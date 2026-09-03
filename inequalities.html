@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สุ่มอสมการเชิงเส้นตัวแปรเดียว</title>
+<style>
+  :root {
+    --navy: #2F3C7E;
+    --navy-deep: #232D63;
+    --coral: #F96167;
+    --coral-deep: #E14A50;
+    --gold: #F9E795;
+    --ink: #FFFFFF;
+    --muted: #B9C0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    user-select: none;
+    position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  .eyebrow {
+    letter-spacing: 0.1em;
+    font-size: clamp(11px, 1.4vw, 16px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    z-index: 1;
+    text-align: center;
+    padding: 0 12px;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 1;
+    padding: 10px 20px;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(22px, 4.4vw, 42px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.35;
+    max-width: 95vw;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.95); }
+
+  .numberline-wrap {
+    width: min(92vw, 640px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .numberline-wrap.swap { opacity: 0; transform: scale(0.95); }
+  .numberline-wrap svg { width: 100%; height: auto; display: block; }
+  .nl-answer-text {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .mode-label {
+    margin-top: 18px;
+    font-size: clamp(13px, 1.8vw, 18px);
+    color: var(--muted);
+    text-align: center;
+    z-index: 1;
+  }
+
+  .controls {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 760px;
+    padding: 0 24px clamp(16px, 4vh, 40px);
+    z-index: 1;
+  }
+  button {
+    border: none;
+    border-radius: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  .btn-next {
+    flex: 2;
+    background: var(--coral);
+    color: var(--ink);
+    font-size: clamp(15px, 2.2vw, 24px);
+    padding: clamp(14px, 2.8vh, 22px) 16px;
+    box-shadow: 0 8px 0 var(--coral-deep);
+  }
+  .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(14px, 2vw, 22px);
+    padding: clamp(14px, 2.8vh, 22px) 16px;
+  }
+  .btn-end {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 2px solid var(--navy-deep);
+    font-size: clamp(13px, 1.7vw, 20px);
+    padding: clamp(14px, 2.8vh, 22px) 12px;
+  }
+  .btn-end:active { background: var(--navy-deep); }
+
+  .end-screen {
+    position: fixed; inset: 0; background: var(--navy-deep);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
+  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+
+  .gear-btn {
+    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+    font-size: 19px; z-index: 2; padding: 0;
+  }
+  .gear-btn:active { background: rgba(255,255,255,0.18); }
+
+  .settings-overlay {
+    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
+    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+  }
+  .settings-overlay.show { display: flex; }
+  .settings-panel {
+    background: var(--navy-deep); border-radius: 22px; padding: 26px 22px; width: 100%; max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
+    max-height: 92vh; overflow-y: auto;
+  }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
+  .field-group { margin-bottom: 14px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 7px; }
+  .field-row { display: flex; gap: 10px; align-items: center; }
+  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; flex-shrink: 0; }
+  .field-row input {
+    flex: 1; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ink);
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 9px 9px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%; min-width: 0;
+  }
+  .field-row input:focus { outline: none; border-color: var(--coral); }
+  .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+
+  @media (max-height: 480px) {
+    .settings-panel { padding: 14px 16px; max-height: 94vh; }
+    .field-group { margin-bottom: 8px; }
+    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
+
+  <div class="eyebrow">สุ่มอสมการเชิงเส้นตัวแปรเดียว</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="numberline-wrap" id="nlWrap" style="display:none;">
+      <svg id="nlSvg" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="nl-answer-text" id="nlAnswerText"></div>
+    </div>
+    <div class="mode-label" id="modeLabel">อ่านโจทย์ แปลงเป็นอสมการ แล้วแก้หาคำตอบ</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มโจทย์ใหม่ ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+      <h2>ตั้งค่าการสุ่มอสมการ</h2>
+      <div class="desc">กำหนดช่วงจำนวนครั้งของแต่ละส่วน (ต่ำสุด-สูงสุด)</div>
+
+      <div class="field-group">
+        <div class="label">ช่วงคำตอบ (จุดแบ่งบนเส้นจำนวน)</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="xMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="xMax">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">จำนวนครั้ง บวก/ลบ</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="asMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="asMax">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">จำนวนครั้ง คูณ/หาร</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="mdMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="mdMax">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">จำนวนครั้ง วงเล็บ</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="brMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="brMax">
+        </div>
+      </div>
+
+      <div class="settings-error" id="settingsError"></div>
+
+      <div class="settings-actions">
+        <button class="btn-cancel" id="cancelBtn">ยกเลิก</button>
+        <button class="btn-save" id="saveBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const DEFAULT_CFG = { xMin: -12, xMax: 12, asMin: 1, asMax: 2, mdMin: 1, mdMax: 2, brMin: 0, brMax: 1 };
+  const STORAGE_KEY = "linear-inequality-gen-cfg";
+  let cfg = { ...DEFAULT_CFG };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved) cfg = { ...DEFAULT_CFG, ...saved };
+  } catch (e) {}
+
+  const NEG_CHANCE = 0.4; // internal: chance a ×/÷ coefficient is negative (creates sign-flip moments)
+
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i);[a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function divisorsOf(n, min, max) {
+    n = Math.abs(n);
+    const divs = [];
+    for (let d = min; d <= max; d++) if (n % d === 0) divs.push(d);
+    return divs;
+  }
+
+  function buildIneqExpr(variable, x0) {
+    const nBrackets = randInt(cfg.brMin, cfg.brMax);
+    const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
+    const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
+
+    const freeMDCount = nMD - nBrackets;
+    const freeASCount = nAS - nBrackets;
+
+    function makeAS() { return { op: choice(["+", "\u2212"]), c: randInt(1, 12) }; }
+    function makeMDPlan() { return { op: choice(["\u00d7", "\u00f7"]), neg: Math.random() < NEG_CHANCE }; }
+
+    const blocks = [];
+    for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMDPlan() });
+    const freeAS = [];
+    for (let i = 0; i < freeASCount; i++) freeAS.push({ kind: "as", layer: makeAS() });
+    const freeMD = [];
+    for (let i = 0; i < freeMDCount; i++) freeMD.push({ kind: "md", layer: makeMDPlan() });
+
+    const middlePool = shuffle([...blocks, ...freeAS]);
+    const orderedAtoms = [...shuffle(freeMD), ...middlePool];
+
+    let expr = variable;
+    let value = x0;
+    let bareMode = true;
+    let bareCoef = 1;
+    let flipCount = 0;
+
+    function materialize() {
+      expr = bareCoef === 1 ? variable : (bareCoef === -1 ? `\u2212${variable}` : `${bareCoef}${variable}`);
+      bareMode = false;
+    }
+    function applyAS(layer) {
+      if (bareMode) materialize();
+      expr += ` ${layer.op} ${layer.c}`;
+      value = layer.op === "+" ? value + layer.c : value - layer.c;
+    }
+    function applyMDDirect(layerPlan) {
+      let op = layerPlan.op, c;
+      if (op === "\u00f7") {
+        if (bareMode) {
+          const divs = divisorsOf(bareCoef, 2, 9);
+          if (divs.length > 0) {
+            c = choice(divs);
+            if (layerPlan.neg) { c = -c; flipCount++; }
+            bareCoef /= c; value /= c;
+            return;
+          }
+        }
+        const valDivs = divisorsOf(value, 2, 9);
+        if (valDivs.length === 0) { op = "\u00d7"; c = randInt(2, 9); }
+        else { c = choice(valDivs); }
+      } else {
+        c = randInt(2, 9);
+      }
+      if (layerPlan.neg) { c = -c; flipCount++; }
+      if (op === "\u00d7") {
+        if (bareMode) { bareCoef *= c; value *= c; return; }
+        expr = `${c}(${expr})`;
+        value *= c;
+      } else {
+        if (bareMode) { materialize(); expr = `${expr} \u00f7 (${c})`; }
+        else { expr = `(${expr}) \u00f7 (${c})`; }
+        value /= c;
+      }
+    }
+    function applyMDBlock(layerPlan) {
+      let op = layerPlan.op, c;
+      if (op === "\u00f7") {
+        const divs = divisorsOf(value, 2, 9);
+        if (divs.length === 0) { op = "\u00d7"; c = randInt(2, 9); } else c = choice(divs);
+      } else { c = randInt(2, 9); }
+      if (layerPlan.neg) { c = -c; flipCount++; }
+      if (op === "\u00d7") { expr = `${c}(${expr})`; value *= c; }
+      else { expr = `(${expr}) \u00f7 (${c})`; value /= c; }
+    }
+
+    orderedAtoms.forEach((atom) => {
+      if (atom.kind === "block") { applyAS(atom.as); applyMDBlock(atom.md); }
+      else if (atom.kind === "as") applyAS(atom.layer);
+      else if (atom.kind === "md") applyMDDirect(atom.layer);
+    });
+    if (bareMode) materialize();
+    return { expr, value, flipCount };
+  }
+
+  function flipRel(rel) {
+    return { "<": ">", ">": "<", "\u2264": "\u2265", "\u2265": "\u2264" }[rel];
+  }
+
+  let currentAnswer = null; // { x0, finalRel }
+  let showingAnswer = false;
+
+  function generateInequality() {
+    const x0 = randInt(cfg.xMin, cfg.xMax);
+    const rel = choice(["<", ">", "\u2264", "\u2265"]);
+    const built = buildIneqExpr("x", x0);
+    const finalRel = built.flipCount % 2 === 0 ? rel : flipRel(rel);
+    currentAnswer = { x0, finalRel };
+    return `${built.expr} ${rel} ${built.value}`;
+  }
+
+  // ---- SVG number line renderer ----
+  function renderNumberLine(x0, finalRel) {
+    const closed = finalRel === "\u2264" || finalRel === "\u2265";
+    const shadeRight = finalRel === ">" || finalRel === "\u2265";
+    const span = 6;
+    const min = x0 - span, max = x0 + span;
+    const w = 400, h = 90, pad = 24;
+    const usableW = w - pad * 2;
+    const scale = usableW / (max - min);
+    function toPx(v) { return pad + (v - min) * scale; }
+    const y = 45;
+
+    let svg = "";
+    svg += `<line x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}" stroke="#26324A" stroke-width="2"/>`;
+    for (let i = min; i <= max; i++) {
+      const px = toPx(i);
+      svg += `<line x1="${px}" y1="${y - 6}" x2="${px}" y2="${y + 6}" stroke="#26324A" stroke-width="1.5"/>`;
+      svg += `<text x="${px}" y="${y + 22}" font-size="11" fill="#B9C0E0" text-anchor="middle" font-family="Calibri, sans-serif">${i}</text>`;
+    }
+    const bx = toPx(x0);
+    const endPx = shadeRight ? w - pad : pad;
+    const segX1 = Math.min(bx, endPx), segX2 = Math.max(bx, endPx);
+    svg += `<line x1="${segX1}" y1="${y}" x2="${segX2}" y2="${y}" stroke="#F96167" stroke-width="5"/>`;
+    // arrowhead
+    const dir = shadeRight ? 1 : -1;
+    const ax = shadeRight ? w - pad : pad;
+    svg += `<polygon points="${ax},${y} ${ax - dir * 10},${y - 6} ${ax - dir * 10},${y + 6}" fill="#F96167"/>`;
+    // boundary circle
+    svg += `<circle cx="${bx}" cy="${y}" r="6.5" fill="${closed ? "#F96167" : "#FFFFFF"}" stroke="#F96167" stroke-width="2.5"/>`;
+    return svg;
+  }
+
+  const exprEl = document.getElementById("exprEl");
+  const nlWrap = document.getElementById("nlWrap");
+  const nlSvg = document.getElementById("nlSvg");
+  const nlAnswerText = document.getElementById("nlAnswerText");
+  const modeLabel = document.getElementById("modeLabel");
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    nlWrap.style.display = "none";
+    modeLabel.textContent = "อ่านโจทย์ แปลงเป็นอสมการ แล้วแก้หาคำตอบ";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    nlWrap.style.display = "";
+    nlSvg.innerHTML = renderNumberLine(currentAnswer.x0, currentAnswer.finalRel);
+    nlAnswerText.textContent = `x ${currentAnswer.finalRel} ${currentAnswer.x0}`;
+    modeLabel.textContent = "นี่คือเฉลยบนเส้นจำนวน";
+  }
+
+  function showNext() {
+    exprEl.classList.add("swap"); nlWrap.classList.add("swap");
+    setTimeout(() => {
+      exprEl.textContent = generateInequality();
+      showingAnswer = false;
+      displayProblem();
+      exprEl.classList.remove("swap"); nlWrap.classList.remove("swap");
+    }, 150);
+  }
+  function toggleAnswer() {
+    const el = showingAnswer ? nlWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? nlWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+
+  // --- settings ---
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["xMin", "xMax", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
+
+  function openSettings() {
+    fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
+    settingsError.textContent = "";
+    settingsOverlay.classList.add("show");
+  }
+  function closeSettings() { settingsOverlay.classList.remove("show"); }
+  gearBtn.addEventListener("click", openSettings);
+  cancelBtn.addEventListener("click", closeSettings);
+  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+
+  saveBtn.addEventListener("click", () => {
+    const vals = {};
+    for (const id of fieldIds) {
+      const v = parseInt(document.getElementById(id).value, 10);
+      if (!Number.isInteger(v)) { settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง"; return; }
+      vals[id] = v;
+    }
+    if (vals.xMin >= vals.xMax) { settingsError.textContent = "ช่วงคำตอบ: ต่ำสุดต้องน้อยกว่าสูงสุด"; return; }
+    if (vals.asMin < 1 || vals.asMin > vals.asMax) { settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
+    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) { settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
+    if (vals.brMin < 0 || vals.brMin > vals.brMax) { settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง"; return; }
+    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) { settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด"; return; }
+
+    cfg = { ...cfg, ...vals };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    closeSettings();
+    showNext();
+  });
+
+  // first problem on load
+  exprEl.textContent = generateInequality();
+  displayProblem();
+</script>
+
+</body>
+</html>
