@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สุ่มโจทย์การประยุกต์ของพหุนาม</title>
+<style>
+  :root {
+    --navy: #2F3C7E;
+    --navy-deep: #232D63;
+    --coral: #F96167;
+    --coral-deep: #E14A50;
+    --gold: #F9E795;
+    --ink: #FFFFFF;
+    --muted: #B9C0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    user-select: none;
+    position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  .eyebrow {
+    letter-spacing: 0.1em;
+    font-size: clamp(11px, 1.4vw, 16px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    z-index: 1;
+    text-align: center;
+    padding: 0 12px;
+  }
+  .type-tag {
+    font-size: clamp(11px, 1.5vw, 15px);
+    color: var(--muted);
+    margin-bottom: 14px;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 1;
+    padding: 10px 20px;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(24px, 5vw, 46px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.35;
+    max-width: 95vw;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.95); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.95); }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .answer-line.step { font-size: clamp(17px, 3.4vw, 30px); color: var(--muted); }
+  .answer-line.final { font-size: clamp(22px, 4.4vw, 40px); color: var(--gold); margin-top: 10px; }
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    vertical-align: middle;
+    margin: 0 0.15em;
+    line-height: 1.25;
+  }
+  .frac-num { border-bottom: 2.5px solid currentColor; padding: 0 0.15em 0.08em; text-align: center; }
+  .frac-den { padding: 0.08em 0.15em 0; text-align: center; }
+
+  .mode-label {
+    margin-top: 20px;
+    font-size: clamp(13px, 1.8vw, 18px);
+    color: var(--muted);
+    text-align: center;
+    z-index: 1;
+  }
+
+  .controls {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 760px;
+    padding: 0 24px clamp(16px, 4vh, 40px);
+    z-index: 1;
+  }
+  button {
+    border: none;
+    border-radius: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  .btn-next {
+    flex: 2;
+    background: var(--coral);
+    color: var(--ink);
+    font-size: clamp(15px, 2.2vw, 24px);
+    padding: clamp(14px, 2.8vh, 22px) 16px;
+    box-shadow: 0 8px 0 var(--coral-deep);
+  }
+  .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(14px, 2vw, 22px);
+    padding: clamp(14px, 2.8vh, 22px) 16px;
+  }
+  .btn-end {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 2px solid var(--navy-deep);
+    font-size: clamp(13px, 1.7vw, 20px);
+    padding: clamp(14px, 2.8vh, 22px) 12px;
+  }
+  .btn-end:active { background: var(--navy-deep); }
+
+  .end-screen {
+    position: fixed; inset: 0; background: var(--navy-deep);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
+  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+
+  .gear-btn {
+    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+    font-size: 19px; z-index: 2; padding: 0;
+  }
+  .gear-btn:active { background: rgba(255,255,255,0.18); }
+
+  .settings-overlay {
+    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
+    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+  }
+  .settings-overlay.show { display: flex; }
+  .settings-panel {
+    background: var(--navy-deep); border-radius: 22px; padding: 26px 22px; width: 100%; max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
+    max-height: 92vh; overflow-y: auto;
+  }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
+  .field-group { margin-bottom: 14px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 7px; }
+  .field-row { display: flex; gap: 10px; align-items: center; }
+  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 70px; flex-shrink: 0; }
+  .field-row input {
+    flex: 1; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ink);
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
+    padding: 9px 9px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%; min-width: 0;
+  }
+  .field-row input:focus { outline: none; border-color: var(--coral); }
+  .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+
+  @media (max-height: 480px) {
+    .settings-panel { padding: 14px 16px; max-height: 94vh; }
+    .field-group { margin-bottom: 8px; }
+    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
+
+  <div class="eyebrow">การประยุกต์ของพหุนาม</div>
+  <div class="type-tag" id="typeTag">&nbsp;</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-line step" id="stepLine"></div>
+      <div class="answer-line final" id="finalLine"></div>
+    </div>
+    <div class="mode-label" id="modeLabel">แก้โจทย์ แล้วกดดูเฉลย</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มโจทย์ใหม่ ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+      <h2>ตั้งค่าการสุ่มโจทย์</h2>
+      <div class="desc">กำหนดค่าตัวเลขสูงสุดที่ใช้ในโจทย์แต่ละแบบ</div>
+
+      <div class="field-group">
+        <div class="label">แบบที่ 1: ทำส่วนให้เป็นตรรกยะ</div>
+        <div class="field-row">
+          <span class="mini-label">a, b สูงสุด</span><input type="number" id="maxT1">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">แบบที่ 2: ถอดรากซ้อน √(a+√b)</div>
+        <div class="field-row">
+          <span class="mini-label">c, d สูงสุด</span><input type="number" id="maxT2">
+        </div>
+      </div>
+
+      <div class="settings-error" id="settingsError"></div>
+
+      <div class="settings-actions">
+        <button class="btn-cancel" id="cancelBtn">ยกเลิก</button>
+        <button class="btn-save" id="saveBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const DEFAULT_CFG = { maxT1: 12, maxT2: 10 };
+  const STORAGE_KEY = "poly-application-gen-cfg";
+  let cfg = { ...DEFAULT_CFG };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved) cfg = { ...DEFAULT_CFG, ...saved };
+  } catch (e) {}
+
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function isPerfectSquare(n) { const r = Math.round(Math.sqrt(n)); return r * r === n; }
+
+  // ---- Type 1: rationalizing the denominator ----
+  function genType1() {
+    let x, y;
+    do {
+      x = randInt(2, cfg.maxT1);
+      y = randInt(2, cfg.maxT1);
+    } while (x === y);
+    const a = Math.max(x, y), b = Math.min(x, y);
+    const sign = choice([1, -1]);
+    const diff = a - b;
+    return { type: 1, a, b, sign, diff };
+  }
+  function displayType1(g) {
+    const signStr = g.sign === 1 ? "+" : "\u2212";
+    const denom = `\u221a${g.a} ${signStr} \u221a${g.b}`;
+    return `<span class="frac"><span class="frac-num">1</span><span class="frac-den">${denom}</span></span>`;
+  }
+  function answerType1(g) {
+    const signStr = g.sign === 1 ? "+" : "\u2212";
+    const conjSignStr = g.sign === 1 ? "\u2212" : "+";
+    const conjExpr = `\u221a${g.a} ${conjSignStr} \u221a${g.b}`;
+    const stepHTML = `\u00d7 <span class="frac"><span class="frac-num">${conjExpr}</span><span class="frac-den">${conjExpr}</span></span>`;
+    const finalHTML = g.diff === 1
+      ? conjExpr
+      : `<span class="frac"><span class="frac-num">${conjExpr}</span><span class="frac-den">${g.diff}</span></span>`;
+    return { stepHTML, finalHTML };
+  }
+
+  // ---- Type 2: nested radical denesting ----
+  function genType2() {
+    const pool = [];
+    for (let n = 1; n <= cfg.maxT2; n++) if (!isPerfectSquare(n)) pool.push(n);
+    let c, d;
+    do {
+      c = choice(pool);
+      d = choice(pool);
+    } while (c === d);
+    const a = c + d;
+    const b = 4 * c * d;
+    return { type: 2, a, b, c, d };
+  }
+  function displayType2(g) {
+    return `\u221a(${g.a} + \u221a${g.b})`;
+  }
+  function answerType2(g) {
+    const step = `หา c+d=${g.a}, cd=${g.b / 4}`;
+    const finalAns = `\u221a${g.c} + \u221a${g.d}`;
+    return { step, finalAns };
+  }
+
+  let current = null;
+  let showingAnswer = false;
+
+  function newProblem() {
+    const type = choice([1, 2]);
+    current = type === 1 ? genType1() : genType2();
+    return current.type === 1 ? displayType1(current) : displayType2(current);
+  }
+
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const stepLine = document.getElementById("stepLine");
+  const finalLine = document.getElementById("finalLine");
+  const modeLabel = document.getElementById("modeLabel");
+  const typeTag = document.getElementById("typeTag");
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  function updateTypeTag() {
+    typeTag.textContent = current.type === 1 ? "แบบที่ 1 \u00b7 ทำส่วนให้เป็นตรรกยะ" : "แบบที่ 2 \u00b7 ถอดรากซ้อน";
+  }
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    modeLabel.textContent = "แก้โจทย์ แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+    if (current.type === 1) {
+      const ans = answerType1(current);
+      stepLine.innerHTML = ans.stepHTML;
+      finalLine.innerHTML = ans.finalHTML;
+    } else {
+      const ans = answerType2(current);
+      stepLine.textContent = ans.step;
+      finalLine.textContent = ans.finalAns;
+    }
+    modeLabel.textContent = "นี่คือเฉลย";
+  }
+
+  function showNext() {
+    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    setTimeout(() => {
+      exprEl.innerHTML = newProblem();
+      updateTypeTag();
+      showingAnswer = false;
+      displayProblem();
+      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+
+  // --- settings ---
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["maxT1", "maxT2"];
+
+  function openSettings() {
+    fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
+    settingsError.textContent = "";
+    settingsOverlay.classList.add("show");
+  }
+  function closeSettings() { settingsOverlay.classList.remove("show"); }
+  gearBtn.addEventListener("click", openSettings);
+  cancelBtn.addEventListener("click", closeSettings);
+  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+
+  saveBtn.addEventListener("click", () => {
+    const vals = {};
+    for (const id of fieldIds) {
+      const v = parseInt(document.getElementById(id).value, 10);
+      if (!Number.isInteger(v)) { settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง"; return; }
+      vals[id] = v;
+    }
+    if (vals.maxT1 < 3) { settingsError.textContent = "แบบที่ 1: ค่าสูงสุดต้องอย่างน้อย 3"; return; }
+    if (vals.maxT2 < 5) { settingsError.textContent = "แบบที่ 2: ค่าสูงสุดต้องอย่างน้อย 5 (ต้องมีค่าที่ไม่ใช่กำลังสองสมบูรณ์พอ)"; return; }
+
+    cfg = { ...cfg, ...vals };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    closeSettings();
+    showNext();
+  });
+
+  // first problem on load
+  exprEl.innerHTML = newProblem();
+  updateTypeTag();
+  displayProblem();
+</script>
+
+</body>
+</html>
