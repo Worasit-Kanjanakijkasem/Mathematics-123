@@ -83,6 +83,16 @@
     text-align: center;
   }
 
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(26px, 5vw, 54px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+  }
+
   .controls {
     display: flex;
     gap: 18px;
@@ -105,18 +115,26 @@
     flex: 2;
     background: var(--coral);
     color: var(--ink);
-    font-size: clamp(18px, 2.6vw, 26px);
-    padding: 22px 20px;
+    font-size: clamp(16px, 2.2vw, 24px);
+    padding: 20px 16px;
     box-shadow: 0 8px 0 var(--coral-deep);
   }
   .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(14px, 2vw, 22px);
+    padding: 20px 16px;
+  }
   .btn-end {
     flex: 1;
     background: transparent;
     color: var(--muted);
     border: 2px solid var(--navy-deep);
-    font-size: clamp(15px, 2vw, 20px);
-    padding: 22px 16px;
+    font-size: clamp(14px, 1.8vw, 20px);
+    padding: 20px 14px;
   }
   .btn-end:active { background: var(--navy-deep); }
 
@@ -183,11 +201,15 @@
 
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
-    <div class="prompt">คำนวณหาผลลัพธ์</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-line" id="answerLine"></div>
+    </div>
+    <div class="prompt" id="promptEl">คำนวณหาผลลัพธ์ แล้วกดดูเฉลย</div>
   </div>
 
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
@@ -269,6 +291,57 @@
     return `<span class="frac"><span class="num">${fr.n}</span><span class="den">${fr.d}</span></span>`;
   }
 
+  // ---- fraction arithmetic ----
+  function fGcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; }
+  function fSimplify(f) {
+    const g = fGcd(f.n, f.d) || 1;
+    let n = f.n / g, d = f.d / g;
+    if (d < 0) { n = -n; d = -d; }
+    return { n, d };
+  }
+  function fAdd(a, b) { return fSimplify({ n: a.n * b.d + b.n * a.d, d: a.d * b.d }); }
+  function fSub(a, b) { return fSimplify({ n: a.n * b.d - b.n * a.d, d: a.d * b.d }); }
+  function fMul(a, b) { return fSimplify({ n: a.n * b.n, d: a.d * b.d }); }
+  function fDiv(a, b) { return fSimplify({ n: a.n * b.d, d: a.d * b.n }); }
+
+  // ---- recursive-descent evaluator over a token array (fractions, operator strings, '(' / ')') ----
+  // respects standard precedence: brackets > ×÷ > +− (matches how the display should be read)
+  function evalTokens(tokens) {
+    let pos = 0;
+    const peek = () => tokens[pos];
+    const next = () => tokens[pos++];
+    function parseExpr() {
+      let left = parseTerm();
+      while (peek() === "+" || peek() === "\u2212") {
+        const op = next();
+        const right = parseTerm();
+        left = op === "+" ? fAdd(left, right) : fSub(left, right);
+      }
+      return left;
+    }
+    function parseTerm() {
+      let left = parseFactor();
+      while (peek() === "\u00d7" || peek() === "\u00f7") {
+        const op = next();
+        const right = parseFactor();
+        left = op === "\u00d7" ? fMul(left, right) : fDiv(left, right);
+      }
+      return left;
+    }
+    function parseFactor() {
+      if (peek() === "(") { next(); const v = parseExpr(); next(); return v; }
+      return next();
+    }
+    return parseExpr();
+  }
+
+  function fmtAnswer(f) {
+    const neg = f.n < 0;
+    const absN = Math.abs(f.n);
+    if (f.d === 1) return `${neg ? "\u2212" : ""}${absN}`;
+    return `${neg ? "\u2212" : ""}<span class="frac"><span class="num">${absN}</span><span class="den">${f.d}</span></span>`;
+  }
+
   function generateExpr() {
     const nBrackets = randInt(cfg.brMin, cfg.brMax);
     const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
@@ -290,34 +363,76 @@
     const middlePool = shuffle([...blocks, ...freeAS]);
     const orderedAtoms = [...shuffle(freeMD), ...middlePool];
 
-    let expr = fracHTML(randFraction(cfg.maxDenom));
+    const frac0 = randFraction(cfg.maxDenom);
+    let expr = fracHTML(frac0);
+    let tokens = [frac0];
+
     orderedAtoms.forEach((atom) => {
       if (atom.kind === "block") {
         expr += ` ${atom.as.op} ${fracHTML(atom.as.frac)}`;
+        tokens.push(atom.as.op, atom.as.frac);
         expr = `(${expr}) ${atom.md.op} ${fracHTML(atom.md.frac)}`;
+        tokens = ["(", ...tokens, ")", atom.md.op, atom.md.frac];
       } else if (atom.kind === "as") {
         expr += ` ${atom.layer.op} ${fracHTML(atom.layer.frac)}`;
+        tokens.push(atom.layer.op, atom.layer.frac);
       } else if (atom.kind === "md") {
         expr += ` ${atom.layer.op} ${fracHTML(atom.layer.frac)}`;
+        tokens.push(atom.layer.op, atom.layer.frac);
       }
     });
-    return expr;
+
+    const answer = evalTokens(tokens);
+    return { expr, answerHTML: fmtAnswer(answer) };
   }
 
   const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerLine = document.getElementById("answerLine");
+  const promptEl = document.getElementById("promptEl");
   const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
   const endBtn = document.getElementById("endBtn");
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  let current = null;
+  let showingAnswer = false;
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "คำนวณหาผลลัพธ์ แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+    answerLine.innerHTML = current.answerHTML;
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+
   function showNext() {
-    exprEl.classList.add("swap");
+    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
     setTimeout(() => {
-      exprEl.innerHTML = generateExpr();
-      exprEl.classList.remove("swap");
+      current = generateExpr();
+      exprEl.innerHTML = current.expr;
+      showingAnswer = false;
+      displayProblem();
+      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
     }, 150);
   }
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
   nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
@@ -359,7 +474,9 @@
   });
 
   // first expression on load
-  exprEl.innerHTML = generateExpr();
+  current = generateExpr();
+  exprEl.innerHTML = current.expr;
+  displayProblem();
 </script>
 
 </body>

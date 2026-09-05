@@ -64,6 +64,28 @@
   }
   .problem.swap { opacity: 0; transform: scale(0.96); }
 
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 0.1em;
+    line-height: 1.05;
+  }
+  .frac .num, .frac .den { display: block; padding: 0 0.15em; }
+  .frac .num { border-bottom: 0.07em solid currentColor; padding-bottom: 0.05em; }
+  .frac .den { padding-top: 0.05em; }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.96); }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(24px, 4.4vw, 42px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+  }
+
   .prompt {
     margin-top: 22px;
     font-size: clamp(14px, 2vw, 18px);
@@ -93,18 +115,26 @@
     flex: 2;
     background: var(--coral);
     color: var(--ink);
-    font-size: clamp(18px, 2.6vw, 26px);
-    padding: 22px 20px;
+    font-size: clamp(16px, 2.2vw, 24px);
+    padding: 20px 16px;
     box-shadow: 0 8px 0 var(--coral-deep);
   }
   .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(14px, 2vw, 22px);
+    padding: 20px 16px;
+  }
   .btn-end {
     flex: 1;
     background: transparent;
     color: var(--muted);
     border: 2px solid var(--navy-deep);
-    font-size: clamp(15px, 2vw, 20px);
-    padding: 22px 16px;
+    font-size: clamp(14px, 1.8vw, 20px);
+    padding: 20px 14px;
   }
   .btn-end:active { background: var(--navy-deep); }
 
@@ -190,11 +220,15 @@
 
   <div class="stage">
     <div class="problem" id="problemEl">…</div>
-    <div class="prompt">อ่านโจทย์ แปลงเป็นสมการ แล้วแก้หาคำตอบ</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-line" id="answerLine"></div>
+    </div>
+    <div class="prompt" id="promptEl">อ่านโจทย์ แปลงเป็นสมการ แล้วกดดูเฉลย</div>
   </div>
 
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
@@ -309,7 +343,9 @@
       c = ax - b;
     }
     const tpl = choice(sign === "+" ? INT_PLUS_TEMPLATES : INT_MINUS_TEMPLATES);
-    return tpl(a, b, c);
+    const signSym = sign === "+" ? "+" : "\u2212";
+    const equation = `${a}x ${signSym} ${b} = ${c}`;
+    return { problem: tpl(a, b, c), equation };
   }
 
   function genFraction(sign) {
@@ -332,7 +368,10 @@
       d = axb - c;
     }
     const tpl = choice(sign === "+" ? FRAC_PLUS_TEMPLATES : FRAC_MINUS_TEMPLATES);
-    return tpl(a, b, c, d);
+    const signSym = sign === "+" ? "+" : "\u2212";
+    const fracHTML = `<span class="frac"><span class="num">${a}</span><span class="den">${b}</span></span>`;
+    const equation = `${fracHTML}x ${signSym} ${c} = ${d}`;
+    return { problem: tpl(a, b, c, d), equation };
   }
 
   function generateProblem() {
@@ -341,24 +380,57 @@
     if (cfg.toggleIntMinus) pool.push(() => genInteger("-"));
     if (cfg.toggleFracPlus) pool.push(() => genFraction("+"));
     if (cfg.toggleFracMinus) pool.push(() => genFraction("-"));
-    if (pool.length === 0) return "กรุณาเปิดประเภทโจทย์อย่างน้อย 1 แบบในตั้งค่า";
+    if (pool.length === 0) return { problem: "กรุณาเปิดประเภทโจทย์อย่างน้อย 1 แบบในตั้งค่า", equation: "" };
     return choice(pool)();
   }
 
   const problemEl = document.getElementById("problemEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerLine = document.getElementById("answerLine");
+  const promptEl = document.getElementById("promptEl");
   const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
   const endBtn = document.getElementById("endBtn");
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  let current = null;
+  let showingAnswer = false;
+
+  function displayProblem() {
+    problemEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "อ่านโจทย์ แปลงเป็นสมการ แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    problemEl.style.display = "none";
+    answerWrap.style.display = "";
+    answerLine.innerHTML = current.equation;
+    promptEl.textContent = "นี่คือสมการที่ควรตั้งได้ (ตรวจคำตอบด้วยการแทนค่า x)";
+  }
+
   function showNext() {
-    problemEl.classList.add("swap");
+    problemEl.classList.add("swap"); answerWrap.classList.add("swap");
     setTimeout(() => {
-      problemEl.textContent = generateProblem();
-      problemEl.classList.remove("swap");
+      current = generateProblem();
+      problemEl.textContent = current.problem;
+      showingAnswer = false;
+      displayProblem();
+      problemEl.classList.remove("swap"); answerWrap.classList.remove("swap");
     }, 150);
   }
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : problemEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : problemEl).classList.remove("swap");
+    }, 150);
+  }
+
   nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
@@ -400,7 +472,9 @@
   });
 
   // first problem on load
-  problemEl.textContent = generateProblem();
+  current = generateProblem();
+  problemEl.textContent = current.problem;
+  displayProblem();
 </script>
 
 </body>
