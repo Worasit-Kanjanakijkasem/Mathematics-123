@@ -22,7 +22,7 @@ body {
 /* ===== กล่องหลัก ===== */
 
 .container {
-    width: min(92%, 760px);
+    width: min(94%, 1000px);
     margin: 0 auto;
 }
 
@@ -33,7 +33,6 @@ h1 {
     text-align: center;
     color: #222222;
 
-    /* ปรับขนาดตัวอักษรตามขนาดจอ */
     font-size: clamp(24px, 3vw, 34px);
 
     margin-top: 20px;
@@ -41,39 +40,59 @@ h1 {
 }
 
 
+/* ===== Grid สำหรับรายการแบบฝึก ===== */
+
+.exercise-grid {
+    display: grid;
+
+    /* 2 คอลัมน์ ขนาดเท่ากัน */
+    grid-template-columns: repeat(2, 1fr);
+
+    /* ระยะห่างระหว่างปุ่ม */
+    gap: 14px;
+}
+
+
 /* ===== Link / ปุ่มเลือกแบบฝึก ===== */
 
-a {
-    display: block;
+.exercise-grid a {
+    display: flex;
+
+    /* จัดข้อความให้อยู่กลางปุ่ม */
+    align-items: center;
+    justify-content: center;
 
     background-color: white;
     color: #0057d9;
 
-    font-size: clamp(18px, 2vw, 22px);
+    font-size: clamp(17px, 1.8vw, 21px);
     font-weight: 500;
 
     text-decoration: underline;
+    text-align: center;
 
-    padding: 18px 22px;
-    margin: 14px 0;
+    padding: 18px 20px;
 
     border: 1px solid #cccccc;
     border-radius: 10px;
 
     box-sizing: border-box;
+
+    /* ทำให้ปุ่มในแต่ละแถวดูสม่ำเสมอ */
+    min-height: 72px;
 }
 
 
 /* เมื่อนำ mouse ไปชี้บน laptop/desktop */
 
-a:hover {
+.exercise-grid a:hover {
     background-color: #e4edff;
 }
 
 
 /* ตอนกด */
 
-a:active {
+.exercise-grid a:active {
     background-color: #d8e5ff;
 }
 
@@ -97,9 +116,15 @@ a:active {
         margin-bottom: 20px;
     }
 
-    a {
+    /* Smartphone ใช้ 1 คอลัมน์ */
+    .exercise-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .exercise-grid a {
         padding: 18px 16px;
-        margin: 12px 0;
+        min-height: 64px;
     }
 
 }
@@ -112,7 +137,7 @@ a:active {
 @media (min-width: 601px) and (max-width: 1024px) {
 
     .container {
-        width: min(90%, 700px);
+        width: min(94%, 900px);
     }
 
 }
@@ -125,7 +150,8 @@ a:active {
 @media (min-width: 1025px) {
 
     .container {
-        width: 700px;
+        width: 1000px;
+        max-width: 94%;
     }
 
 }
@@ -141,42 +167,47 @@ a:active {
 
     <h1>แบบฝึกคณิตศาสตร์มัธยมศึกษาตอนต้น</h1>
 
-    <a href="divisible.html">
-        กฎการหารลงตัว
-    </a>
 
-    <a href="lcm-practice.html">
-        การหา ค.ร.น. (มีเฉลย)
-    </a>
-    
-    <a href="fraction.html">
-        การคำนวณเศษส่วน
-    </a>
+    <div class="exercise-grid">
 
-    <a href="linear-equation.html">
-        สมการเชิงเส้นตัวแปรเดียว
-    </a>
+        <a href="divisible.html">
+            กฎการหารลงตัว
+        </a>
 
-    <a href="word-to-equation.html">
-        การแก้สมการจากข้อความ
-    </a>
+        <a href="lcm-practice.html">
+            การหา ค.ร.น. (มีเฉลย)
+        </a>
 
-    <a href="system-of-equations.html">
-        ระบบสมการเชิงเส้นสองตัวแปร
-    </a>
+        <a href="fraction.html">
+            การคำนวณเศษส่วน
+        </a>
 
-    <a href="inequalities.html">
-        อสมการเชิงเส้นตัวแปรเดียว (มีเฉลย)
-    </a>
+        <a href="linear-equation.html">
+            สมการเชิงเส้นตัวแปรเดียว
+        </a>
 
-    <a href="quadratic-equation.html">
-        สมการกำลังสองตัวแปรเดียว (มีเฉลย)
-    </a>
+        <a href="word-to-equation.html">
+            การแก้สมการจากข้อความ
+        </a>
 
-    <a href="radical-simplification.html">
-        การลดรูปกรณฑ์ (มีเฉลย)
-    </a>
-    
+        <a href="system-of-equations.html">
+            ระบบสมการเชิงเส้นสองตัวแปร
+        </a>
+
+        <a href="inequalities.html">
+            อสมการเชิงเส้นตัวแปรเดียว (มีเฉลย)
+        </a>
+
+        <a href="quadratic-equation.html">
+            สมการกำลังสองตัวแปรเดียว (มีเฉลย)
+        </a>
+
+        <a href="radical-simplification.html">
+            การลดรูปกรณฑ์ (มีเฉลย)
+        </a>
+
+    </div>
+
 </div>
 
 </body>
