@@ -280,8 +280,31 @@
     const freeMDCount = nMD - nBrackets;
     const freeASCount = nAS - nBrackets;
 
-    function makeAS() { return { op: choice(["+", "\u2212"]), num: randInt(1, cfg.maxNum) }; }
-    function makeMD() { return { op: choice(["\u00d7", "\u00f7"]), num: randInt(1, cfg.maxNum) }; }
+  // ---- exponent assignment: 2-4 -> 20% sq, 5% cube, 75% none; 5-10 -> 20% sq, 80% none; >10 -> never ----
+  function applyExponent(base) {
+    let exp = 1;
+    if (base >= 2 && base <= 4) {
+      const r = Math.random();
+      if (r < 0.20) exp = 2;
+      else if (r < 0.25) exp = 3;
+    } else if (base >= 5 && base <= 10) {
+      if (Math.random() < 0.20) exp = 2;
+    }
+    const value = Math.pow(base, exp);
+    const display = exp === 1 ? `${base}` : `${base}${exp === 2 ? "\u00b2" : "\u00b3"}`;
+    return { value, display };
+  }
+  // base number generator; excludeOne=true is used for divisors (never divide by 1)
+  function genNum(excludeOne) {
+    const base = excludeOne ? randInt(2, cfg.maxNum) : randInt(1, cfg.maxNum);
+    return applyExponent(base);
+  }
+
+  function makeAS() { return { op: choice(["+", "\u2212"]), ...genNum(false) }; }
+  function makeMD() {
+    const op = choice(["\u00d7", "\u00f7"]);
+    return { op, ...genNum(op === "\u00f7") };
+  }
 
     const blocks = [];
     for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMD() });
@@ -293,19 +316,19 @@
     const middlePool = shuffle([...blocks, ...freeAS]);
     const orderedAtoms = [...shuffle(freeMD), ...middlePool];
 
-    const num0 = randInt(1, cfg.maxNum);
-    let expr = `${num0}`;
-    let tokens = [num0];
+    const num0obj = genNum(false);
+    let expr = num0obj.display;
+    let tokens = [num0obj.value];
 
     orderedAtoms.forEach((atom) => {
       if (atom.kind === "block") {
-        expr += ` ${atom.as.op} ${atom.as.num}`;
-        tokens.push(atom.as.op, atom.as.num);
-        expr = `(${expr}) ${atom.md.op} ${atom.md.num}`;
-        tokens = ["(", ...tokens, ")", atom.md.op, atom.md.num];
+        expr += ` ${atom.as.op} ${atom.as.display}`;
+        tokens.push(atom.as.op, atom.as.value);
+        expr = `(${expr}) ${atom.md.op} ${atom.md.display}`;
+        tokens = ["(", ...tokens, ")", atom.md.op, atom.md.value];
       } else {
-        expr += ` ${atom.layer.op} ${atom.layer.num}`;
-        tokens.push(atom.layer.op, atom.layer.num);
+        expr += ` ${atom.layer.op} ${atom.layer.display}`;
+        tokens.push(atom.layer.op, atom.layer.value);
       }
     });
     return { expr, tokens };
