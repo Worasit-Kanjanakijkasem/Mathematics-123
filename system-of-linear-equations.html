@@ -66,6 +66,17 @@
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .equation.swap { opacity: 0; transform: scale(0.94); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(24px, 4.6vw, 46px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    line-height: 1.5;
+  }
   .eq-pair {
     display: flex;
     align-items: center;
@@ -119,13 +130,21 @@
     box-shadow: 0 8px 0 var(--coral-deep);
   }
   .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(14px, 2vw, 22px);
+    padding: clamp(14px, 2.8vh, 22px) 16px;
+  }
   .btn-end {
     flex: 1;
     background: transparent;
     color: var(--muted);
     border: 2px solid var(--navy-deep);
-    font-size: clamp(14px, 1.8vw, 20px);
-    padding: clamp(14px, 2.8vh, 22px) 16px;
+    font-size: clamp(13px, 1.7vw, 20px);
+    padding: clamp(14px, 2.8vh, 22px) 12px;
   }
   .btn-end:active { background: var(--navy-deep); }
 
@@ -208,17 +227,21 @@
   <div class="eyebrow">สุ่มระบบสมการเชิงเส้นสองตัวแปร</div>
 
   <div class="stage">
-    <div class="eq-pair">
+    <div class="eq-pair" id="eqPair">
       <div class="eq-lines">
         <div class="equation" id="eq1El">…</div>
         <div class="equation" id="eq2El">…</div>
       </div>
     </div>
-    <div class="prompt">แก้ระบบสมการ หาค่าตัวแปรทั้งสองตัว</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-line" id="answerLine"></div>
+    </div>
+    <div class="prompt" id="promptEl">แก้ระบบสมการ หาค่าตัวแปรทั้งสองตัว แล้วกดดูเฉลย</div>
   </div>
 
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
@@ -449,7 +472,7 @@
       attempts++;
     }
 
-    return [eq1, eq2];
+    return { eq1, eq2, varX, varY, x0, y0 };
   }
 
   // ---- helpers to detect a coincident (dependent) system: strip fraction spans, evaluate
@@ -487,23 +510,55 @@
     return v1.every((val, i) => Math.abs(val - k * v2[i]) < eps);
   }
 
+  const eqPair = document.getElementById("eqPair");
   const eq1El = document.getElementById("eq1El");
   const eq2El = document.getElementById("eq2El");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerLine = document.getElementById("answerLine");
+  const promptEl = document.getElementById("promptEl");
   const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
   const endBtn = document.getElementById("endBtn");
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  let current = null;
+  let showingAnswer = false;
+
+  function displayProblem() {
+    eqPair.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "แก้ระบบสมการ หาค่าตัวแปรทั้งสองตัว แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    eqPair.style.display = "none";
+    answerWrap.style.display = "";
+    answerLine.textContent = `${current.varX} = ${current.x0}      ${current.varY} = ${current.y0}`;
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+
   function showNext() {
-    eq1El.classList.add("swap"); eq2El.classList.add("swap");
+    eqPair.classList.add("swap"); answerWrap.classList.add("swap");
     setTimeout(() => {
-      const [e1, e2] = generateSystem();
-      eq1El.innerHTML = e1;
-      eq2El.innerHTML = e2;
-      eq1El.classList.remove("swap"); eq2El.classList.remove("swap");
+      current = generateSystem();
+      eq1El.innerHTML = current.eq1;
+      eq2El.innerHTML = current.eq2;
+      showingAnswer = false;
+      displayProblem();
+      eqPair.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : eqPair;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : eqPair).classList.remove("swap");
     }, 150);
   }
   nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
@@ -553,9 +608,10 @@
 
   // first system on load
   {
-    const [e1, e2] = generateSystem();
-    eq1El.innerHTML = e1;
-    eq2El.innerHTML = e2;
+    current = generateSystem();
+    eq1El.innerHTML = current.eq1;
+    eq2El.innerHTML = current.eq2;
+    displayProblem();
   }
 </script>
 
