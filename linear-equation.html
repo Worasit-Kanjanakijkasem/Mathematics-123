@@ -64,6 +64,16 @@
   }
   .equation.swap { opacity: 0; transform: scale(0.94); }
 
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(28px, 5.5vw, 56px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+  }
+
   .frac {
     display: inline-flex;
     flex-direction: column;
@@ -113,13 +123,21 @@
     box-shadow: 0 8px 0 var(--coral-deep);
   }
   .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(14px, 2vw, 22px);
+    padding: 22px 16px;
+  }
   .btn-end {
     flex: 1;
     background: transparent;
     color: var(--muted);
     border: 2px solid var(--navy-deep);
-    font-size: clamp(15px, 2vw, 20px);
-    padding: 22px 16px;
+    font-size: clamp(14px, 1.8vw, 20px);
+    padding: 22px 14px;
   }
   .btn-end:active { background: var(--navy-deep); }
 
@@ -187,11 +205,15 @@
 
   <div class="stage">
     <div class="equation" id="equation">…</div>
-    <div class="prompt">หาค่าตัวแปรในสมการนี้</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-line" id="answerLine"></div>
+    </div>
+    <div class="prompt" id="promptEl">หาค่าตัวแปรในสมการนี้ แล้วกดดูเฉลย</div>
   </div>
 
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
@@ -371,23 +393,55 @@
 
     if (bareMode) materialize();
 
-    return `${expr} = ${value}`;
+    return { expr: `${expr} = ${value}`, answer: x0, variable };
   }
 
   const equationEl = document.getElementById("equation");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerLine = document.getElementById("answerLine");
+  const promptEl = document.getElementById("promptEl");
   const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
   const endBtn = document.getElementById("endBtn");
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  let current = null;
+  let showingAnswer = false;
+
+  function displayProblem() {
+    equationEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "หาค่าตัวแปรในสมการนี้ แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    equationEl.style.display = "none";
+    answerWrap.style.display = "";
+    answerLine.textContent = `${current.variable} = ${current.answer}`;
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+
   function showNext() {
-    equationEl.classList.add("swap");
+    equationEl.classList.add("swap"); answerWrap.classList.add("swap");
     setTimeout(() => {
-      equationEl.innerHTML = generateEquation();
-      equationEl.classList.remove("swap");
+      current = generateEquation();
+      equationEl.innerHTML = current.expr;
+      showingAnswer = false;
+      displayProblem();
+      equationEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : equationEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : equationEl).classList.remove("swap");
     }, 150);
   }
   nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
@@ -429,7 +483,9 @@
   });
 
   // first equation on load
-  equationEl.innerHTML = generateEquation();
+  current = generateEquation();
+  equationEl.innerHTML = current.expr;
+  displayProblem();
 </script>
 
 </body>
