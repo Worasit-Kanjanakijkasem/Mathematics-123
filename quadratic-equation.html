@@ -328,7 +328,11 @@
     if (a === 1) s += "x\u00b2";
     else if (a === -1) s += "\u2212x\u00b2";
     else s += `${a}x\u00b2`;
-    if (b !== 0) s += ` ${b > 0 ? "+" : "\u2212"} ${Math.abs(b)}x`;
+    if (b !== 0) {
+      const absB = Math.abs(b);
+      const bStr = absB === 1 ? "x" : `${absB}x`;
+      s += ` ${b > 0 ? "+" : "\u2212"} ${bStr}`;
+    }
     if (c !== 0) s += ` ${c > 0 ? "+" : "\u2212"} ${Math.abs(c)}`;
     s += " = 0";
     return s;
