@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สมการและกราฟของเส้นตรง</title>
+<style>
+  :root {
+    --navy: #2F3C7E;
+    --navy-deep: #232D63;
+    --coral: #F96167;
+    --coral-deep: #E14A50;
+    --gold: #F9E795;
+    --ink: #FFFFFF;
+    --muted: #B9C0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    user-select: none;
+    position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  .eyebrow {
+    letter-spacing: 0.1em;
+    font-size: clamp(12px, 1.6vw, 17px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 1;
+    padding: 6px 16px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(24px, 4.6vw, 42px);
+    font-weight: 700;
+    text-align: center;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.94); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; min-height: 0; flex: 1; justify-content: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+  .answer-facts {
+    font-size: clamp(12px, 2vw, 16px);
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .graph-box { width: min(78vh, 92vw, 560px); flex-shrink: 1; min-height: 0; }
+  .graph-box svg { width: 100%; height: 100%; display: block; }
+
+  .prompt {
+    margin-top: 8px;
+    font-size: clamp(12px, 1.7vw, 17px);
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .controls {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px);
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  button {
+    border: none;
+    border-radius: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  .btn-next {
+    flex: 2;
+    background: var(--coral);
+    color: var(--ink);
+    font-size: clamp(14px, 2.1vw, 22px);
+    padding: clamp(12px, 2.4vh, 20px) 16px;
+    box-shadow: 0 8px 0 var(--coral-deep);
+  }
+  .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(13px, 1.9vw, 20px);
+    padding: clamp(12px, 2.4vh, 20px) 16px;
+  }
+  .btn-end {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 2px solid var(--navy-deep);
+    font-size: clamp(12px, 1.6vw, 18px);
+    padding: clamp(12px, 2.4vh, 20px) 12px;
+  }
+  .btn-end:active { background: var(--navy-deep); }
+
+  .end-screen {
+    position: fixed; inset: 0; background: var(--navy-deep);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
+  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="eyebrow">สมการและกราฟของเส้นตรง</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-facts" id="answerFacts"></div>
+      <div class="graph-box" id="graphBox"></div>
+    </div>
+    <div class="prompt" id="promptEl">หาจุดตัดแกน x,y ระบุความชัน แล้วร่างกราฟ จากนั้นกดดูเฉลย</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+<script>
+  const DENOMS = [1, 2, 3, 4, 5, 6, 8, 9, 12];
+  const RANGE_MIN = -50, RANGE_MAX = 50;
+
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
+
+  // ---- generate a line: pick slope M/D in lowest terms, pick x-intercept as multiple of D ----
+  function generateLine() {
+    while (true) {
+      const D = choice(DENOMS);
+      let M;
+      do { M = choice([-1, 1]) * randInt(1, 3 * D); } while (M === 0 || gcd(Math.abs(M), D) !== 1);
+      const multiples = [];
+      for (let k = Math.ceil(RANGE_MIN / D); k <= Math.floor(RANGE_MAX / D); k++) {
+        if (k !== 0) multiples.push(k * D);
+      }
+      if (multiples.length === 0) continue;
+      const p = choice(multiples); // x-intercept
+      const qExact = (-M / D) * p;
+      const q = Math.round(qExact);
+      if (Math.abs(qExact - q) > 1e-9) continue; // must be exact integer
+      if (q === 0 || q < RANGE_MIN || q > RANGE_MAX) continue;
+      // line through (p,0),(0,q): q*x + p*y - p*q = 0
+      let A = q, B = p, C = -p * q;
+      const g = gcd(gcd(A, B), C);
+      A /= g; B /= g; C /= g;
+      if (A === 0 || B === 0) continue;
+      // normalize sign: prefer A>0 for display consistency (doesn't affect geometry)
+      if (A < 0) { A = -A; B = -B; C = -C; }
+      const slopeNum = -A, slopeDen = B; // slope = -A/B
+      let sN = slopeNum, sD = slopeDen;
+      if (sD < 0) { sN = -sN; sD = -sD; }
+      const sg = gcd(sN, sD);
+      sN /= sg; sD /= sg;
+      return { A, B, C, p, q, slopeN: sN, slopeD: sD };
+    }
+  }
+
+  // ---- format Ax+By+C=0, coefficient 1 shown bare ----
+  function fmtTerm(coef, varName, isFirst) {
+    if (coef === 0) return "";
+    const sign = coef < 0 ? "\u2212" : isFirst ? "" : "+";
+    const abs = Math.abs(coef);
+    const numStr = abs === 1 ? "" : `${abs}`;
+    return isFirst ? `${sign}${numStr}${varName}` : ` ${sign} ${numStr}${varName}`;
+  }
+  function fmtLineGeneral(A, B, C) {
+    let out = "";
+    let first = true;
+    for (const [coef, v] of [[A, "x"], [B, "y"], [C, ""]]) {
+      if (coef === 0) continue;
+      out += fmtTerm(coef, v, first);
+      first = false;
+    }
+    return out + " = 0";
+  }
+  function fmtSlope(n, d) {
+    const sign = (n < 0) !== (d < 0) ? "\u2212" : "";
+    return d === 1 ? `${sign}${Math.abs(n)}` : `${sign}${Math.abs(n)}/${Math.abs(d)}`;
+  }
+
+  // ---- build SVG graph for the answer ----
+  function buildGraphSVG(line) {
+    const { p, q, slopeN, slopeD } = line;
+    const maxAbs = Math.max(Math.abs(p), Math.abs(q));
+    let range = Math.ceil((maxAbs * 1.25) / 5) * 5;
+    if (range < 5) range = 5;
+    const size = 560;
+    const pad = 34;
+    const plotSize = size - 2 * pad;
+    const scale = plotSize / (2 * range);
+    const cx = size / 2, cy = size / 2;
+    function toSX(wx) { return cx + wx * scale; }
+    function toSY(wy) { return cy - wy * scale; }
+
+    // label direction: sign(C) * (A,B) normalized (always perpendicular to the line)
+    const { A, B, C } = line;
+    const norm = Math.sqrt(A * A + B * B);
+    const sgn = C > 0 ? 1 : -1;
+    const dirx = (sgn * A) / norm, diry = (sgn * B) / norm;
+
+    // dynamic offset: enough to clear a text box of the given string's width against
+    // this specific perpendicular direction. Steep lines -> mostly-horizontal perpendicular
+    // -> wide text needs much more clearance; shallow lines -> mostly-vertical perpendicular
+    // -> only text height matters, so a small offset already suffices.
+    function dynamicOffset(text, fontSize, baseMargin) {
+      const avgCharW = fontSize * 0.58;
+      const W = (text.length * avgCharW) / 2;
+      const H = fontSize / 2;
+      return W * Math.abs(dirx) + H * Math.abs(diry) + baseMargin;
+    }
+
+    const xLabelStr = `(${p}, 0)`, yLabelStr = `(0, ${q})`;
+    const offX = dynamicOffset(xLabelStr, 14, 10);
+    const offY = dynamicOffset(yLabelStr, 14, 10);
+    const lx1 = toSX(p) + dirx * offX, ly1 = toSY(0) - diry * offX;
+    const lx2 = toSX(0) + dirx * offY, ly2 = toSY(q) - diry * offY;
+
+    // slope label: near midpoint, offset in OPPOSITE direction (clearer side)
+    const midx = p / 2, midy = q / 2;
+    const slopeStr = `m = ${fmtSlope(slopeN, slopeD)}`;
+    const slopeOffset = dynamicOffset(slopeStr, 15, 10);
+    const slx = toSX(midx) - dirx * slopeOffset, sly = toSY(midy) + diry * slopeOffset;
+
+    // line extension: extend ~18% of segment length beyond each intercept, clipped to view range
+    const dx = 0 - p, dy = q - 0; // direction from x-int to y-int
+    const segLen = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ext = segLen * 0.35;
+    const ux = dx / segLen, uy = dy / segLen;
+    let ex1 = p - ux * ext, ey1 = 0 - uy * ext;
+    let ex2 = 0 + ux * ext, ey2 = q + uy * ext;
+    const clip = range * 1.02;
+    function clampPoint(x, y, ox, oy) {
+      // clamp along the line from (ox,oy) toward (x,y) if it exceeds view range
+      let t = 1;
+      if (Math.abs(x) > clip) t = Math.min(t, (clip * Math.sign(x) - ox) / (x - ox));
+      if (Math.abs(y) > clip) t = Math.min(t, (clip * Math.sign(y) - oy) / (y - oy));
+      return [ox + (x - ox) * t, oy + (y - oy) * t];
+    }
+    [ex1, ey1] = clampPoint(ex1, ey1, p, 0);
+    [ex2, ey2] = clampPoint(ex2, ey2, 0, q);
+
+    const axisColor = "#7A8296";
+    let svg = `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+    svg += `<title>กราฟของเส้นตรง ${fmtLineGeneral(A, B, C)}</title>`;
+    // axes
+    svg += `<line x1="${pad - 6}" y1="${cy}" x2="${size - pad + 14}" y2="${cy}" stroke="${axisColor}" stroke-width="1.5"/>`;
+    svg += `<polygon points="${size - pad + 14},${cy} ${size - pad + 4},${cy - 5} ${size - pad + 4},${cy + 5}" fill="${axisColor}"/>`;
+    svg += `<line x1="${cx}" y1="${size - pad + 6}" x2="${cx}" y2="${pad - 14}" stroke="${axisColor}" stroke-width="1.5"/>`;
+    svg += `<polygon points="${cx},${pad - 14} ${cx - 5},${pad - 4} ${cx + 5},${pad - 4}" fill="${axisColor}"/>`;
+    svg += `<text x="${size - pad + 6}" y="${cy + 18}" font-size="13" fill="${axisColor}" font-weight="700">x</text>`;
+    svg += `<text x="${cx + 8}" y="${pad - 16}" font-size="13" fill="${axisColor}" font-weight="700">y</text>`;
+    svg += `<text x="${cx - 14}" y="${cy + 16}" font-size="11" fill="${axisColor}">0</text>`;
+    // line
+    svg += `<line x1="${toSX(ex1)}" y1="${toSY(ey1)}" x2="${toSX(ex2)}" y2="${toSY(ey2)}" stroke="#FFFFFF" stroke-width="3"/>`;
+    // intercept points
+    svg += `<circle cx="${toSX(p)}" cy="${toSY(0)}" r="6" fill="#E14A50"/>`;
+    svg += `<circle cx="${toSX(0)}" cy="${toSY(q)}" r="6" fill="#E14A50"/>`;
+    // intercept labels
+    svg += `<text x="${lx1}" y="${ly1}" font-size="14" fill="#E14A50" font-weight="700" text-anchor="middle" dominant-baseline="middle">(${p}, 0)</text>`;
+    svg += `<text x="${lx2}" y="${ly2}" font-size="14" fill="#E14A50" font-weight="700" text-anchor="middle" dominant-baseline="middle">(0, ${q})</text>`;
+    // slope label
+    svg += `<text x="${slx}" y="${sly}" font-size="15" fill="#F9E795" font-weight="700" text-anchor="middle" dominant-baseline="middle">${slopeStr}</text>`;
+    svg += `</svg>`;
+    return svg;
+  }
+
+  let current = null;
+  let showingAnswer = false;
+
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerFacts = document.getElementById("answerFacts");
+  const graphBox = document.getElementById("graphBox");
+  const promptEl = document.getElementById("promptEl");
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "หาจุดตัดแกน x,y ระบุความชัน แล้วร่างกราฟ จากนั้นกดดูเฉลย";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "flex";
+    answerFacts.textContent = `จุดตัดแกน x = (${current.p}, 0)   จุดตัดแกน y = (0, ${current.q})   ความชัน m = ${fmtSlope(current.slopeN, current.slopeD)}`;
+    graphBox.innerHTML = buildGraphSVG(current);
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+
+  function showNext() {
+    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    setTimeout(() => {
+      current = generateLine();
+      exprEl.textContent = fmtLineGeneral(current.A, current.B, current.C);
+      showingAnswer = false;
+      displayProblem();
+      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+  nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+
+  // first problem on load
+  showNext();
+</script>
+
+</body>
+</html>
