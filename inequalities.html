@@ -196,7 +196,7 @@
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="numberline-wrap" id="nlWrap" style="display:none;">
-      <svg id="nlSvg" viewBox="0 0 400 90" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="nlSvg" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="nl-answer-text" id="nlAnswerText"></div>
     </div>
     <div class="mode-label" id="modeLabel">อ่านโจทย์ แปลงเป็นอสมการ แล้วแก้หาคำตอบ</div>
@@ -311,6 +311,7 @@
     let bareMode = true;
     let bareCoef = 1;
     let flipCount = 0;
+    let coefA = 1, coefB = 0; // LHS as linear function: coefA*x + coefB (mirrors value's transforms)
 
     function materialize() {
       expr = bareCoef === 1 ? variable : (bareCoef === -1 ? `\u2212${variable}` : `${bareCoef}${variable}`);
@@ -320,6 +321,7 @@
       if (bareMode) materialize();
       expr += ` ${layer.op} ${layer.c}`;
       value = layer.op === "+" ? value + layer.c : value - layer.c;
+      coefB = layer.op === "+" ? coefB + layer.c : coefB - layer.c;
     }
     function applyMDDirect(layerPlan) {
       let op = layerPlan.op, c;
@@ -329,7 +331,7 @@
           if (divs.length > 0) {
             c = choice(divs);
             if (layerPlan.neg) { c = -c; flipCount++; }
-            bareCoef /= c; value /= c;
+            bareCoef /= c; value /= c; coefA /= c; coefB /= c;
             return;
           }
         }
@@ -341,13 +343,13 @@
       }
       if (layerPlan.neg) { c = -c; flipCount++; }
       if (op === "\u00d7") {
-        if (bareMode) { bareCoef *= c; value *= c; return; }
+        if (bareMode) { bareCoef *= c; value *= c; coefA *= c; coefB *= c; return; }
         expr = `${c}(${expr})`;
-        value *= c;
+        value *= c; coefA *= c; coefB *= c;
       } else {
         if (bareMode) { materialize(); expr = `${expr} \u00f7 (${c})`; }
         else { expr = `(${expr}) \u00f7 (${c})`; }
-        value /= c;
+        value /= c; coefA /= c; coefB /= c;
       }
     }
     function applyMDBlock(layerPlan) {
@@ -357,8 +359,8 @@
         if (divs.length === 0) { op = "\u00d7"; c = randInt(2, 9); } else c = choice(divs);
       } else { c = randInt(2, 9); }
       if (layerPlan.neg) { c = -c; flipCount++; }
-      if (op === "\u00d7") { expr = `${c}(${expr})`; value *= c; }
-      else { expr = `(${expr}) \u00f7 (${c})`; value /= c; }
+      if (op === "\u00d7") { expr = `${c}(${expr})`; value *= c; coefA *= c; coefB *= c; }
+      else { expr = `(${expr}) \u00f7 (${c})`; value /= c; coefA /= c; coefB /= c; }
     }
 
     orderedAtoms.forEach((atom) => {
@@ -367,7 +369,7 @@
       else if (atom.kind === "md") applyMDDirect(atom.layer);
     });
     if (bareMode) materialize();
-    return { expr, value, flipCount };
+    return { expr, value, flipCount, coefA, coefB };
   }
 
   function flipRel(rel) {
@@ -382,7 +384,7 @@
     const rel = choice(["<", ">", "\u2264", "\u2265"]);
     const built = buildIneqExpr("x", x0);
     const finalRel = built.flipCount % 2 === 0 ? rel : flipRel(rel);
-    currentAnswer = { x0, finalRel };
+    currentAnswer = { x0, finalRel, coefA: built.coefA, coefB: built.coefB, rhsValue: built.value };
     return `${built.expr} ${rel} ${built.value}`;
   }
 
@@ -418,6 +420,82 @@
     return svg;
   }
 
+  function fmtLinearY(a, b) {
+    function r(n) { return Math.abs(n - Math.round(n)) < 1e-9 ? Math.round(n) : Math.round(n * 1000) / 1000; }
+    const a2 = r(a), b2 = r(b);
+    const aPart = a2 === 1 ? "x" : a2 === -1 ? "\u2212x" : `${a2}x`;
+    if (b2 === 0) return `y = ${aPart}`;
+    const sign = b2 > 0 ? "+" : "\u2212";
+    return `y = ${aPart} ${sign} ${Math.abs(b2)}`;
+  }
+
+  // ---- combined "top view / front view" renderer: 2D line graph aligned above the number line ----
+  function renderCombinedGraph(coefA, coefB, rhsValue, x0, finalRel) {
+    const span = 6;
+    const min = x0 - span, max = x0 + span;
+    const w = 400, pad = 24;
+    const usableW = w - pad * 2;
+    const scaleX = usableW / (max - min);
+    function toPx(v) { return pad + (v - min) * scaleX; }
+
+    // ---- graph zone (top view) ----
+    const graphTop = 8, graphBottom = 150;
+    const graphH = graphBottom - graphTop;
+    const y1a = coefA * min + coefB, y1b = coefA * max + coefB; // LHS line endpoints
+    let yLo = Math.min(y1a, y1b, rhsValue), yHi = Math.max(y1a, y1b, rhsValue);
+    if (yHi - yLo < 1e-6) { yLo -= 1; yHi += 1; }
+    const yPad = (yHi - yLo) * 0.18;
+    yLo -= yPad; yHi += yPad;
+    const scaleY = graphH / (yHi - yLo);
+    function toPy(v) { return graphBottom - (v - yLo) * scaleY; }
+
+    let svg = "";
+    // x-axis reference (y=0) if visible in window
+    if (yLo <= 0 && 0 <= yHi) {
+      svg += `<line x1="${pad}" y1="${toPy(0)}" x2="${w - pad}" y2="${toPy(0)}" stroke="#3A4570" stroke-width="1" stroke-dasharray="3 3"/>`;
+    }
+    // RHS constant line (dashed coral)
+    svg += `<line x1="${toPx(min)}" y1="${toPy(rhsValue)}" x2="${toPx(max)}" y2="${toPy(rhsValue)}" stroke="#F96167" stroke-width="2" stroke-dasharray="5 4"/>`;
+    // LHS line (solid teal/white)
+    svg += `<line x1="${toPx(min)}" y1="${toPy(y1a)}" x2="${toPx(max)}" y2="${toPy(y1b)}" stroke="#FFFFFF" stroke-width="2.5"/>`;
+    // intersection point
+    const ix = toPx(x0), iy = toPy(rhsValue);
+    svg += `<circle cx="${ix}" cy="${iy}" r="5" fill="#F9E795" stroke="#232D63" stroke-width="1.5"/>`;
+    // small labels: placed inset from the edge (85% along) with generous clearance from the line/edge
+    const lhsAtLabelX = min + (max - min) * 0.85;
+    const lhsLabelY = coefA * lhsAtLabelX + coefB;
+    const lhsAbove = y1b > y1a; // does the LHS line rise toward the right?
+    svg += `<text x="${toPx(lhsAtLabelX)}" y="${toPy(lhsLabelY) - (lhsAbove ? 14 : -18)}" font-size="11" fill="#FFFFFF" text-anchor="middle" font-family="Calibri, sans-serif">${fmtLinearY(coefA, coefB)}</text>`;
+    const rhsAtLabelX = min + (max - min) * 0.15;
+    const rhsBelow = !(yLo + (yHi - yLo) * 0.5 < rhsValue); // if RHS line sits in lower half, put label above it, else below
+    svg += `<text x="${toPx(rhsAtLabelX)}" y="${toPy(rhsValue) + (rhsBelow ? 16 : -10)}" font-size="11" fill="#F96167" text-anchor="middle" font-family="Calibri, sans-serif">y = ${rhsValue}</text>`;
+
+    // ---- vertical projection guide line connecting top view to front view ----
+    const nlYOffset = 168;
+    svg += `<line x1="${ix}" y1="${iy}" x2="${ix}" y2="${nlYOffset + 45}" stroke="#F9E795" stroke-width="1.25" stroke-dasharray="2 3" opacity="0.7"/>`;
+
+    // ---- number line zone (front view), shifted down by nlYOffset ----
+    const closed = finalRel === "\u2264" || finalRel === "\u2265";
+    const shadeRight = finalRel === ">" || finalRel === "\u2265";
+    const y = 45 + nlYOffset;
+    svg += `<line x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}" stroke="#26324A" stroke-width="2"/>`;
+    for (let i = min; i <= max; i++) {
+      const px = toPx(i);
+      svg += `<line x1="${px}" y1="${y - 6}" x2="${px}" y2="${y + 6}" stroke="#26324A" stroke-width="1.5"/>`;
+      svg += `<text x="${px}" y="${y + 22}" font-size="11" fill="#B9C0E0" text-anchor="middle" font-family="Calibri, sans-serif">${i}</text>`;
+    }
+    const bx = toPx(x0);
+    const endPx = shadeRight ? w - pad : pad;
+    const segX1 = Math.min(bx, endPx), segX2 = Math.max(bx, endPx);
+    svg += `<line x1="${segX1}" y1="${y}" x2="${segX2}" y2="${y}" stroke="#F96167" stroke-width="3.25"/>`;
+    const dir = shadeRight ? 1 : -1;
+    const ax = shadeRight ? w - pad : pad;
+    svg += `<polygon points="${ax},${y} ${ax - dir * 8},${y - 5} ${ax - dir * 8},${y + 5}" fill="#F96167"/>`;
+    svg += `<circle cx="${bx}" cy="${y}" r="5.8" fill="${closed ? "#F96167" : "#FFFFFF"}" stroke="#F96167" stroke-width="2.25"/>`;
+
+    return svg;
+  }
+
   const exprEl = document.getElementById("exprEl");
   const nlWrap = document.getElementById("nlWrap");
   const nlSvg = document.getElementById("nlSvg");
@@ -437,7 +515,7 @@
   function displayAnswer() {
     exprEl.style.display = "none";
     nlWrap.style.display = "";
-    nlSvg.innerHTML = renderNumberLine(currentAnswer.x0, currentAnswer.finalRel);
+    nlSvg.innerHTML = renderCombinedGraph(currentAnswer.coefA, currentAnswer.coefB, currentAnswer.rhsValue, currentAnswer.x0, currentAnswer.finalRel);
     nlAnswerText.textContent = `x ${currentAnswer.finalRel} ${currentAnswer.x0}`;
     modeLabel.textContent = "นี่คือเฉลยบนเส้นจำนวน";
   }
