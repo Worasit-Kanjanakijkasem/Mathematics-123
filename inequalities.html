@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มอสมการเชิงเส้นตัวแปรเดียว</title>
 <style>
+  /* ===== Base / Variables ===== */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -17,6 +18,7 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
@@ -33,10 +35,12 @@
     position: relative;
   }
 
+  /* ===== Decoration ===== */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
+  /* ===== Header ===== */
   .eyebrow {
     letter-spacing: 0.1em;
     font-size: clamp(11px, 1.4vw, 16px);
@@ -49,6 +53,7 @@
     padding: 0 12px;
   }
 
+  /* ===== Stage ===== */
   .stage {
     display: flex;
     flex-direction: column;
@@ -60,6 +65,7 @@
     padding: 10px 20px;
   }
 
+  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(22px, 4.4vw, 42px);
@@ -93,6 +99,7 @@
     z-index: 1;
   }
 
+  /* ===== Standard Controls ===== */
   .controls {
     display: flex;
     gap: 14px;
@@ -118,11 +125,12 @@
     flex: 2;
     background: var(--coral);
     color: var(--ink);
-    font-size: clamp(14px, 2.1vw, 22px);
-    padding: clamp(12px, 2.4vh, 20px) 16px;
-    box-shadow: 0 8px 0 var(--coral-deep);
+    font-size: clamp(13px, 2.1vw, 22px);
+    padding: clamp(12px, 2.4vh, 20px) 10px;
+    box-shadow: none;
+    white-space: nowrap;
   }
-  .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -143,6 +151,7 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
+  /* ===== End Screen ===== */
   .end-screen {
     position: fixed; inset: 0; background: var(--navy-deep);
     display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -151,15 +160,18 @@
   .end-screen.show { display: flex; }
   .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
   .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
+  /* ===== Restart ===== */
   .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
 
+  /* ===== Gear ===== */
   .gear-btn {
     position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
     background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 19px; z-index: 2; padding: 0;
+    font-size: 20px; z-index: 2; padding: 0;
   }
   .gear-btn:active { background: rgba(255,255,255,0.18); }
 
+  /* ===== Settings ===== */
   .settings-overlay {
     position: fixed; inset: 0; background: rgba(20,24,54,0.75);
     display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
@@ -187,6 +199,7 @@
   .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
+  /* ===== Media Queries ===== */
   @media (max-height: 480px) {
     .settings-panel { padding: 14px 16px; max-height: 94vh; }
     .field-group { margin-bottom: 8px; }
@@ -271,8 +284,10 @@
   </div>
 
 <script>
+  // ===== Configuration / Constants =====
   const DEFAULT_CFG = { xMin: -12, xMax: 12, asMin: 1, asMax: 2, mdMin: 1, mdMax: 2, brMin: 0, brMax: 1 };
   const STORAGE_KEY = "linear-inequality-gen-cfg";
+  // ===== Saved Settings =====
   let cfg = { ...DEFAULT_CFG };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -281,6 +296,7 @@
 
   const NEG_CHANCE = 0.4; // internal: chance a ×/÷ coefficient is negative (creates sign-flip moments)
 
+  // ===== Exercise Generator =====
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
   function shuffle(arr) {
@@ -382,6 +398,7 @@
     return { expr, value, flipCount, coefA, coefB };
   }
 
+  // ===== Answer Logic =====
   function flipRel(rel) {
     return { "<": ">", ">": "<", "\u2264": "\u2265", "\u2265": "\u2264" }[rel];
   }
@@ -506,6 +523,7 @@
     return svg;
   }
 
+  // ===== DOM References =====
   const exprEl = document.getElementById("exprEl");
   const nlWrap = document.getElementById("nlWrap");
   const nlSvg = document.getElementById("nlSvg");
@@ -517,6 +535,7 @@
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  // ===== Display Functions =====
   function displayProblem() {
     exprEl.style.display = "";
     nlWrap.style.display = "none";
@@ -549,12 +568,13 @@
     }, 150);
   }
 
+  // ===== Main Button Events =====
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
-  // --- settings ---
+  // ===== Settings Logic =====
   const gearBtn = document.getElementById("gearBtn");
   const settingsOverlay = document.getElementById("settingsOverlay");
   const settingsError = document.getElementById("settingsError");
@@ -591,6 +611,7 @@
     showNext();
   });
 
+  // ===== Initial Load =====
   // first problem on load
   exprEl.textContent = generateInequality();
   displayProblem();
