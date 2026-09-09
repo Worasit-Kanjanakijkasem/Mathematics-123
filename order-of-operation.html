@@ -14,8 +14,11 @@
     --ink: #FFFFFF;
     --muted: #B9C0E0;
   }
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; margin: 0; overflow: hidden; }
+
+  html, body { margin: 0; overflow: hidden; }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
@@ -24,10 +27,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    height: 100dvh;
+    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
+
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
