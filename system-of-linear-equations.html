@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มระบบสมการเชิงเส้นสองตัวแปร</title>
 <style>
+  /* ===== Base / Variables ===== */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -17,6 +18,7 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
@@ -33,22 +35,23 @@
     position: relative;
   }
 
+  /* ===== Decoration ===== */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
+  /* ===== Header ===== */
   .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: clamp(11px, 1.4vw, 16px);
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
     font-weight: 700;
     color: var(--gold);
     text-transform: uppercase;
     margin-bottom: 8px;
     z-index: 1;
-    text-align: center;
-    padding: 0 12px;
   }
 
+  /* ===== Stage ===== */
   .stage {
     display: flex;
     flex-direction: column;
@@ -61,6 +64,7 @@
     gap: clamp(10px, 2.2vh, 22px);
   }
 
+  /* ===== Exercise-specific CSS ===== */
   .equation {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(20px, 4vw, 40px);
@@ -108,6 +112,7 @@
     z-index: 1;
   }
 
+  /* ===== Standard Controls ===== */
   .controls {
     display: flex;
     gap: 14px;
@@ -133,11 +138,12 @@
     flex: 2;
     background: var(--coral);
     color: var(--ink);
-    font-size: clamp(14px, 2.1vw, 22px);
-    padding: clamp(12px, 2.4vh, 20px) 16px;
-    box-shadow: 0 8px 0 var(--coral-deep);
+    font-size: clamp(13px, 2.1vw, 22px);
+    padding: clamp(12px, 2.4vh, 20px) 10px;
+    box-shadow: none;
+    white-space: nowrap;
   }
-  .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -158,35 +164,75 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
+  /* ===== End Screen ===== */
   .end-screen {
     position: fixed; inset: 0; background: var(--navy-deep);
     display: none; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; padding: 24px; z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
-  .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
-  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+  .end-screen .headline {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .end-screen .sub {
+    color: var(--muted);
+    font-size: clamp(16px, 2.4vw, 22px);
+    margin-bottom: 36px;
+  }
+  /* ===== Restart ===== */
+  .btn-restart {
+    background: var(--gold);
+    color: var(--navy-deep);
+    font-size: clamp(17px, 2.4vw, 22px);
+    padding: 18px 40px;
+    border-radius: 20px;
+  }
 
+  /* ===== Gear ===== */
   .gear-btn {
-    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 19px; z-index: 2; padding: 0;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
   }
   .gear-btn:active { background: rgba(255,255,255,0.18); }
 
+  /* ===== Settings ===== */
   .settings-overlay {
-    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
-    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,24,54,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
   .settings-panel {
-    background: var(--navy-deep); border-radius: 22px; padding: 26px 22px; width: 100%; max-width: 460px;
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
-    max-height: 92vh; overflow-y: auto;
+    max-height: 92vh;
+    overflow-y: auto;
   }
-  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
-  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 14px; }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
 
   .var-section {
     background: rgba(255,255,255,0.05); border-radius: 14px; padding: 12px 14px 4px; margin-bottom: 14px;
@@ -219,23 +265,28 @@
   .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
+  /* ===== Media Queries ===== */
   @media (max-height: 480px) {
-    .settings-panel { padding: 14px 16px; max-height: 94vh; }
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
     .var-section { padding: 8px 10px 2px; margin-bottom: 8px; }
     .field-group { margin-bottom: 6px; }
-    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
-    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
   }
 </style>
 </head>
 <body>
 
+  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
+  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
+  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มระบบสมการเชิงเส้นสองตัวแปร</div>
 
+  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="eq-pair" id="eqPair">
       <div class="eq-lines">
@@ -249,18 +300,21 @@
     <div class="prompt" id="promptEl">แก้ระบบสมการ หาค่าตัวแปรทั้งสองตัว แล้วกดดูเฉลย</div>
   </div>
 
+  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
+  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
+  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มระบบสมการ</h2>
@@ -334,6 +388,7 @@
   </div>
 
 <script>
+  // ===== Configuration / Constants =====
   const DEFAULT_CFG = {
     xMin: -15, xMax: 15,
     v1AsMin: 1, v1AsMax: 2, v1MdMin: 1, v1MdMax: 2, v1BrMin: 0, v1BrMax: 1,
@@ -341,11 +396,13 @@
   };
   const STORAGE_KEY = "linear-system-2var-gen-cfg";
   let cfg = { ...DEFAULT_CFG };
+  // ===== Saved Settings =====
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
+  // ===== Exercise Generator =====
   const VAR_POOL = ["x", "y", "a", "b", "m", "n", "p", "q"];
 
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -520,6 +577,7 @@
     return v1.every((val, i) => Math.abs(val - k * v2[i]) < eps);
   }
 
+  // ===== DOM References =====
   const eqPair = document.getElementById("eqPair");
   const eq1El = document.getElementById("eq1El");
   const eq2El = document.getElementById("eq2El");
@@ -532,9 +590,11 @@
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  // ===== State =====
   let current = null;
   let showingAnswer = false;
 
+  // ===== Display Functions =====
   function displayProblem() {
     eqPair.style.display = "";
     answerWrap.style.display = "none";
@@ -567,12 +627,13 @@
       (showingAnswer ? answerWrap : eqPair).classList.remove("swap");
     }, 150);
   }
+  // ===== Main Button Events =====
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
-  // --- settings ---
+  // ===== Settings Logic =====
   const gearBtn = document.getElementById("gearBtn");
   const settingsOverlay = document.getElementById("settingsOverlay");
   const settingsError = document.getElementById("settingsError");
@@ -616,6 +677,7 @@
     showNext();
   });
 
+  // ===== Initial Load =====
   // first system on load
   {
     current = generateSystem();
