@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มโจทย์ลำดับการดำเนินการ</title>
 <style>
+  /* ===== Base / Variables ===== */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -17,6 +18,7 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
@@ -33,10 +35,12 @@
     position: relative;
   }
 
+  /* ===== Decoration ===== */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
+  /* ===== Header ===== */
   .eyebrow {
     letter-spacing: 0.1em;
     font-size: clamp(12px, 1.5vw, 16px);
@@ -49,6 +53,7 @@
     padding: 0 12px;
   }
 
+  /* ===== Stage ===== */
   .stage {
     display: flex;
     flex-direction: column;
@@ -60,6 +65,7 @@
     padding: 0 20px;
   }
 
+  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(22px, 4.4vw, 46px);
@@ -88,6 +94,7 @@
     text-align: center;
   }
 
+  /* ===== Standard Controls ===== */
   .controls {
     display: flex;
     gap: 14px;
@@ -113,11 +120,12 @@
     flex: 2;
     background: var(--coral);
     color: var(--ink);
-    font-size: clamp(14px, 2.1vw, 22px);
-    padding: clamp(12px, 2.4vh, 20px) 16px;
-    box-shadow: 0 8px 0 var(--coral-deep);
+    font-size: clamp(13px, 2.1vw, 22px);
+    padding: clamp(12px, 2.4vh, 20px) 10px;
+    box-shadow: none;
+    white-space: nowrap;
   }
-  .btn-next:active { box-shadow: 0 3px 0 var(--coral-deep); }
+  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -138,23 +146,41 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
+  /* ===== End Screen ===== */
   .end-screen {
     position: fixed; inset: 0; background: var(--navy-deep);
     display: none; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; padding: 24px; z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
-  .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
-  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+  .end-screen .headline {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .end-screen .sub {
+    color: var(--muted);
+    font-size: clamp(16px, 2.4vw, 22px);
+    margin-bottom: 36px;
+  }
+  /* ===== Restart ===== */
+  .btn-restart {
+    background: var(--gold);
+    color: var(--navy-deep);
+    font-size: clamp(17px, 2.4vw, 22px);
+    padding: 18px 40px;
+    border-radius: 20px;
+  }
 
+  /* ===== Gear ===== */
   .gear-btn {
     position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
     background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 19px; z-index: 2; padding: 0;
+    font-size: 20px; z-index: 2; padding: 0;
   }
   .gear-btn:active { background: rgba(255,255,255,0.18); }
 
+  /* ===== Settings ===== */
   .settings-overlay {
     position: fixed; inset: 0; background: rgba(20,24,54,0.75);
     display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
@@ -183,6 +209,7 @@
   .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
+  /* ===== Media Queries ===== */
   @media (max-height: 480px) {
     .settings-panel { padding: 14px 18px; max-height: 94vh; }
     .field-group { margin-bottom: 8px; }
@@ -193,12 +220,16 @@
 </head>
 <body>
 
+  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
+  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
+  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มโจทย์ลำดับการดำเนินการ</div>
 
+  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
@@ -207,18 +238,21 @@
     <div class="prompt" id="promptEl">คำนวณหาผลลัพธ์ แล้วกดดูเฉลย</div>
   </div>
 
+  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
+  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
+  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มโจทย์</h2>
@@ -266,14 +300,17 @@
   </div>
 
 <script>
+  // ===== Configuration / Constants =====
   const DEFAULT_CFG = { maxNum: 24, asMin: 1, asMax: 3, mdMin: 1, mdMax: 3, brMin: 0, brMax: 2 };
   const STORAGE_KEY = "order-ops-gen-cfg";
   let cfg = { ...DEFAULT_CFG };
+  // ===== Saved Settings =====
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
+  // ===== Exercise Generator =====
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
   function shuffle(arr) {
@@ -385,9 +422,11 @@
     return { expr: g.expr, answer: evalRes.result };
   }
 
+  // ===== State =====
   let current = null;
   let showingAnswer = false;
 
+  // ===== DOM References =====
   const exprEl = document.getElementById("exprEl");
   const answerWrap = document.getElementById("answerWrap");
   const answerLine = document.getElementById("answerLine");
@@ -398,6 +437,7 @@
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
+  // ===== Display Functions =====
   function displayProblem() {
     exprEl.style.display = "";
     answerWrap.style.display = "none";
@@ -430,12 +470,13 @@
     }, 150);
   }
 
+  // ===== Main Button Events =====
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
   restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
 
-  // --- settings ---
+  // ===== Settings Logic =====
   const gearBtn = document.getElementById("gearBtn");
   const settingsOverlay = document.getElementById("settingsOverlay");
   const settingsError = document.getElementById("settingsError");
@@ -472,6 +513,7 @@
     showNext();
   });
 
+  // ===== Initial Load =====
   // first problem on load
   current = generateProblem();
   exprEl.textContent = current.expr;
