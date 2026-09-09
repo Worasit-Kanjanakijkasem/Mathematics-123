@@ -90,11 +90,12 @@
 
   .controls {
     display: flex;
-    gap: 18px;
+    gap: 14px;
     width: 100%;
-    max-width: 720px;
-    padding: 0 24px 40px;
+    max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px);
     z-index: 1;
+    flex-shrink: 0;
   }
 
   button {
