@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มโจทย์เศษส่วน</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,29 +21,32 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
     letter-spacing: 0.12em;
     font-size: clamp(13px, 1.6vw, 18px);
@@ -51,7 +57,26 @@
     z-index: 1;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -62,7 +87,6 @@
     z-index: 1;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(24px, 4.6vw, 50px);
@@ -74,6 +98,24 @@
   }
   .expr.swap { opacity: 0; transform: scale(0.94); }
 
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(26px, 5vw, 54px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+  }
+
+  .prompt {
+    margin-top: 20px;
+    font-size: clamp(14px, 2vw, 20px);
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ---- exercise-specific: fraction display ---- */
   .frac {
     display: inline-flex;
     flex-direction: column;
@@ -86,24 +128,9 @@
   .frac .num { border-bottom: 0.06em solid currentColor; padding-bottom: 0.04em; }
   .frac .den { padding-top: 0.04em; }
 
-  .prompt {
-    margin-top: 20px;
-    font-size: clamp(14px, 2vw, 20px);
-    color: var(--muted);
-    text-align: center;
-  }
-
-  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
-  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
-  .answer-line {
-    font-family: "Cambria", "Georgia", serif;
-    font-size: clamp(26px, 5vw, 54px);
-    font-weight: 700;
-    color: var(--gold);
-    text-align: center;
-  }
-
-  /* ===== Standard Controls ===== */
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -131,10 +158,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -155,7 +180,9 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
     position: fixed;
     inset: 0;
@@ -169,18 +196,9 @@
     z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
 
-  /* ===== Restart ===== */
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -189,29 +207,13 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    z-index: 2;
-    padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20,24,54,0.75);
+    background: rgba(20, 24, 54, 0.75);
     display: none;
     align-items: center;
     justify-content: center;
@@ -227,60 +229,62 @@
     padding: 28px 24px;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
     max-height: 92vh;
     overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
   .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
   .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
   .field-group { margin-bottom: 16px; }
   .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .field-row { display: flex; gap: 10px; align-items: center; }
   .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; }
   .field-row input {
     flex: 1;
+    width: 100%;
     font-family: inherit;
     font-size: 17px;
     font-weight: 700;
     color: var(--ink);
-    background: rgba(255,255,255,0.08);
-    border: 2px solid rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
     padding: 10px;
     box-sizing: border-box;
     font-variant-numeric: tabular-nums;
-    width: 100%;
   }
   .field-row input:focus { outline: none; border-color: var(--coral); }
-  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
-  /* ===== Media Queries ===== */
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
     .settings-panel { padding: 16px 18px; max-height: 94vh; }
-    .toggle-row { padding: 8px 12px; margin-bottom: 6px; }
-    .field-group { margin: 10px 0; }
     .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
     .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
+    .toggle-row { padding: 8px 12px; margin-bottom: 6px; }
   }
+
 </style>
 </head>
 <body>
 
-  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-
-  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
-  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มโจทย์ บวก ลบ คูณ หาร เศษส่วน</div>
 
-  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
@@ -289,21 +293,18 @@
     <div class="prompt" id="promptEl">คำนวณหาผลลัพธ์ แล้วกดดูเฉลย</div>
   </div>
 
-  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
-  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
-  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มโจทย์</h2>
@@ -351,35 +352,55 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
   const DEFAULT_CFG = { maxDenom: 12, asMin: 1, asMax: 3, mdMin: 2, mdMax: 2, brMin: 1, brMax: 2 };
   const STORAGE_KEY = "frac-arith-gen-cfg";
-  let cfg = { ...DEFAULT_CFG };
 
-  // ===== Saved Settings =====
+  let cfg = { ...DEFAULT_CFG };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
-  // ===== DOM References =====
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
   const exprEl = document.getElementById("exprEl");
   const answerWrap = document.getElementById("answerWrap");
   const answerLine = document.getElementById("answerLine");
   const promptEl = document.getElementById("promptEl");
+
+  // main controls
   const nextBtn = document.getElementById("nextBtn");
   const toggleBtn = document.getElementById("toggleBtn");
   const endBtn = document.getElementById("endBtn");
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
-  // ===== State =====
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["maxDenom", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
   let current = null;
   let showingAnswer = false;
 
-  // ===== Exercise Generator =====
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -389,63 +410,9 @@
     return a;
   }
 
-  function randFraction(maxDenom) {
-    const d = randInt(2, Math.max(2, maxDenom));
-    const n = randInt(1, d - 1);
-    return { n, d };
-  }
-
-  function fracHTML(fr) {
-    return `<span class="frac"><span class="num">${fr.n}</span><span class="den">${fr.d}</span></span>`;
-  }
-
-  function generateExpr() {
-    const nBrackets = randInt(cfg.brMin, cfg.brMax);
-    const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
-    const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
-
-    const freeMDCount = nMD - nBrackets;
-    const freeASCount = nAS - nBrackets;
-
-    function makeAS() { return { op: choice(["+", "\u2212"]), frac: randFraction(cfg.maxDenom) }; }
-    function makeMD() { return { op: choice(["\u00d7", "\u00f7"]), frac: randFraction(cfg.maxDenom) }; }
-
-    const blocks = [];
-    for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMD() });
-
-    const freeAS = [];
-    for (let i = 0; i < freeASCount; i++) freeAS.push({ kind: "as", layer: makeAS() });
-
-    const freeMD = [];
-    for (let i = 0; i < freeMDCount; i++) freeMD.push({ kind: "md", layer: makeMD() });
-
-    const middlePool = shuffle([...blocks, ...freeAS]);
-    const orderedAtoms = [...shuffle(freeMD), ...middlePool];
-
-    const frac0 = randFraction(cfg.maxDenom);
-    let expr = fracHTML(frac0);
-    let tokens = [frac0];
-
-    orderedAtoms.forEach((atom) => {
-      if (atom.kind === "block") {
-        expr += ` ${atom.as.op} ${fracHTML(atom.as.frac)}`;
-        tokens.push(atom.as.op, atom.as.frac);
-        expr = `(${expr}) ${atom.md.op} ${fracHTML(atom.md.frac)}`;
-        tokens = ["(", ...tokens, ")", atom.md.op, atom.md.frac];
-      } else if (atom.kind === "as") {
-        expr += ` ${atom.layer.op} ${fracHTML(atom.layer.frac)}`;
-        tokens.push(atom.layer.op, atom.layer.frac);
-      } else if (atom.kind === "md") {
-        expr += ` ${atom.layer.op} ${fracHTML(atom.layer.frac)}`;
-        tokens.push(atom.layer.op, atom.layer.frac);
-      }
-    });
-
-    const answer = evalTokens(tokens);
-    return { expr, answerHTML: fmtAnswer(answer) };
-  }
-
-  // ===== Answer Logic =====
+  /* =========================================================
+     5. FRACTION MATH
+     ========================================================= */
   function fGcd(a, b) {
     a = Math.abs(a);
     b = Math.abs(b);
@@ -465,8 +432,32 @@
   function fMul(a, b) { return fSimplify({ n: a.n * b.n, d: a.d * b.d }); }
   function fDiv(a, b) { return fSimplify({ n: a.n * b.d, d: a.d * b.n }); }
 
-  // recursive-descent evaluator over a token array (fractions, operator strings, '(' / ')')
-  // respects standard precedence: brackets > ×÷ > +− (matches how the display should be read)
+  /* =========================================================
+     6. FRACTION DISPLAY HELPERS
+     ========================================================= */
+  function randFraction(maxDenom) {
+    const d = randInt(2, Math.max(2, maxDenom));
+    const n = randInt(1, d - 1);
+    return { n, d };
+  }
+
+  function fracHTML(fr) {
+    return `<span class="frac"><span class="num">${fr.n}</span><span class="den">${fr.d}</span></span>`;
+  }
+
+  function fmtAnswer(f) {
+    const neg = f.n < 0;
+    const absN = Math.abs(f.n);
+    if (f.d === 1) return `${neg ? "\u2212" : ""}${absN}`;
+    return `${neg ? "\u2212" : ""}<span class="frac"><span class="num">${absN}</span><span class="den">${f.d}</span></span>`;
+  }
+
+  /* =========================================================
+     7. EXPRESSION EVALUATOR
+     Recursive-descent parser over a token array (fractions,
+     operator strings, "(" / ")"). Respects standard precedence:
+     brackets > ×÷ > +− — matches how the display should be read.
+     ========================================================= */
   function evalTokens(tokens) {
     let pos = 0;
     const peek = () => tokens[pos];
@@ -505,14 +496,55 @@
     return parseExpr();
   }
 
-  function fmtAnswer(f) {
-    const neg = f.n < 0;
-    const absN = Math.abs(f.n);
-    if (f.d === 1) return `${neg ? "\u2212" : ""}${absN}`;
-    return `${neg ? "\u2212" : ""}<span class="frac"><span class="num">${absN}</span><span class="den">${f.d}</span></span>`;
+  /* =========================================================
+     8. EXPRESSION GENERATOR
+     ========================================================= */
+  function generateExpr() {
+    const nBrackets = randInt(cfg.brMin, cfg.brMax);
+    const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
+    const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
+    const freeASCount = nAS - nBrackets;
+    const freeMDCount = nMD - nBrackets;
+
+    function makeAS() { return { op: choice(["+", "\u2212"]), frac: randFraction(cfg.maxDenom) }; }
+    function makeMD() { return { op: choice(["\u00d7", "\u00f7"]), frac: randFraction(cfg.maxDenom) }; }
+
+    const blocks = [];
+    for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMD() });
+
+    const freeAS = [];
+    for (let i = 0; i < freeASCount; i++) freeAS.push({ kind: "as", layer: makeAS() });
+
+    const freeMD = [];
+    for (let i = 0; i < freeMDCount; i++) freeMD.push({ kind: "md", layer: makeMD() });
+
+    const middlePool = shuffle([...blocks, ...freeAS]);
+    const orderedAtoms = [...shuffle(freeMD), ...middlePool];
+
+    const frac0 = randFraction(cfg.maxDenom);
+    let expr = fracHTML(frac0);
+    let tokens = [frac0];
+
+    orderedAtoms.forEach((atom) => {
+      if (atom.kind === "block") {
+        expr += ` ${atom.as.op} ${fracHTML(atom.as.frac)}`;
+        tokens.push(atom.as.op, atom.as.frac);
+        expr = `(${expr}) ${atom.md.op} ${fracHTML(atom.md.frac)}`;
+        tokens = ["(", ...tokens, ")", atom.md.op, atom.md.frac];
+      } else {
+        // "as" and "md" atoms both append the same way
+        expr += ` ${atom.layer.op} ${fracHTML(atom.layer.frac)}`;
+        tokens.push(atom.layer.op, atom.layer.frac);
+      }
+    });
+
+    const answer = evalTokens(tokens);
+    return { expr, answerHTML: fmtAnswer(answer) };
   }
 
-  // ===== Display Functions =====
+  /* =========================================================
+     9. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     exprEl.style.display = "";
     answerWrap.style.display = "none";
@@ -549,7 +581,9 @@
     }, 150);
   }
 
-  // ===== Main Button Events =====
+  /* =========================================================
+     10. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
@@ -558,14 +592,9 @@
     showNext();
   });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const fieldIds = ["maxDenom", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
-
+  /* =========================================================
+     11. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
   function openSettings() {
     fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
     settingsError.textContent = "";
@@ -620,10 +649,13 @@
     showNext();
   });
 
-  // ===== Initial Load =====
+  /* =========================================================
+     12. INITIAL LOAD
+     ========================================================= */
   current = generateExpr();
   exprEl.innerHTML = current.expr;
   displayProblem();
+
 </script>
 
 </body>
