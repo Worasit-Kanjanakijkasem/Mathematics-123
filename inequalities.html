@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มอสมการเชิงเส้นตัวแปรเดียว</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,42 +21,62 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: clamp(11px, 1.4vw, 16px);
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
     font-weight: 700;
     color: var(--gold);
     text-transform: uppercase;
     margin-bottom: 8px;
     z-index: 1;
-    text-align: center;
-    padding: 0 12px;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -62,10 +85,8 @@
     flex: 1;
     width: 100%;
     z-index: 1;
-    padding: 10px 20px;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(22px, 4.4vw, 42px);
@@ -77,6 +98,15 @@
   }
   .expr.swap { opacity: 0; transform: scale(0.95); }
 
+  .mode-label {
+    margin-top: 18px;
+    font-size: clamp(13px, 1.8vw, 18px);
+    color: var(--muted);
+    text-align: center;
+    z-index: 1;
+  }
+
+  /* ---- exercise-specific: combined graph + number line ---- */
   .numberline-wrap {
     width: min(92vw, 640px);
     transition: opacity 0.15s ease, transform 0.15s ease;
@@ -91,15 +121,9 @@
     margin-top: 6px;
   }
 
-  .mode-label {
-    margin-top: 18px;
-    font-size: clamp(13px, 1.8vw, 18px);
-    color: var(--muted);
-    text-align: center;
-    z-index: 1;
-  }
-
-  /* ===== Standard Controls ===== */
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -127,10 +151,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -151,61 +173,100 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
-    position: fixed; inset: 0; background: var(--navy-deep);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; z-index: 10;
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline { font-size: clamp(28px, 5vw, 52px); font-weight: 800; margin-bottom: 12px; }
-  .end-screen .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 20px); margin-bottom: 32px; }
-  /* ===== Restart ===== */
-  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 20px; z-index: 2; padding: 0;
+  .btn-restart {
+    background: var(--gold);
+    color: var(--navy-deep);
+    font-size: clamp(17px, 2.4vw, 22px);
+    padding: 18px 40px;
+    border-radius: 20px;
   }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
 
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
-    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
-    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
+
   .settings-panel {
-    background: var(--navy-deep); border-radius: 22px; padding: 26px 22px; width: 100%; max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
-    max-height: 92vh; overflow-y: auto;
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
-  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
-  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
-  .field-group { margin-bottom: 14px; }
-  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 7px; }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .field-row { display: flex; gap: 10px; align-items: center; }
   .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; flex-shrink: 0; }
   .field-row input {
-    flex: 1; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ink);
-    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
-    padding: 9px 9px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%; min-width: 0;
+    flex: 1;
+    width: 100%;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
   }
   .field-row input:focus { outline: none; border-color: var(--coral); }
+
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
-  /* ===== Media Queries ===== */
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
-    .settings-panel { padding: 14px 16px; max-height: 94vh; }
-    .field-group { margin-bottom: 8px; }
-    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
-    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
   }
+
 </style>
 </head>
 <body>
@@ -272,6 +333,7 @@
           <span class="mini-label">ต่ำสุด</span><input type="number" id="brMin">
           <span class="mini-label">สูงสุด</span><input type="number" id="brMax">
         </div>
+        <div class="field-note">วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -284,26 +346,66 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
   const DEFAULT_CFG = { xMin: -12, xMax: 12, asMin: 1, asMax: 2, mdMin: 1, mdMax: 2, brMin: 0, brMax: 1 };
   const STORAGE_KEY = "linear-inequality-gen-cfg";
-  // ===== Saved Settings =====
+  const NEG_CHANCE = 0.4; // chance a ×/÷ coefficient is negative (creates sign-flip moments)
+
   let cfg = { ...DEFAULT_CFG };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
-  const NEG_CHANCE = 0.4; // internal: chance a ×/÷ coefficient is negative (creates sign-flip moments)
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const nlWrap = document.getElementById("nlWrap");
+  const nlSvg = document.getElementById("nlSvg");
+  const nlAnswerText = document.getElementById("nlAnswerText");
+  const modeLabel = document.getElementById("modeLabel");
 
-  // ===== Exercise Generator =====
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["xMin", "xMax", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let currentAnswer = null; // { x0, finalRel, coefA, coefB, rhsValue }
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+
   function shuffle(arr) {
     const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i);[a[i], a[j]] = [a[j], a[i]]; }
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = randInt(0, i);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
     return a;
   }
+
   function divisorsOf(n, min, max) {
     n = Math.abs(n);
     const divs = [];
@@ -311,21 +413,28 @@
     return divs;
   }
 
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+     Builds the inequality's LHS as a string (expr), while
+     tracking its equivalent linear form coefA*x + coefB in
+     parallel — needed later to draw the two-line graph.
+     ========================================================= */
   function buildIneqExpr(variable, x0) {
     const nBrackets = randInt(cfg.brMin, cfg.brMax);
     const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
     const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
-
-    const freeMDCount = nMD - nBrackets;
     const freeASCount = nAS - nBrackets;
+    const freeMDCount = nMD - nBrackets;
 
     function makeAS() { return { op: choice(["+", "\u2212"]), c: randInt(1, 12) }; }
     function makeMDPlan() { return { op: choice(["\u00d7", "\u00f7"]), neg: Math.random() < NEG_CHANCE }; }
 
     const blocks = [];
     for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMDPlan() });
+
     const freeAS = [];
     for (let i = 0; i < freeASCount; i++) freeAS.push({ kind: "as", layer: makeAS() });
+
     const freeMD = [];
     for (let i = 0; i < freeMDCount; i++) freeMD.push({ kind: "md", layer: makeMDPlan() });
 
@@ -340,15 +449,17 @@
     let coefA = 1, coefB = 0; // LHS as linear function: coefA*x + coefB (mirrors value's transforms)
 
     function materialize() {
-      expr = bareCoef === 1 ? variable : (bareCoef === -1 ? `\u2212${variable}` : `${bareCoef}${variable}`);
+      expr = bareCoef === 1 ? variable : bareCoef === -1 ? `\u2212${variable}` : `${bareCoef}${variable}`;
       bareMode = false;
     }
+
     function applyAS(layer) {
       if (bareMode) materialize();
       expr += ` ${layer.op} ${layer.c}`;
       value = layer.op === "+" ? value + layer.c : value - layer.c;
       coefB = layer.op === "+" ? coefB + layer.c : coefB - layer.c;
     }
+
     function applyMDDirect(layerPlan) {
       let op = layerPlan.op, c;
       if (op === "\u00f7") {
@@ -378,15 +489,23 @@
         value /= c; coefA /= c; coefB /= c;
       }
     }
+
     function applyMDBlock(layerPlan) {
       let op = layerPlan.op, c;
       if (op === "\u00f7") {
         const divs = divisorsOf(value, 2, 9);
         if (divs.length === 0) { op = "\u00d7"; c = randInt(2, 9); } else c = choice(divs);
-      } else { c = randInt(2, 9); }
+      } else {
+        c = randInt(2, 9);
+      }
       if (layerPlan.neg) { c = -c; flipCount++; }
-      if (op === "\u00d7") { expr = `${c}(${expr})`; value *= c; coefA *= c; coefB *= c; }
-      else { expr = `(${expr}) \u00f7 (${c})`; value /= c; coefA /= c; coefB /= c; }
+      if (op === "\u00d7") {
+        expr = `${c}(${expr})`;
+        value *= c; coefA *= c; coefB *= c;
+      } else {
+        expr = `(${expr}) \u00f7 (${c})`;
+        value /= c; coefA /= c; coefB /= c;
+      }
     }
 
     orderedAtoms.forEach((atom) => {
@@ -395,16 +514,13 @@
       else if (atom.kind === "md") applyMDDirect(atom.layer);
     });
     if (bareMode) materialize();
+
     return { expr, value, flipCount, coefA, coefB };
   }
 
-  // ===== Answer Logic =====
   function flipRel(rel) {
     return { "<": ">", ">": "<", "\u2264": "\u2265", "\u2265": "\u2264" }[rel];
   }
-
-  let currentAnswer = null; // { x0, finalRel }
-  let showingAnswer = false;
 
   function generateInequality() {
     const x0 = randInt(cfg.xMin, cfg.xMax);
@@ -415,38 +531,14 @@
     return `${built.expr} ${rel} ${built.value}`;
   }
 
-  // ---- SVG number line renderer ----
-  function renderNumberLine(x0, finalRel) {
-    const closed = finalRel === "\u2264" || finalRel === "\u2265";
-    const shadeRight = finalRel === ">" || finalRel === "\u2265";
-    const span = 6;
-    const min = x0 - span, max = x0 + span;
-    const w = 400, h = 90, pad = 24;
-    const usableW = w - pad * 2;
-    const scale = usableW / (max - min);
-    function toPx(v) { return pad + (v - min) * scale; }
-    const y = 45;
-
-    let svg = "";
-    svg += `<line x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}" stroke="#26324A" stroke-width="2"/>`;
-    for (let i = min; i <= max; i++) {
-      const px = toPx(i);
-      svg += `<line x1="${px}" y1="${y - 6}" x2="${px}" y2="${y + 6}" stroke="#26324A" stroke-width="1.5"/>`;
-      svg += `<text x="${px}" y="${y + 22}" font-size="11" fill="#B9C0E0" text-anchor="middle" font-family="Calibri, sans-serif">${i}</text>`;
-    }
-    const bx = toPx(x0);
-    const endPx = shadeRight ? w - pad : pad;
-    const segX1 = Math.min(bx, endPx), segX2 = Math.max(bx, endPx);
-    svg += `<line x1="${segX1}" y1="${y}" x2="${segX2}" y2="${y}" stroke="#F96167" stroke-width="5"/>`;
-    // arrowhead
-    const dir = shadeRight ? 1 : -1;
-    const ax = shadeRight ? w - pad : pad;
-    svg += `<polygon points="${ax},${y} ${ax - dir * 10},${y - 6} ${ax - dir * 10},${y + 6}" fill="#F96167"/>`;
-    // boundary circle
-    svg += `<circle cx="${bx}" cy="${y}" r="6.5" fill="${closed ? "#F96167" : "#FFFFFF"}" stroke="#F96167" stroke-width="2.5"/>`;
-    return svg;
-  }
-
+  /* =========================================================
+     6. GRAPH RENDERING
+     "Top view / front view" combined SVG: a 2D line graph
+     (LHS line vs RHS constant) sits directly above the number
+     line, sharing the same horizontal (x) scale — the
+     intersection point in the graph lines up exactly with the
+     boundary circle below, like aligned drafting views.
+     ========================================================= */
   function fmtLinearY(a, b) {
     function r(n) { return Math.abs(n - Math.round(n)) < 1e-9 ? Math.round(n) : Math.round(n * 1000) / 1000; }
     const a2 = r(a), b2 = r(b);
@@ -456,7 +548,6 @@
     return `y = ${aPart} ${sign} ${Math.abs(b2)}`;
   }
 
-  // ---- combined "top view / front view" renderer: 2D line graph aligned above the number line ----
   function renderCombinedGraph(coefA, coefB, rhsValue, x0, finalRel) {
     const span = 6;
     const min = x0 - span, max = x0 + span;
@@ -477,22 +568,28 @@
     function toPy(v) { return graphBottom - (v - yLo) * scaleY; }
 
     let svg = "";
+
     // x-axis reference (y=0) if visible in window
     if (yLo <= 0 && 0 <= yHi) {
       svg += `<line x1="${pad}" y1="${toPy(0)}" x2="${w - pad}" y2="${toPy(0)}" stroke="#3A4570" stroke-width="1" stroke-dasharray="3 3"/>`;
     }
+
     // RHS constant line (dashed coral)
     svg += `<line x1="${toPx(min)}" y1="${toPy(rhsValue)}" x2="${toPx(max)}" y2="${toPy(rhsValue)}" stroke="#F96167" stroke-width="2" stroke-dasharray="5 4"/>`;
-    // LHS line (solid teal/white)
+
+    // LHS line (solid white)
     svg += `<line x1="${toPx(min)}" y1="${toPy(y1a)}" x2="${toPx(max)}" y2="${toPy(y1b)}" stroke="#FFFFFF" stroke-width="2.5"/>`;
+
     // intersection point
     const ix = toPx(x0), iy = toPy(rhsValue);
     svg += `<circle cx="${ix}" cy="${iy}" r="5" fill="#F9E795" stroke="#232D63" stroke-width="1.5"/>`;
-    // small labels: placed inset from the edge (85% along) with generous clearance from the line/edge
+
+    // line labels: inset from the edge (85%/15% along) with clearance scaled to the line's own angle
     const lhsAtLabelX = min + (max - min) * 0.85;
     const lhsLabelY = coefA * lhsAtLabelX + coefB;
     const lhsAbove = y1b > y1a; // does the LHS line rise toward the right?
     svg += `<text x="${toPx(lhsAtLabelX)}" y="${toPy(lhsLabelY) - (lhsAbove ? 14 : -18)}" font-size="11" fill="#FFFFFF" text-anchor="middle" font-family="Calibri, sans-serif">${fmtLinearY(coefA, coefB)}</text>`;
+
     const rhsAtLabelX = min + (max - min) * 0.15;
     const rhsBelow = !(yLo + (yHi - yLo) * 0.5 < rhsValue); // if RHS line sits in lower half, put label above it, else below
     svg += `<text x="${toPx(rhsAtLabelX)}" y="${toPy(rhsValue) + (rhsBelow ? 16 : -10)}" font-size="11" fill="#F96167" text-anchor="middle" font-family="Calibri, sans-serif">y = ${rhsValue}</text>`;
@@ -505,16 +602,19 @@
     const closed = finalRel === "\u2264" || finalRel === "\u2265";
     const shadeRight = finalRel === ">" || finalRel === "\u2265";
     const y = 45 + nlYOffset;
+
     svg += `<line x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}" stroke="#26324A" stroke-width="2"/>`;
     for (let i = min; i <= max; i++) {
       const px = toPx(i);
       svg += `<line x1="${px}" y1="${y - 6}" x2="${px}" y2="${y + 6}" stroke="#26324A" stroke-width="1.5"/>`;
       svg += `<text x="${px}" y="${y + 22}" font-size="11" fill="#B9C0E0" text-anchor="middle" font-family="Calibri, sans-serif">${i}</text>`;
     }
+
     const bx = toPx(x0);
     const endPx = shadeRight ? w - pad : pad;
     const segX1 = Math.min(bx, endPx), segX2 = Math.max(bx, endPx);
     svg += `<line x1="${segX1}" y1="${y}" x2="${segX2}" y2="${y}" stroke="#F96167" stroke-width="3.25"/>`;
+
     const dir = shadeRight ? 1 : -1;
     const ax = shadeRight ? w - pad : pad;
     svg += `<polygon points="${ax},${y} ${ax - dir * 8},${y - 5} ${ax - dir * 8},${y + 5}" fill="#F96167"/>`;
@@ -523,24 +623,15 @@
     return svg;
   }
 
-  // ===== DOM References =====
-  const exprEl = document.getElementById("exprEl");
-  const nlWrap = document.getElementById("nlWrap");
-  const nlSvg = document.getElementById("nlSvg");
-  const nlAnswerText = document.getElementById("nlAnswerText");
-  const modeLabel = document.getElementById("modeLabel");
-  const nextBtn = document.getElementById("nextBtn");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const endBtn = document.getElementById("endBtn");
-  const endScreen = document.getElementById("endScreen");
-  const restartBtn = document.getElementById("restartBtn");
-
-  // ===== Display Functions =====
+  /* =========================================================
+     7. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     exprEl.style.display = "";
     nlWrap.style.display = "none";
     modeLabel.textContent = "อ่านโจทย์ แปลงเป็นอสมการ แล้วแก้หาคำตอบ";
   }
+
   function displayAnswer() {
     exprEl.style.display = "none";
     nlWrap.style.display = "";
@@ -550,14 +641,17 @@
   }
 
   function showNext() {
-    exprEl.classList.add("swap"); nlWrap.classList.add("swap");
+    exprEl.classList.add("swap");
+    nlWrap.classList.add("swap");
     setTimeout(() => {
       exprEl.textContent = generateInequality();
       showingAnswer = false;
       displayProblem();
-      exprEl.classList.remove("swap"); nlWrap.classList.remove("swap");
+      exprEl.classList.remove("swap");
+      nlWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? nlWrap : exprEl;
     el.classList.add("swap");
@@ -568,42 +662,67 @@
     }, 150);
   }
 
-  // ===== Main Button Events =====
+  /* =========================================================
+     8. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const fieldIds = ["xMin", "xMax", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
-
+  /* =========================================================
+     9. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
   function openSettings() {
     fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
     settingsError.textContent = "";
     settingsOverlay.classList.add("show");
   }
-  function closeSettings() { settingsOverlay.classList.remove("show"); }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
   gearBtn.addEventListener("click", openSettings);
   cancelBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
 
   saveBtn.addEventListener("click", () => {
     const vals = {};
     for (const id of fieldIds) {
       const v = parseInt(document.getElementById(id).value, 10);
-      if (!Number.isInteger(v)) { settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง"; return; }
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
       vals[id] = v;
     }
-    if (vals.xMin >= vals.xMax) { settingsError.textContent = "ช่วงคำตอบ: ต่ำสุดต้องน้อยกว่าสูงสุด"; return; }
-    if (vals.asMin < 1 || vals.asMin > vals.asMax) { settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
-    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) { settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
-    if (vals.brMin < 0 || vals.brMin > vals.brMax) { settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง"; return; }
-    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) { settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด"; return; }
+
+    if (vals.xMin >= vals.xMax) {
+      settingsError.textContent = "ช่วงคำตอบ: ต่ำสุดต้องน้อยกว่าสูงสุด";
+      return;
+    }
+    if (vals.asMin < 1 || vals.asMin > vals.asMax) {
+      settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)";
+      return;
+    }
+    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) {
+      settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)";
+      return;
+    }
+    if (vals.brMin < 0 || vals.brMin > vals.brMax) {
+      settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง";
+      return;
+    }
+    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) {
+      settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด";
+      return;
+    }
 
     cfg = { ...cfg, ...vals };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
@@ -611,10 +730,12 @@
     showNext();
   });
 
-  // ===== Initial Load =====
-  // first problem on load
+  /* =========================================================
+     10. INITIAL LOAD
+     ========================================================= */
   exprEl.textContent = generateInequality();
   displayProblem();
+
 </script>
 
 </body>
