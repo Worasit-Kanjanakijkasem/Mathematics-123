@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มสมการเชิงเส้น</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,32 +21,35 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: clamp(12px, 1.5vw, 16px);
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
     font-weight: 700;
     color: var(--gold);
     text-transform: uppercase;
@@ -51,7 +57,26 @@
     z-index: 1;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -60,10 +85,8 @@
     flex: 1;
     width: 100%;
     z-index: 1;
-    padding: 0 20px;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .equation {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(28px, 5.5vw, 62px);
@@ -85,6 +108,14 @@
     text-align: center;
   }
 
+  .prompt {
+    margin-top: 20px;
+    font-size: clamp(14px, 2vw, 20px);
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ---- exercise-specific: fraction display (used ~50% of the time for ÷ steps) ---- */
   .frac {
     display: inline-flex;
     flex-direction: column;
@@ -93,21 +124,13 @@
     margin: 0 0.12em;
     line-height: 1.05;
   }
-  .frac .num, .frac .den {
-    display: block;
-    padding: 0 0.1em;
-  }
+  .frac .num, .frac .den { display: block; padding: 0 0.1em; }
   .frac .num { border-bottom: 0.06em solid currentColor; padding-bottom: 0.04em; }
   .frac .den { padding-top: 0.04em; }
 
-  .prompt {
-    margin-top: 20px;
-    font-size: clamp(14px, 2vw, 20px);
-    color: var(--muted);
-    text-align: center;
-  }
-
-  /* ===== Standard Controls ===== */
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -135,10 +158,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -159,24 +180,25 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
-    position: fixed; inset: 0; background: var(--navy-deep);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; z-index: 10;
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
-  /* ===== Restart ===== */
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -185,89 +207,103 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 20px; z-index: 2; padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
-    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
-    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
+
   .settings-panel {
-    background: var(--navy-deep); border-radius: 22px; padding: 28px 24px; width: 100%; max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
-    max-height: 92vh; overflow-y: auto;
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
   .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
   .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
   .field-group { margin-bottom: 16px; }
-  .field-group .label {
-    font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px;
-  }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .field-row { display: flex; gap: 10px; align-items: center; }
   .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; }
   .field-row input {
-    flex: 1; font-family: inherit; font-size: 17px; font-weight: 700; color: var(--ink);
-    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
-    padding: 10px 10px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%;
+    flex: 1;
+    width: 100%;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
   }
   .field-row input:focus { outline: none; border-color: var(--coral); }
+
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
-  /* ===== Media Queries ===== */
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
     .settings-panel { padding: 16px 18px; max-height: 94vh; }
-    .toggle-row { padding: 8px 12px; margin-bottom: 6px; }
-    .field-group { margin: 10px 0; }
     .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
     .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
   }
+
 </style>
 </head>
 <body>
 
-  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
-  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มสมการเชิงเส้นตัวแปรเดียว</div>
 
-  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
-    <div class="equation" id="equation">…</div>
+    <div class="equation" id="equationEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
       <div class="answer-line" id="answerLine"></div>
     </div>
     <div class="prompt" id="promptEl">หาค่าตัวแปรในสมการนี้ แล้วกดดูเฉลย</div>
   </div>
 
-  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
-  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
-  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มสมการ</h2>
@@ -303,6 +339,7 @@
           <span class="mini-label">ต่ำสุด</span><input type="number" id="brMin">
           <span class="mini-label">สูงสุด</span><input type="number" id="brMax">
         </div>
+        <div class="field-note">วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -315,70 +352,186 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
-  const DEFAULT_CFG = { xMin: -15, xMax: 15, asMin: 1, asMax: 3, mdMin: 1, mdMax: 3, brMin: 1, brMax: 2 };
-  const STORAGE_KEY = "linear-eq-gen-cfg";
-  let cfg = { ...DEFAULT_CFG };
 
-  // ===== Saved Settings =====
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
+  const DEFAULT_CFG = { xMin: -15, xMax: 15, asMin: 2, asMax: 3, mdMin: 2, mdMax: 3, brMin: 1, brMax: 2 };
+  const STORAGE_KEY = "linear-eq-gen-cfg";
+  const VAR_LETTERS = ["a", "y", "m", "n", "t", "k"];
+  const NEG_CHANCE = 0.4; // chance a ×/÷ coefficient is negative (type 6 only)
+
+  // Types 1-5 (simple structures) use their own fixed answer range,
+  // independent of the gear settings — the gear only tunes type 6.
+  const SIMPLE_TYPE_X_MIN = -12, SIMPLE_TYPE_X_MAX = 12;
+
+  let cfg = { ...DEFAULT_CFG };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
-  // ===== DOM References =====
-  const equationEl = document.getElementById("equation");
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const equationEl = document.getElementById("equationEl");
   const answerWrap = document.getElementById("answerWrap");
   const answerLine = document.getElementById("answerLine");
   const promptEl = document.getElementById("promptEl");
+
+  // main controls
   const nextBtn = document.getElementById("nextBtn");
   const toggleBtn = document.getElementById("toggleBtn");
   const endBtn = document.getElementById("endBtn");
   const endScreen = document.getElementById("endScreen");
   const restartBtn = document.getElementById("restartBtn");
 
-  // ===== Exercise Generator =====
-  const VAR_LETTERS = ["a", "y", "m", "n", "t", "k"];
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["xMin", "xMax", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
 
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = randInt(0, i);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
   function divisorsOf(n, min, max) {
     n = Math.abs(n);
     const divs = [];
     for (let d = min; d <= max; d++) if (n % d === 0) divs.push(d);
     return divs;
   }
-  function shuffle(arr) {
-    const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i);[a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  }
+
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+
+     Six equation "types" are generated behind the scenes (the
+     player never sees which type they got). Weighted so that
+     the five simple types share 50% total, and the one fully
+     freeform type carries the other 50% on its own:
+       Type 1  10%  bare, positive coefficient      3x + 5 = 20
+       Type 2  10%  bare, negative coefficient      -3x + 5 = 20
+       Type 3  10%  bracket, positive outer ×       3(x + 5) = 20
+       Type 4  10%  bracket, negative outer ×       -3(x + 5) = 20
+       Type 5  10%  bracket, outer ÷ (fraction)     (x + 5) ÷ 3 = 20
+       Type 6  50%  fully freeform (uses the gear settings)
+     ========================================================= */
+
   // 50/50 each time a division is written out: plain "÷" text, or a real stacked fraction
   function divisionDisplay(numeratorHTML, denominator, wrapInParens) {
     if (Math.random() < 0.5) {
       return `<span class="frac"><span class="num">${numeratorHTML}</span><span class="den">${denominator}</span></span>`;
     }
-    return wrapInParens ? `(${numeratorHTML}) \u00f7 ${denominator}` : `${numeratorHTML} \u00f7 ${denominator}`;
+    // a negative divisor needs its own parens in the inline "÷" form to avoid
+    // reading as "÷ -5" (ambiguous) — this is purely notational, not a
+    // structural bracket, so it is never counted toward the bracket parameter.
+    const denStr = denominator < 0 ? `(${denominator})` : `${denominator}`;
+    return wrapInParens ? `(${numeratorHTML}) \u00f7 ${denStr}` : `${numeratorHTML} \u00f7 ${denStr}`;
   }
 
-  function generateEquation() {
-    const variable = Math.random() < 0.7 ? "x" : choice(VAR_LETTERS);
+  // ---- Type 1: bare, positive coefficient (e.g. 3x + 5 = 20) ----
+  function genType1(variable) {
+    const x0 = randInt(SIMPLE_TYPE_X_MIN, SIMPLE_TYPE_X_MAX);
+    const C = randInt(2, 9);
+    const c1 = randInt(1, 12);
+    const op1 = choice(["+", "\u2212"]);
+    const expr = `${C}${variable} ${op1} ${c1}`;
+    const value = op1 === "+" ? C * x0 + c1 : C * x0 - c1;
+    return { expr: `${expr} = ${value}`, answer: x0, variable };
+  }
+
+  // ---- Type 2: bare, negative coefficient (e.g. -3x + 5 = 20) ----
+  function genType2(variable) {
+    const x0 = randInt(SIMPLE_TYPE_X_MIN, SIMPLE_TYPE_X_MAX);
+    const C = -randInt(2, 9);
+    const c1 = randInt(1, 12);
+    const op1 = choice(["+", "\u2212"]);
+    const expr = `${C}${variable} ${op1} ${c1}`;
+    const value = op1 === "+" ? C * x0 + c1 : C * x0 - c1;
+    return { expr: `${expr} = ${value}`, answer: x0, variable };
+  }
+
+  // ---- Type 3: bracket, positive outer multiply (e.g. 3(x + 5) = 20) ----
+  function genType3(variable) {
+    const x0 = randInt(SIMPLE_TYPE_X_MIN, SIMPLE_TYPE_X_MAX);
+    const c1 = randInt(1, 12);
+    const op1 = choice(["+", "\u2212"]);
+    const C = randInt(2, 9);
+    const innerValue = op1 === "+" ? x0 + c1 : x0 - c1;
+    const expr = `${C}(${variable} ${op1} ${c1})`;
+    return { expr: `${expr} = ${C * innerValue}`, answer: x0, variable };
+  }
+
+  // ---- Type 4: bracket, negative outer multiply (e.g. -3(x + 5) = 20) ----
+  function genType4(variable) {
+    const x0 = randInt(SIMPLE_TYPE_X_MIN, SIMPLE_TYPE_X_MAX);
+    const c1 = randInt(1, 12);
+    const op1 = choice(["+", "\u2212"]);
+    const C = -randInt(2, 9);
+    const innerValue = op1 === "+" ? x0 + c1 : x0 - c1;
+    const expr = `${C}(${variable} ${op1} ${c1})`;
+    return { expr: `${expr} = ${C * innerValue}`, answer: x0, variable };
+  }
+
+  // ---- Type 5: bracket, outer divide (e.g. (x + 5) ÷ 3 = 20) ----
+  // built by retrying small (x0, c1) picks until the inner value has a clean
+  // divisor in [2,9] — verified to succeed within a handful of tries virtually always.
+  function genType5(variable) {
+    let x0, c1, op1, innerValue, divs = [];
+    for (let attempt = 0; attempt < 30; attempt++) {
+      x0 = randInt(SIMPLE_TYPE_X_MIN, SIMPLE_TYPE_X_MAX);
+      c1 = randInt(1, 12);
+      op1 = choice(["+", "\u2212"]);
+      innerValue = op1 === "+" ? x0 + c1 : x0 - c1;
+      divs = divisorsOf(innerValue, 2, 9);
+      if (divs.length > 0) break;
+    }
+    const C = choice(divs);
+    const inner = `${variable} ${op1} ${c1}`;
+    const expr = divisionDisplay(inner, C, true);
+    return { expr: `${expr} = ${innerValue / C}`, answer: x0, variable };
+  }
+
+  // ---- Type 6: fully freeform (the original generator; driven by the gear settings) ----
+  function genType6(variable) {
     const x0 = randInt(cfg.xMin, cfg.xMax);
 
     const nBrackets = randInt(cfg.brMin, cfg.brMax);
     const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
     const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
-
-    const freeMDCount = nMD - nBrackets;
     const freeASCount = nAS - nBrackets;
+    const freeMDCount = nMD - nBrackets;
 
-    function makeAS() { return { op: choice(["+", "-"]), c: randInt(1, 12) }; }
-    function makeMDPlan() { return { op: choice(["\u00d7", "\u00f7"]) }; }
+    function makeAS() { return { op: choice(["+", "\u2212"]), c: randInt(1, 12) }; }
+    function makeMDPlan() { return { op: choice(["\u00d7", "\u00f7"]), neg: Math.random() < NEG_CHANCE }; }
 
     const blocks = [];
     for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMDPlan() });
+
     const freeAS = [];
     for (let i = 0; i < freeASCount; i++) freeAS.push({ kind: "as", layer: makeAS() });
+
     const freeMD = [];
     for (let i = 0; i < freeMDCount; i++) freeMD.push({ kind: "md", layer: makeMDPlan() });
 
@@ -391,14 +544,16 @@
     let bareCoef = 1;
 
     function materialize() {
-      expr = bareCoef === 1 ? variable : `${bareCoef}${variable}`;
+      expr = bareCoef === 1 ? variable : bareCoef === -1 ? `-${variable}` : `${bareCoef}${variable}`;
       bareMode = false;
     }
+
     function applyAS(layer) {
       if (bareMode) materialize();
       expr += ` ${layer.op} ${layer.c}`;
       value = layer.op === "+" ? value + layer.c : value - layer.c;
     }
+
     function applyMDDirect(layerPlan) {
       let op = layerPlan.op, c;
       if (op === "\u00f7") {
@@ -406,8 +561,9 @@
           const divs = divisorsOf(bareCoef, 2, 9);
           if (divs.length > 0) {
             c = choice(divs);
-            bareCoef = bareCoef / c;
-            value = value / c;
+            if (layerPlan.neg) c = -c;
+            bareCoef /= c;
+            value /= c;
             return;
           }
         }
@@ -417,31 +573,34 @@
       } else {
         c = randInt(2, 9);
       }
+      if (layerPlan.neg) c = -c;
       if (op === "\u00d7") {
         if (bareMode) { bareCoef *= c; value *= c; return; }
         expr = `${c}(${expr})`;
         value *= c;
       } else {
-        if (bareMode) {
-          materialize();
-          expr = divisionDisplay(expr, c, false);
-        } else {
-          expr = divisionDisplay(expr, c, true);
-        }
+        if (bareMode) { materialize(); expr = divisionDisplay(expr, c, false); }
+        else { expr = divisionDisplay(expr, c, true); }
         value /= c;
       }
     }
+
     function applyMDBlock(layerPlan) {
       let op = layerPlan.op, c;
       if (op === "\u00f7") {
         const divs = divisorsOf(value, 2, 9);
-        if (divs.length === 0) { op = "\u00d7"; c = randInt(2, 9); }
-        else c = choice(divs);
+        if (divs.length === 0) { op = "\u00d7"; c = randInt(2, 9); } else c = choice(divs);
       } else {
         c = randInt(2, 9);
       }
-      if (op === "\u00d7") { expr = `${c}(${expr})`; value *= c; }
-      else { expr = divisionDisplay(expr, c, true); value /= c; }
+      if (layerPlan.neg) c = -c;
+      if (op === "\u00d7") {
+        expr = `${c}(${expr})`;
+        value *= c;
+      } else {
+        expr = divisionDisplay(expr, c, true);
+        value /= c;
+      }
     }
 
     orderedAtoms.forEach((atom) => {
@@ -449,22 +608,38 @@
       else if (atom.kind === "as") applyAS(atom.layer);
       else if (atom.kind === "md") applyMDDirect(atom.layer);
     });
-
     if (bareMode) materialize();
 
     return { expr: `${expr} = ${value}`, answer: x0, variable };
   }
 
-  // ===== State =====
-  let current = null;
-  let showingAnswer = false;
+  const TYPE_GENERATORS = [genType1, genType2, genType3, genType4, genType5, genType6];
+  const TYPE_WEIGHTS = [0.10, 0.10, 0.10, 0.10, 0.10, 0.50];
 
-  // ===== Display Functions =====
+  function pickTypeIndex() {
+    const r = Math.random();
+    let acc = 0;
+    for (let i = 0; i < TYPE_WEIGHTS.length; i++) {
+      acc += TYPE_WEIGHTS[i];
+      if (r < acc) return i;
+    }
+    return TYPE_WEIGHTS.length - 1;
+  }
+
+  function generateEquation() {
+    const variable = Math.random() < 0.7 ? "x" : choice(VAR_LETTERS);
+    return TYPE_GENERATORS[pickTypeIndex()](variable);
+  }
+
+  /* =========================================================
+     6. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     equationEl.style.display = "";
     answerWrap.style.display = "none";
     promptEl.textContent = "หาค่าตัวแปรในสมการนี้ แล้วกดดูเฉลย";
   }
+
   function displayAnswer() {
     equationEl.style.display = "none";
     answerWrap.style.display = "";
@@ -473,15 +648,18 @@
   }
 
   function showNext() {
-    equationEl.classList.add("swap"); answerWrap.classList.add("swap");
+    equationEl.classList.add("swap");
+    answerWrap.classList.add("swap");
     setTimeout(() => {
       current = generateEquation();
       equationEl.innerHTML = current.expr;
       showingAnswer = false;
       displayProblem();
-      equationEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+      equationEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? answerWrap : equationEl;
     el.classList.add("swap");
@@ -491,42 +669,68 @@
       (showingAnswer ? answerWrap : equationEl).classList.remove("swap");
     }, 150);
   }
-  // ===== Main Button Events =====
+
+  /* =========================================================
+     7. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const fieldIds = ["xMin", "xMax", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
-
+  /* =========================================================
+     8. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
   function openSettings() {
     fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
     settingsError.textContent = "";
     settingsOverlay.classList.add("show");
   }
-  function closeSettings() { settingsOverlay.classList.remove("show"); }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
   gearBtn.addEventListener("click", openSettings);
   cancelBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
 
   saveBtn.addEventListener("click", () => {
     const vals = {};
     for (const id of fieldIds) {
       const v = parseInt(document.getElementById(id).value, 10);
-      if (!Number.isInteger(v)) { settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง"; return; }
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
       vals[id] = v;
     }
-    if (vals.xMin >= vals.xMax) { settingsError.textContent = "ค่าคำตอบ: ต่ำสุดต้องน้อยกว่าสูงสุด"; return; }
-    if (vals.asMin < 1 || vals.asMin > vals.asMax) { settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
-    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) { settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
-    if (vals.brMin < 0 || vals.brMin > vals.brMax) { settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง"; return; }
-    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) { settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด"; return; }
+
+    if (vals.xMin >= vals.xMax) {
+      settingsError.textContent = "ค่าคำตอบ: ต่ำสุดต้องน้อยกว่าสูงสุด";
+      return;
+    }
+    if (vals.asMin < 1 || vals.asMin > vals.asMax) {
+      settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)";
+      return;
+    }
+    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) {
+      settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)";
+      return;
+    }
+    if (vals.brMin < 0 || vals.brMin > vals.brMax) {
+      settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง";
+      return;
+    }
+    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) {
+      settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด";
+      return;
+    }
 
     cfg = { ...cfg, ...vals };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
@@ -534,11 +738,13 @@
     showNext();
   });
 
-  // ===== Initial Load =====
-  // first equation on load
+  /* =========================================================
+     9. INITIAL LOAD
+     ========================================================= */
   current = generateEquation();
   equationEl.innerHTML = current.expr;
   displayProblem();
+
 </script>
 
 </body>
