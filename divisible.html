@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ฝึกหารลงตัว</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,29 +21,32 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
     letter-spacing: 0.12em;
     font-size: clamp(13px, 1.6vw, 18px);
@@ -51,7 +57,26 @@
     z-index: 1;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -61,18 +86,6 @@
     width: 100%;
     z-index: 1;
   }
-
-  /* ===== Exercise-specific CSS ===== */
-  .number {
-    font-size: clamp(64px, 18vw, 220px);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.01em;
-    line-height: 1;
-    margin: 0;
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-  .number.swap { opacity: 0; transform: scale(0.92); }
 
   .prompt {
     margin-top: 22px;
@@ -94,7 +107,21 @@
     line-height: 1.4;
   }
 
-  /* ===== Standard Controls ===== */
+  /* ---- exercise-specific: big number display ---- */
+  .number {
+    font-size: clamp(64px, 18vw, 220px);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    margin: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .number.swap { opacity: 0; transform: scale(0.92); }
+
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -122,10 +149,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -146,7 +171,9 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
     position: fixed;
     inset: 0;
@@ -160,18 +187,9 @@
     z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
 
-  /* ===== Restart ===== */
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -180,121 +198,71 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    z-index: 2;
-    padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20, 24, 54, 0.72);
+    background: rgba(20, 24, 54, 0.75);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 20;
-    padding: 24px;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
 
   .settings-panel {
     background: var(--navy-deep);
-    border-radius: 24px;
-    padding: 32px 28px;
+    border-radius: 22px;
+    padding: 28px 24px;
     width: 100%;
-    max-width: 380px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
+    max-width: 420px;
     max-height: 92vh;
     overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
-  .settings-panel h2 {
-    margin: 0 0 6px;
-    font-size: 22px;
-    font-weight: 800;
-  }
-  .settings-panel .desc {
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
 
-  .field { margin-bottom: 18px; }
-  .field label {
-    display: block;
-    font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 700;
-  }
-  .field input {
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+  .field-row { display: flex; gap: 10px; align-items: center; }
+  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; }
+  .field-row input {
+    flex: 1;
     width: 100%;
     font-family: inherit;
-    font-size: 22px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--ink);
-    background: rgba(255,255,255,0.08);
-    border: 2px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
     box-sizing: border-box;
     font-variant-numeric: tabular-nums;
   }
-  .field input:focus {
-    outline: none;
-    border-color: var(--coral);
-  }
+  .field-row input:focus { outline: none; border-color: var(--coral); }
 
-  .settings-error {
-    color: var(--coral);
-    font-size: 14px;
-    font-weight: 700;
-    margin: -6px 0 16px;
-    min-height: 18px;
-  }
+  .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
 
-  .settings-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .btn-cancel {
-    flex: 1;
-    background: transparent;
-    border: 2px solid rgba(255,255,255,0.15);
-    color: var(--muted);
-    font-size: 16px;
-    padding: 16px;
-  }
-  .btn-save {
-    flex: 1;
-    background: var(--coral);
-    color: var(--ink);
-    font-size: 16px;
-    padding: 16px;
-  }
-  /* ===== Media Queries ===== */
+  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
     .settings-panel { padding: 16px 18px; max-height: 94vh; }
     .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
     .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .number { transition: none; }
+    .field-group { margin: 10px 0; }
   }
 
 </style>
@@ -303,13 +271,12 @@
 
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่าช่วงตัวเลข">⚙️</button>
 
   <div class="eyebrow">ฝึกหารลงตัว · 3 · 4 · 8 · 9 · 11</div>
 
   <div class="stage">
-    <div class="number" id="number">–</div>
+    <div class="number" id="numberEl">–</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
       <div class="answer-line" id="answerLine"></div>
     </div>
@@ -333,13 +300,13 @@
       <h2>ตั้งค่าช่วงตัวเลข</h2>
       <div class="desc">กำหนดเลขน้อยที่สุด และเลขมากที่สุดที่จะสุ่ม</div>
 
-      <div class="field">
-        <label for="minInput">เลขน้อยที่สุด</label>
-        <input type="number" id="minInput" inputmode="numeric">
-      </div>
-      <div class="field">
-        <label for="maxInput">เลขมากที่สุด</label>
-        <input type="number" id="maxInput" inputmode="numeric">
+      <div class="field-group">
+        <div class="label">ช่วงตัวเลขที่จะสุ่ม</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="minInput" inputmode="numeric">
+          <span class="mini-label">สูงสุด</span><input type="number" id="maxInput" inputmode="numeric">
+        </div>
+        <div class="field-note">เลขน้อยที่สุดต้องมากกว่า 0 และน้อยกว่าเลขมากที่สุด</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -352,153 +319,172 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
-  const DEFAULT_MIN = 101;
-  const DEFAULT_MAX = 99999;
-  const STORAGE_KEY = 'divisibility-drill-range';
 
-  let MIN_NUM = DEFAULT_MIN;
-  let MAX_NUM = DEFAULT_MAX;
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
+  const DEFAULT_CFG = { min: 101, max: 99999 };
+  const STORAGE_KEY = "divisibility-drill-range";
 
-  // ===== Saved Settings =====
-  // restore saved range, if any
+  let cfg = { ...DEFAULT_CFG };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && Number.isInteger(saved.min) && Number.isInteger(saved.max) && saved.min < saved.max) {
-      MIN_NUM = saved.min;
-      MAX_NUM = saved.max;
+      cfg = { ...saved };
     }
-  } catch (e) { /* ignore, use defaults */ }
+  } catch (e) {}
 
-  // ===== DOM References =====
-  const numberEl = document.getElementById('number');
-  const answerWrap = document.getElementById('answerWrap');
-  const answerLine = document.getElementById('answerLine');
-  const promptEl = document.getElementById('promptEl');
-  const nextBtn = document.getElementById('nextBtn');
-  const toggleBtn = document.getElementById('toggleBtn');
-  const endBtn = document.getElementById('endBtn');
-  const endScreen = document.getElementById('endScreen');
-  const restartBtn = document.getElementById('restartBtn');
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const numberEl = document.getElementById("numberEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerLine = document.getElementById("answerLine");
+  const promptEl = document.getElementById("promptEl");
 
-  // ===== State =====
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const minInput = document.getElementById("minInput");
+  const maxInput = document.getElementById("maxInput");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
   const DIVISORS = [3, 4, 8, 9, 11];
   let current = null;
   let showingAnswer = false;
 
-  // ===== Exercise Generator =====
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  /* =========================================================
+     5. DOMAIN LOGIC
+     ========================================================= */
   function randomNumber() {
-    return Math.floor(Math.random() * (MAX_NUM - MIN_NUM + 1)) + MIN_NUM;
+    return randInt(cfg.min, cfg.max);
   }
 
-  // ===== Answer Logic =====
   function computeDivisibility(n) {
     return DIVISORS.filter((d) => n % d === 0);
   }
 
-  // ===== Display Functions =====
+  /* =========================================================
+     6. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     numberEl.style.display = "";
     answerWrap.style.display = "none";
-    promptEl.textContent = "หารลงตัวด้วยตัวไหนบ้าง? (3, 4, 8, 9, 11)";
+    promptEl.innerHTML = "หารลงตัวด้วยตัวไหนบ้าง? <b>(3, 4, 8, 9, 11)</b>";
   }
+
   function displayAnswer() {
     numberEl.style.display = "none";
     answerWrap.style.display = "";
     const hits = computeDivisibility(current);
-    answerLine.textContent = hits.length ? `หารลงตัวด้วย: ${hits.join(", ")}` : `หารด้วย ${DIVISORS.join(",")} ไม่ลงตัว`;
+    answerLine.textContent = hits.length
+      ? `หารลงตัวด้วย: ${hits.join(", ")}`
+      : `หารด้วย ${DIVISORS.join(",")} ไม่ลงตัว`;
     promptEl.textContent = "นี่คือเฉลย";
   }
 
   function showNext() {
-    numberEl.classList.add('swap'); answerWrap.classList.add('swap');
+    numberEl.classList.add("swap");
+    answerWrap.classList.add("swap");
     setTimeout(() => {
       current = randomNumber();
-      numberEl.textContent = current.toLocaleString('en-US');
+      numberEl.textContent = current.toLocaleString("en-US");
       showingAnswer = false;
       displayProblem();
-      numberEl.classList.remove('swap'); answerWrap.classList.remove('swap');
+      numberEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? answerWrap : numberEl;
-    el.classList.add('swap');
+    el.classList.add("swap");
     setTimeout(() => {
       showingAnswer = !showingAnswer;
       if (showingAnswer) displayAnswer(); else displayProblem();
-      (showingAnswer ? answerWrap : numberEl).classList.remove('swap');
+      (showingAnswer ? answerWrap : numberEl).classList.remove("swap");
     }, 150);
   }
 
-  // ===== Main Button Events =====
-  nextBtn.addEventListener('click', showNext);
-  toggleBtn.addEventListener('click', toggleAnswer);
-
-  endBtn.addEventListener('click', () => {
-    endScreen.classList.add('show');
-  });
-
-  restartBtn.addEventListener('click', () => {
-    endScreen.classList.remove('show');
+  /* =========================================================
+     7. MAIN CONTROLS — EVENTS
+     ========================================================= */
+  nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
     showNext();
   });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById('gearBtn');
-  const settingsOverlay = document.getElementById('settingsOverlay');
-  const minInput = document.getElementById('minInput');
-  const maxInput = document.getElementById('maxInput');
-  const settingsError = document.getElementById('settingsError');
-  const cancelBtn = document.getElementById('cancelBtn');
-  const saveBtn = document.getElementById('saveBtn');
-
+  /* =========================================================
+     8. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
   function openSettings() {
-    minInput.value = MIN_NUM;
-    maxInput.value = MAX_NUM;
-    settingsError.textContent = '';
-    settingsOverlay.classList.add('show');
+    minInput.value = cfg.min;
+    maxInput.value = cfg.max;
+    settingsError.textContent = "";
+    settingsOverlay.classList.add("show");
   }
 
   function closeSettings() {
-    settingsOverlay.classList.remove('show');
+    settingsOverlay.classList.remove("show");
   }
 
-  gearBtn.addEventListener('click', openSettings);
-  cancelBtn.addEventListener('click', closeSettings);
-  settingsOverlay.addEventListener('click', (e) => {
+  gearBtn.addEventListener("click", openSettings);
+  cancelBtn.addEventListener("click", closeSettings);
+  settingsOverlay.addEventListener("click", (e) => {
     if (e.target === settingsOverlay) closeSettings();
   });
 
-  saveBtn.addEventListener('click', () => {
+  saveBtn.addEventListener("click", () => {
     const newMin = parseInt(minInput.value, 10);
     const newMax = parseInt(maxInput.value, 10);
 
     if (!Number.isInteger(newMin) || !Number.isInteger(newMax)) {
-      settingsError.textContent = 'กรอกตัวเลขให้ครบทั้งสองช่อง';
+      settingsError.textContent = "กรอกตัวเลขให้ครบทั้งสองช่อง";
       return;
     }
     if (newMin < 1) {
-      settingsError.textContent = 'เลขน้อยที่สุดต้องมากกว่า 0';
+      settingsError.textContent = "เลขน้อยที่สุดต้องมากกว่า 0";
       return;
     }
     if (newMin >= newMax) {
-      settingsError.textContent = 'เลขน้อยที่สุดต้องน้อยกว่าเลขมากที่สุด';
+      settingsError.textContent = "เลขน้อยที่สุดต้องน้อยกว่าเลขมากที่สุด";
       return;
     }
 
-    MIN_NUM = newMin;
-    MAX_NUM = newMax;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ min: MIN_NUM, max: MAX_NUM }));
-
+    cfg = { min: newMin, max: newMax };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
     closeSettings();
     showNext();
   });
 
-  // ===== Initial Load =====
-  // first number on load
+  /* =========================================================
+     9. INITIAL LOAD
+     ========================================================= */
   current = randomNumber();
-  numberEl.textContent = current.toLocaleString('en-US');
+  numberEl.textContent = current.toLocaleString("en-US");
   displayProblem();
+
 </script>
 
 </body>
