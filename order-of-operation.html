@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มโจทย์ลำดับการดำเนินการ</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,42 +21,62 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: clamp(12px, 1.5vw, 16px);
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
     font-weight: 700;
     color: var(--gold);
     text-transform: uppercase;
     margin-bottom: 8px;
     z-index: 1;
-    text-align: center;
-    padding: 0 12px;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -62,10 +85,8 @@
     flex: 1;
     width: 100%;
     z-index: 1;
-    padding: 0 20px;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(22px, 4.4vw, 46px);
@@ -94,7 +115,9 @@
     text-align: center;
   }
 
-  /* ===== Standard Controls ===== */
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -122,10 +145,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -146,24 +167,25 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
-    position: fixed; inset: 0; background: var(--navy-deep);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; z-index: 10;
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
-  /* ===== Restart ===== */
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -172,64 +194,83 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 20px; z-index: 2; padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
-    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
-    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
+
   .settings-panel {
-    background: var(--navy-deep); border-radius: 22px; padding: 26px 24px; width: 100%; max-width: 440px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
-    max-height: 92vh; overflow-y: auto;
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
-  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
-  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
-  .field-group { margin-bottom: 14px; }
-  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 7px; }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .field-row { display: flex; gap: 10px; align-items: center; }
-  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 46px; flex-shrink: 0; }
+  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; flex-shrink: 0; }
   .field-row input {
-    flex: 1; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ink);
-    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
-    padding: 9px 9px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%; min-width: 0;
+    flex: 1;
+    width: 100%;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
   }
   .field-row input:focus { outline: none; border-color: var(--coral); }
-  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
-  /* ===== Media Queries ===== */
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
-    .settings-panel { padding: 14px 18px; max-height: 94vh; }
-    .field-group { margin-bottom: 8px; }
-    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
-    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
   }
+
 </style>
 </head>
 <body>
 
-  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
-  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มโจทย์ลำดับการดำเนินการ</div>
 
-  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
@@ -238,21 +279,18 @@
     <div class="prompt" id="promptEl">คำนวณหาผลลัพธ์ แล้วกดดูเฉลย</div>
   </div>
 
-  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
-  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
-  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มโจทย์</h2>
@@ -288,6 +326,7 @@
           <span class="mini-label">ต่ำสุด</span><input type="number" id="brMin">
           <span class="mini-label">สูงสุด</span><input type="number" id="brMax">
         </div>
+        <div class="field-note">วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -300,34 +339,68 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
   const DEFAULT_CFG = { maxNum: 24, asMin: 1, asMax: 3, mdMin: 1, mdMax: 3, brMin: 0, brMax: 2 };
   const STORAGE_KEY = "order-ops-gen-cfg";
+
   let cfg = { ...DEFAULT_CFG };
-  // ===== Saved Settings =====
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
-  // ===== Exercise Generator =====
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerLine = document.getElementById("answerLine");
+  const promptEl = document.getElementById("promptEl");
+
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["maxNum", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+
   function shuffle(arr) {
     const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i);[a[i], a[j]] = [a[j], a[i]]; }
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = randInt(0, i);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
     return a;
   }
 
-  // ---- build expression + matching token array in one pass ----
-  function generateExprWithTokens() {
-    const nBrackets = randInt(cfg.brMin, cfg.brMax);
-    const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
-    const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
-    const freeMDCount = nMD - nBrackets;
-    const freeASCount = nAS - nBrackets;
-
-  // ---- exponent assignment: 2-4 -> 20% sq, 5% cube, 75% none; 5-10 -> 20% sq, 80% none; >10 -> never ----
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+     ========================================================= */
+  // exponent assignment: 2-4 -> 20% squared, 5% cubed, 75% plain; 5-10 -> 20% squared, 80% plain; >10 -> never
   function applyExponent(base) {
     let exp = 1;
     if (base >= 2 && base <= 4) {
@@ -341,31 +414,38 @@
     const display = exp === 1 ? `${base}` : `${base}${exp === 2 ? "\u00b2" : "\u00b3"}`;
     return { value, display };
   }
-  // base number generator; excludeOne=true is used for divisors (never divide by 1)
+
+  // base number generator; excludeOne=true is used for ×/÷ factors (never a no-op ×1 or ÷1)
   function genNum(excludeOne) {
     const base = excludeOne ? randInt(2, cfg.maxNum) : randInt(1, cfg.maxNum);
     return applyExponent(base);
   }
 
   function makeAS() { return { op: choice(["+", "\u2212"]), ...genNum(false) }; }
-  function makeMD() {
-    const op = choice(["\u00d7", "\u00f7"]);
-    return { op, ...genNum(op === "\u00f7") };
-  }
+  function makeMD() { return { op: choice(["\u00d7", "\u00f7"]), ...genNum(true) }; }
+
+  function generateExprWithTokens() {
+    const nBrackets = randInt(cfg.brMin, cfg.brMax);
+    const nAS = randInt(Math.max(cfg.asMin, nBrackets), Math.max(cfg.asMax, nBrackets));
+    const nMD = randInt(Math.max(cfg.mdMin, nBrackets), Math.max(cfg.mdMax, nBrackets));
+    const freeASCount = nAS - nBrackets;
+    const freeMDCount = nMD - nBrackets;
 
     const blocks = [];
     for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMD() });
+
     const freeAS = [];
     for (let i = 0; i < freeASCount; i++) freeAS.push({ kind: "as", layer: makeAS() });
+
     const freeMD = [];
     for (let i = 0; i < freeMDCount; i++) freeMD.push({ kind: "md", layer: makeMD() });
 
     const middlePool = shuffle([...blocks, ...freeAS]);
     const orderedAtoms = [...shuffle(freeMD), ...middlePool];
 
-    const num0obj = genNum(false);
-    let expr = num0obj.display;
-    let tokens = [num0obj.value];
+    const num0 = genNum(false);
+    let expr = num0.display;
+    let tokens = [num0.value];
 
     orderedAtoms.forEach((atom) => {
       if (atom.kind === "block") {
@@ -378,36 +458,43 @@
         tokens.push(atom.layer.op, atom.layer.value);
       }
     });
+
     return { expr, tokens };
   }
 
-  // ---- precedence-aware evaluator; also reports whether every division was a clean whole number ----
+  // precedence-aware evaluator; also reports whether every division landed on a clean whole number
   function evalTokens(tokens) {
     let pos = 0;
     let allClean = true;
     const peek = () => tokens[pos];
     const next = () => tokens[pos++];
+
     function parseExpr() {
       let left = parseTerm();
       while (peek() === "+" || peek() === "\u2212") {
-        const op = next(); const right = parseTerm();
+        const op = next();
+        const right = parseTerm();
         left = op === "+" ? left + right : left - right;
       }
       return left;
     }
+
     function parseTerm() {
       let left = parseFactor();
       while (peek() === "\u00d7" || peek() === "\u00f7") {
-        const op = next(); const right = parseFactor();
+        const op = next();
+        const right = parseFactor();
         if (op === "\u00d7") { left = left * right; }
         else { if (right === 0 || left % right !== 0) allClean = false; left = left / right; }
       }
       return left;
     }
+
     function parseFactor() {
       if (peek() === "(") { next(); const v = parseExpr(); next(); return v; }
       return next();
     }
+
     const result = parseExpr();
     return { result, allClean };
   }
@@ -422,27 +509,15 @@
     return { expr: g.expr, answer: evalRes.result };
   }
 
-  // ===== State =====
-  let current = null;
-  let showingAnswer = false;
-
-  // ===== DOM References =====
-  const exprEl = document.getElementById("exprEl");
-  const answerWrap = document.getElementById("answerWrap");
-  const answerLine = document.getElementById("answerLine");
-  const promptEl = document.getElementById("promptEl");
-  const nextBtn = document.getElementById("nextBtn");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const endBtn = document.getElementById("endBtn");
-  const endScreen = document.getElementById("endScreen");
-  const restartBtn = document.getElementById("restartBtn");
-
-  // ===== Display Functions =====
+  /* =========================================================
+     6. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     exprEl.style.display = "";
     answerWrap.style.display = "none";
     promptEl.textContent = "คำนวณหาผลลัพธ์ แล้วกดดูเฉลย";
   }
+
   function displayAnswer() {
     exprEl.style.display = "none";
     answerWrap.style.display = "";
@@ -451,15 +526,18 @@
   }
 
   function showNext() {
-    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    exprEl.classList.add("swap");
+    answerWrap.classList.add("swap");
     setTimeout(() => {
       current = generateProblem();
       exprEl.textContent = current.expr;
       showingAnswer = false;
       displayProblem();
-      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+      exprEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? answerWrap : exprEl;
     el.classList.add("swap");
@@ -470,42 +548,67 @@
     }, 150);
   }
 
-  // ===== Main Button Events =====
+  /* =========================================================
+     7. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const fieldIds = ["maxNum", "asMin", "asMax", "mdMin", "mdMax", "brMin", "brMax"];
-
+  /* =========================================================
+     8. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
   function openSettings() {
     fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
     settingsError.textContent = "";
     settingsOverlay.classList.add("show");
   }
-  function closeSettings() { settingsOverlay.classList.remove("show"); }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
   gearBtn.addEventListener("click", openSettings);
   cancelBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
 
   saveBtn.addEventListener("click", () => {
     const vals = {};
     for (const id of fieldIds) {
       const v = parseInt(document.getElementById(id).value, 10);
-      if (!Number.isInteger(v)) { settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง"; return; }
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
       vals[id] = v;
     }
-    if (vals.maxNum < 2) { settingsError.textContent = "ตัวเลขสูงสุดต้องอย่างน้อย 2"; return; }
-    if (vals.asMin < 1 || vals.asMin > vals.asMax) { settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
-    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) { settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)"; return; }
-    if (vals.brMin < 0 || vals.brMin > vals.brMax) { settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง"; return; }
-    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) { settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด"; return; }
+
+    if (vals.maxNum < 2) {
+      settingsError.textContent = "ตัวเลขสูงสุดต้องอย่างน้อย 2";
+      return;
+    }
+    if (vals.asMin < 1 || vals.asMin > vals.asMax) {
+      settingsError.textContent = "บวก/ลบ: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)";
+      return;
+    }
+    if (vals.mdMin < 1 || vals.mdMin > vals.mdMax) {
+      settingsError.textContent = "คูณ/หาร: ช่วงไม่ถูกต้อง (ต่ำสุดอย่างน้อย 1)";
+      return;
+    }
+    if (vals.brMin < 0 || vals.brMin > vals.brMax) {
+      settingsError.textContent = "วงเล็บ: ช่วงไม่ถูกต้อง";
+      return;
+    }
+    if (vals.brMax > vals.asMax || vals.brMax > vals.mdMax) {
+      settingsError.textContent = "วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด";
+      return;
+    }
 
     cfg = { ...cfg, ...vals };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
@@ -513,11 +616,13 @@
     showNext();
   });
 
-  // ===== Initial Load =====
-  // first problem on load
+  /* =========================================================
+     9. INITIAL LOAD
+     ========================================================= */
   current = generateProblem();
   exprEl.textContent = current.expr;
   displayProblem();
+
 </script>
 
 </body>
