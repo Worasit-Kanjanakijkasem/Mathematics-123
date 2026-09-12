@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มโจทย์คูณพหุนาม</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,42 +21,66 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: clamp(11px, 1.4vw, 16px);
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
     font-weight: 700;
     color: var(--gold);
     text-transform: uppercase;
     margin-bottom: 8px;
     z-index: 1;
-    text-align: center;
-    padding: 0 12px;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ---- note: the answer view (outer-product table + final
+     line) can grow tall for 4x4 term brackets, so — like the
+     ค.ร.น. ladder tool — the stage keeps its own padding and
+     scroll as a deliberate exception. ----
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -66,7 +93,6 @@
     overflow-y: auto;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(20px, 4.4vw, 38px);
@@ -81,24 +107,52 @@
 
   .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; max-width: 95vw; }
   .answer-wrap.swap { opacity: 0; transform: scale(0.95); }
-  .answer-line {
-    font-family: "Cambria", "Georgia", serif;
-    font-weight: 700;
-    text-align: center;
-    line-height: 1.5;
-    word-break: break-word;
-  }
-  .answer-line.final { font-size: clamp(18px, 3.8vw, 32px); color: var(--gold); }
 
   .mode-label {
-    margin-top: 20px;
+    margin-top: 16px;
     font-size: clamp(13px, 1.8vw, 18px);
     color: var(--muted);
     text-align: center;
     z-index: 1;
   }
 
-  /* ===== Standard Controls ===== */
+  /* ---- exercise-specific: outer-product multiplication table ---- */
+  #tableWrap {
+    max-width: 95vw;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mult-table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    font-family: "Cambria", "Georgia", serif;
+    font-weight: 700;
+  }
+  .mult-table td {
+    border: 2px solid var(--muted);
+    padding: 8px 14px;
+    font-size: clamp(14px, 2.6vw, 22px);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .mult-table .corner { border: none; background: transparent; }
+  .mult-table .hcell { color: var(--ink); background: rgba(249, 231, 149, 0.08); }
+  .mult-table .cell { color: var(--gold); }
+
+  .final-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.5;
+    word-break: break-word;
+    font-size: clamp(18px, 3.8vw, 32px);
+    color: var(--gold);
+    margin-top: 18px;
+  }
+
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -126,10 +180,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -150,24 +202,25 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
-    position: fixed; inset: 0; background: var(--navy-deep);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; z-index: 10;
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
-  /* ===== Restart ===== */
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -176,97 +229,127 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 20px; z-index: 2; padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
-    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
-    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
+
   .settings-panel {
-    background: var(--navy-deep); border-radius: 22px; padding: 26px 22px; width: 100%; max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
-    max-height: 92vh; overflow-y: auto;
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
-  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
-  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
-  .field-group { margin-bottom: 14px; }
-  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 7px; }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .field-row { display: flex; gap: 10px; align-items: center; }
   .field-row input {
-    flex: 1; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ink);
-    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
-    padding: 9px 9px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%; min-width: 0;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
   }
   .field-row input:focus { outline: none; border-color: var(--coral); }
-  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
-  /* ===== Media Queries ===== */
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
-    .settings-panel { padding: 14px 16px; max-height: 94vh; }
-    .field-group { margin-bottom: 8px; }
-    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
-    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
+
+    .stage { padding: 4px 20px; }
+    .mult-table td { padding: 4px 8px; font-size: clamp(11px, 2.2vw, 16px); }
+    .final-line { margin-top: 8px; font-size: clamp(14px, 2.8vw, 22px); }
+    .mode-label { margin-top: 6px; }
   }
+
 </style>
 </head>
 <body>
 
-  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
-  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มโจทย์คูณพหุนาม</div>
 
-  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
-      <div class="answer-line final" id="finalLine"></div>
+      <div id="tableWrap"></div>
+      <div class="final-line" id="finalLine"></div>
     </div>
     <div class="mode-label" id="modeLabel">กระจายและรวมพจน์ แล้วกดดูเฉลย</div>
   </div>
 
-  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
-  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
-  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มโจทย์</h2>
-      <div class="desc">กำหนดค่าสัมประสิทธิ์สูงสุดที่ใช้ในโจทย์</div>
+      <div class="desc">กำหนดค่าที่ใช้ในการสุ่มโจทย์คูณพหุนาม</div>
 
       <div class="field-group">
         <div class="label">สัมประสิทธิ์สูงสุด</div>
         <div class="field-row">
           <input type="number" id="maxCoeff">
         </div>
-        <div class="field-note">จำนวนพจน์ต่อวงเล็บ (1-4) และเลขชี้กำลัง (1-4) กำหนดตายตัวตามหลักการของแบบฝึกหัดนี้</div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">ผลรวมเลขชี้กำลังสูงสุด (กลุ่มตัวแปรผสม)</div>
+        <div class="field-row">
+          <input type="number" id="maxDegree">
+        </div>
+        <div class="field-note">เช่น ผลรวม 2 บน a,b คือ a\u00b2, ab, b\u00b2</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -279,77 +362,184 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
-  const DEFAULT_CFG = { maxCoeff: 9 };
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
+  const DEFAULT_CFG = { maxCoeff: 9, maxDegree: 4 };
   const STORAGE_KEY = "poly-mult-gen-cfg";
+
   let cfg = { ...DEFAULT_CFG };
-  // ===== Saved Settings =====
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
-  // ===== Exercise Generator =====
-  const GROUPS = [
-    ["x", "y"], ["x", "y", "z"],
-    ["a", "b"], ["a", "b", "c"], ["a", "b", "c", "d"],
-    ["u", "v"], ["u", "v", "w"],
-    ["p", "q"], ["p", "q", "r", "s"],
-  ];
-  const SUP = { 1: "", 2: "\u00b2", 3: "\u00b3", 4: "\u2074", 5: "\u2075", 6: "\u2076", 7: "\u2077", 8: "\u2078" };
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const tableWrap = document.getElementById("tableWrap");
+  const finalLine = document.getElementById("finalLine");
+  const modeLabel = document.getElementById("modeLabel");
 
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+
   function shuffle(arr) {
     const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i);[a[i], a[j]] = [a[j], a[i]]; }
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = randInt(0, i);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
     return a;
   }
 
-  function weightedTermCount() {
-    // 2 terms most common, then 3, then 4 (45% / 35% / 20%)
-    const r = Math.random();
-    if (r < 0.45) return 2;
-    if (r < 0.80) return 3;
-    return 4;
+  /* =========================================================
+     5. DOMAIN LOGIC
+
+     Two problem "groups", chosen behind the scenes:
+       Group 1  25%  single shared variable throughout, e.g.
+                     (3x²+2x−5)(x−4) — the classic case.
+       Group 2  75%  same variable SET in both brackets, each
+                     bracket homogeneous (every term has the
+                     same total degree), e.g. (a²+ab+b²)(a−b).
+                     The two brackets' degrees are picked
+                     independently, so they may match or differ
+                     — this is what makes patterns like the
+                     difference of cubes possible, and is why
+                     the multiplication table actually earns
+                     its keep (cells land on the same term, or
+                     even cancel, far more often than with
+                     fully free-form terms).
+     Both groups produce terms in the same shape, so every
+     downstream function (cellProduct, formatting, the table)
+     works identically regardless of which group produced them:
+       { factors: { varName: exponent, ... }, coeff, sign }
+     ========================================================= */
+  const ALL_VAR_LETTERS = ["x", "y", "z", "a", "b", "c", "d", "u", "v", "w", "p", "q", "r", "s"];
+  const SUP = { 1: "", 2: "\u00b2", 3: "\u00b3", 4: "\u2074", 5: "\u2075", 6: "\u2076", 7: "\u2077", 8: "\u2078", 9: "\u2079", 10: "\u00b9\u2070" };
+
+  // ---- Group 1: single shared variable ----
+  // Every possible exponent 4-0 always gets a slot (0 = the constant term, since a
+  // normal polynomial can legitimately have one) — same "keep the full set, let some
+  // slots be zero" principle as Group 2 below, so the table can show a "0" row/column
+  // instead of silently shrinking whenever an exponent happens to be dropped.
+  function generateSingleVarBracket(param) {
+    const EXPONENTS = [4, 3, 2, 1, 0]; // fixed, already highest-to-lowest for display
+    const ZERO_CHANCE = 0.2;
+    const minNonzero = 2;
+    let coeffs;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      coeffs = EXPONENTS.map(() => (Math.random() < ZERO_CHANCE ? 0 : randInt(1, cfg.maxCoeff)));
+      if (coeffs.filter((c) => c !== 0).length >= minNonzero) break;
+    }
+    if (coeffs.filter((c) => c !== 0).length < minNonzero) {
+      coeffs = EXPONENTS.map(() => 0);
+      shuffle(EXPONENTS.map((_, i) => i)).slice(0, minNonzero).forEach((i) => { coeffs[i] = randInt(1, cfg.maxCoeff); });
+    }
+    return EXPONENTS.map((exp, i) => ({
+      factors: exp === 0 ? {} : { [param]: exp }, // exponent 0 -> plain constant, no variable attached
+      coeff: coeffs[i],
+      sign: coeffs[i] === 0 ? 1 : choice([1, -1]),
+    }));
   }
 
-  function generateBracket(group) {
-    const k = weightedTermCount(); // at least 2 terms per bracket, weighted toward fewer terms
-    const terms = [];
-    // weight toward "single shared parameter" brackets (looks like a familiar one-variable polynomial)
-    const useSingleParam = Math.random() < 0.55;
-    if (useSingleParam) {
-      const param = choice(group);
-      for (let i = 0; i < k; i++) terms.push({ param });
-    } else {
-      for (let i = 0; i < k; i++) terms.push({ param: choice(group) });
+  // ---- Group 2: homogeneous polynomial of a given degree over a variable set ----
+  // stars-and-bars enumeration of every way `degree` splits across `vars`
+  function generateMonomialsOfDegree(vars, degree) {
+    const n = vars.length;
+    const results = [];
+    function helper(idx, remaining, current) {
+      if (idx === n - 1) {
+        const full = [...current, remaining];
+        const factors = {};
+        vars.forEach((v, i) => { if (full[i] > 0) factors[v] = full[i]; });
+        results.push(factors);
+        return;
+      }
+      for (let e = 0; e <= remaining; e++) helper(idx + 1, remaining - e, [...current, e]);
+    }
+    helper(0, degree, []);
+    return results;
+  }
+
+  function generateHomogeneousBracket(vars, degree, maxCoeff) {
+    const allMonomials = generateMonomialsOfDegree(vars, degree);
+    // canonical descending order by each variable's exponent in turn, so the bracket
+    // reads like a normal polynomial rather than a shuffled list
+    allMonomials.sort((m1, m2) => {
+      for (const v of vars) {
+        const e1 = m1[v] || 0, e2 = m2[v] || 0;
+        if (e2 !== e1) return e2 - e1;
+      }
+      return 0;
+    });
+
+    // EVERY possible monomial of this degree always gets a slot — each independently has
+    // a chance of coefficient 0 (meaning it's simply absent from the written polynomial),
+    // but the term is still carried through so the multiplication table can show its row
+    // or column as an explicit "0". Keeping every slot present (rather than only the
+    // nonzero ones) is what keeps same-total-degree cells lined up on a clean, reliable
+    // diagonal for combining, instead of the table's shape shifting whenever a monomial
+    // happens to be dropped.
+    const ZERO_CHANCE = 0.2;
+    const minNonzero = Math.min(2, allMonomials.length);
+    let coeffs;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      coeffs = allMonomials.map(() => (Math.random() < ZERO_CHANCE ? 0 : randInt(1, maxCoeff)));
+      if (coeffs.filter((c) => c !== 0).length >= minNonzero) break;
+    }
+    if (coeffs.filter((c) => c !== 0).length < minNonzero) {
+      coeffs = allMonomials.map(() => 0);
+      shuffle(allMonomials.map((_, i) => i)).slice(0, minNonzero).forEach((i) => { coeffs[i] = randInt(1, maxCoeff); });
     }
 
-    const byParam = {};
-    terms.forEach((t, idx) => { (byParam[t.param] = byParam[t.param] || []).push(idx); });
-    Object.keys(byParam).forEach((p) => {
-      const indices = byParam[p];
-      if (indices.length === 1) {
-        terms[indices[0]].exp = randInt(1, 4);
-      } else {
-        const pool = shuffle([1, 2, 3, 4]);
-        indices.forEach((idx, j) => { terms[idx].exp = pool[j]; });
-      }
-    });
-    terms.forEach((t) => { t.coeff = randInt(1, cfg.maxCoeff); t.sign = choice([1, -1]); });
-    return terms;
+    return allMonomials.map((factors, i) => ({
+      factors,
+      coeff: coeffs[i],
+      sign: coeffs[i] === 0 ? 1 : choice([1, -1]),
+    }));
+  }
+
+  function cellProduct(t1, t2) {
+    const coeff = t1.sign * t1.coeff * t2.sign * t2.coeff;
+    const factors = {};
+    Object.keys(t1.factors).forEach((p) => { factors[p] = (factors[p] || 0) + t1.factors[p]; });
+    Object.keys(t2.factors).forEach((p) => { factors[p] = (factors[p] || 0) + t2.factors[p]; });
+    return { coeff, factors };
   }
 
   function multiplyBrackets(terms1, terms2) {
     const products = [];
     for (const t1 of terms1) {
       for (const t2 of terms2) {
-        const coeff = t1.sign * t1.coeff * t2.sign * t2.coeff;
-        const factors = {};
-        factors[t1.param] = (factors[t1.param] || 0) + t1.exp;
-        factors[t2.param] = (factors[t2.param] || 0) + t2.exp;
-        products.push({ coeff, factors });
+        products.push(cellProduct(t1, t2));
       }
     }
     const combined = {};
@@ -361,13 +551,55 @@
     return Object.values(combined).filter((t) => t.coeff !== 0);
   }
 
-  function fmtBracket(terms) {
-    return terms.map((t, i) => {
-      const signStr = t.sign === 1 ? (i === 0 ? "" : " + ") : (i === 0 ? "\u2212" : " \u2212 ");
-      const coeffStr = t.coeff === 1 ? "" : t.coeff;
-      const expStr = SUP[t.exp];
-      return `${signStr}${coeffStr}${t.param}${expStr}`;
+  function fmtFactorsPart(factors) {
+    return Object.keys(factors).sort().map((p) => {
+      const e = factors[p];
+      return `${p}${SUP[e] !== undefined ? SUP[e] : `^${e}`}`;
     }).join("");
+  }
+
+  // "1x" should omit the 1 (the x carries it), but a bare constant term of exactly
+  // 1 or -1 has nothing else to carry it and must show its digit.
+  function coeffDisplayStr(absCoeff, factors) {
+    const hasVars = Object.keys(factors).length > 0;
+    return absCoeff === 1 && hasVars ? "" : absCoeff;
+  }
+
+  function fmtBracket(terms) {
+    // zero-coefficient slots exist so the table can show them, but a normal written
+    // polynomial simply omits them (nobody writes "+ 0ab")
+    const visible = terms.filter((t) => t.coeff !== 0);
+    return visible.map((t, i) => {
+      const signStr = t.sign === 1 ? (i === 0 ? "" : " + ") : (i === 0 ? "\u2212" : " \u2212 ");
+      const coeffStr = coeffDisplayStr(t.coeff, t.factors);
+      return `${signStr}${coeffStr}${fmtFactorsPart(t.factors)}`;
+    }).join("");
+  }
+
+  // always shows an explicit leading sign — used for table headers, which are standalone
+  // labels rather than terms written in a running sum. A zero-coefficient slot shows "0"
+  // together with its variable/exponent (e.g. "0r³") so its column reads clearly and
+  // sits at a similar width to its neighbors; a zero constant slot has no variable to
+  // attach, so it's just a bare "0".
+  function fmtSignedTerm(t) {
+    if (t.coeff === 0) {
+      const part = fmtFactorsPart(t.factors);
+      return part ? `0${part}` : "0";
+    }
+    const signStr = t.sign === 1 ? "+" : "\u2212";
+    const coeffStr = coeffDisplayStr(t.coeff, t.factors);
+    return `${signStr}${coeffStr}${fmtFactorsPart(t.factors)}`;
+  }
+
+  function fmtFactors(coeff, factors) {
+    if (coeff === 0) {
+      const part = fmtFactorsPart(factors);
+      return part ? `0${part}` : "0";
+    }
+    const sign = coeff < 0 ? "\u2212" : "+";
+    const absCoeff = Math.abs(coeff);
+    const coeffStr = coeffDisplayStr(absCoeff, factors);
+    return `${sign}${coeffStr}${fmtFactorsPart(factors)}`;
   }
 
   function fmtProduct(terms) {
@@ -382,61 +614,84 @@
     return sorted.map((t, i) => {
       const sign = t.coeff < 0 ? (i === 0 ? "\u2212" : " \u2212 ") : (i === 0 ? "" : " + ");
       const absCoeff = Math.abs(t.coeff);
-      const coeffStr = absCoeff === 1 ? "" : absCoeff;
-      const factorStr = Object.keys(t.factors).sort().map((p) => {
-        const e = t.factors[p];
-        return `${p}${SUP[e] !== undefined ? SUP[e] : `^${e}`}`;
-      }).join("");
-      return `${sign}${coeffStr}${factorStr}`;
+      const coeffStr = coeffDisplayStr(absCoeff, t.factors);
+      return `${sign}${coeffStr}${fmtFactorsPart(t.factors)}`;
     }).join("");
   }
 
-  // ===== State =====
-  let current = null;
-  let showingAnswer = false;
+  // outer-product table: row/column headers are the bracket terms (own sign always shown),
+  // every interior cell is that row x column product — an empty cell would mean a forgotten
+  // multiplication, so every cell is always filled by construction.
+  function buildMultiplicationTable(terms1, terms2) {
+    let html = '<table class="mult-table"><tr><td class="corner"></td>';
+    terms2.forEach((t2) => { html += `<td class="hcell">${fmtSignedTerm(t2)}</td>`; });
+    html += "</tr>";
+    terms1.forEach((t1) => {
+      html += `<tr><td class="hcell">${fmtSignedTerm(t1)}</td>`;
+      terms2.forEach((t2) => {
+        const { coeff, factors } = cellProduct(t1, t2);
+        html += `<td class="cell">${fmtFactors(coeff, factors)}</td>`;
+      });
+      html += "</tr>";
+    });
+    html += "</table>";
+    return html;
+  }
 
   function newProblem() {
-    const group = choice(GROUPS);
-    const b1 = generateBracket(group);
-    const b2 = generateBracket(group);
-    current = { group, b1, b2 };
+    let b1, b2;
+    const GROUP1_CHANCE = 1 / 3;
+    if (Math.random() < GROUP1_CHANCE) {
+      // Group 1: single shared variable
+      const param = choice(ALL_VAR_LETTERS);
+      b1 = generateSingleVarBracket(param);
+      b2 = generateSingleVarBracket(param);
+    } else {
+      // Group 2: same variable set (always exactly 2 variables), independently-chosen
+      // (possibly different) degrees per bracket
+      const NVARS_GROUP2 = 2;
+      // pick which letters are in play at random, but fix their PRIORITY order
+      // alphabetically — this is what "a before b" ordering in each bracket is based on.
+      const vars = shuffle(ALL_VAR_LETTERS).slice(0, NVARS_GROUP2).sort();
+      const d1 = randInt(1, Math.max(1, cfg.maxDegree));
+      const d2 = randInt(1, Math.max(1, cfg.maxDegree));
+      b1 = generateHomogeneousBracket(vars, d1, cfg.maxCoeff);
+      b2 = generateHomogeneousBracket(vars, d2, cfg.maxCoeff);
+    }
+    current = { b1, b2 };
     return `(${fmtBracket(b1)})(${fmtBracket(b2)})`;
   }
 
-  // ===== DOM References =====
-  const exprEl = document.getElementById("exprEl");
-  const answerWrap = document.getElementById("answerWrap");
-  const finalLine = document.getElementById("finalLine");
-  const modeLabel = document.getElementById("modeLabel");
-  const nextBtn = document.getElementById("nextBtn");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const endBtn = document.getElementById("endBtn");
-  const endScreen = document.getElementById("endScreen");
-  const restartBtn = document.getElementById("restartBtn");
-
-  // ===== Display Functions =====
+  /* =========================================================
+     6. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     exprEl.style.display = "";
     answerWrap.style.display = "none";
     modeLabel.textContent = "กระจายและรวมพจน์ แล้วกดดูเฉลย";
   }
+
   function displayAnswer() {
     exprEl.style.display = "none";
     answerWrap.style.display = "";
+    tableWrap.innerHTML = buildMultiplicationTable(current.b1, current.b2);
     const product = multiplyBrackets(current.b1, current.b2);
     finalLine.textContent = fmtProduct(product);
-    modeLabel.textContent = "นี่คือเฉลย (กระจายและรวมพจน์แล้ว)";
+    modeLabel.textContent = "นี่คือเฉลย (ตารางคูณไขว้)";
   }
 
   function showNext() {
-    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    exprEl.classList.add("swap");
+    answerWrap.classList.add("swap");
     setTimeout(() => {
       exprEl.textContent = newProblem();
       showingAnswer = false;
       displayProblem();
-      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+      exprEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? answerWrap : exprEl;
     el.classList.add("swap");
@@ -447,44 +702,69 @@
     }, 150);
   }
 
-  // ===== Main Button Events =====
+  /* =========================================================
+     7. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
+  /* =========================================================
+     8. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
+  const fieldIds = ["maxCoeff", "maxDegree"];
 
   function openSettings() {
-    document.getElementById("maxCoeff").value = cfg.maxCoeff;
+    fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
     settingsError.textContent = "";
     settingsOverlay.classList.add("show");
   }
-  function closeSettings() { settingsOverlay.classList.remove("show"); }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
   gearBtn.addEventListener("click", openSettings);
   cancelBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
 
   saveBtn.addEventListener("click", () => {
-    const maxCoeff = parseInt(document.getElementById("maxCoeff").value, 10);
-    if (!Number.isInteger(maxCoeff)) { settingsError.textContent = "กรอกตัวเลขให้ถูกต้อง"; return; }
-    if (maxCoeff < 1) { settingsError.textContent = "สัมประสิทธิ์สูงสุดต้องอย่างน้อย 1"; return; }
+    const vals = {};
+    for (const id of fieldIds) {
+      const v = parseInt(document.getElementById(id).value, 10);
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
+      vals[id] = v;
+    }
+    if (vals.maxCoeff < 1) {
+      settingsError.textContent = "สัมประสิทธิ์สูงสุดต้องอย่างน้อย 1";
+      return;
+    }
+    if (vals.maxDegree < 1) {
+      settingsError.textContent = "ผลรวมเลขชี้กำลังสูงสุดต้องอย่างน้อย 1";
+      return;
+    }
 
-    cfg = { ...cfg, maxCoeff };
+    cfg = { ...cfg, ...vals };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
     closeSettings();
     showNext();
   });
 
-  // ===== Initial Load =====
-  // first problem on load
+  /* =========================================================
+     9. INITIAL LOAD
+     ========================================================= */
   exprEl.textContent = newProblem();
   displayProblem();
+
 </script>
 
 </body>
