@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มสมการกำลังสอง</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,42 +21,67 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
-    letter-spacing: 0.1em;
-    font-size: clamp(11px, 1.4vw, 16px);
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
     font-weight: 700;
     color: var(--gold);
     text-transform: uppercase;
     margin-bottom: 8px;
     z-index: 1;
-    text-align: center;
-    padding: 0 12px;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ---- note: the answer now stacks a graph above the
+     factored/roots text, which can run tall on short mobile
+     screens, so — like the ค.ร.น. and polynomial tools — the
+     stage keeps its own padding + scroll as a deliberate
+     exception. ----
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -63,9 +91,9 @@
     width: 100%;
     z-index: 1;
     padding: 10px 20px;
+    overflow-y: auto;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(22px, 4.6vw, 44px);
@@ -79,24 +107,31 @@
 
   .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
   .answer-wrap.swap { opacity: 0; transform: scale(0.95); }
+
+  /* ---- exercise-specific: root graph ---- */
+  .graph-box { width: min(78vw, 380px); margin: 0 auto; }
+  .graph-box svg { width: 100%; height: auto; display: block; }
+
   .answer-line {
     font-family: "Cambria", "Georgia", serif;
     font-weight: 700;
     text-align: center;
     line-height: 1.5;
   }
-  .answer-line.factored { font-size: clamp(20px, 4vw, 38px); }
+  .answer-line.factored { font-size: clamp(20px, 4vw, 38px); margin-top: 12px; }
   .answer-line.roots { font-size: clamp(19px, 3.6vw, 34px); color: var(--gold); margin-top: 8px; }
 
   .mode-label {
-    margin-top: 20px;
+    margin-top: 16px;
     font-size: clamp(13px, 1.8vw, 18px);
     color: var(--muted);
     text-align: center;
     z-index: 1;
   }
 
-  /* ===== Standard Controls ===== */
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -124,10 +159,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -148,24 +181,25 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
-    position: fixed; inset: 0; background: var(--navy-deep);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; z-index: 10;
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
-  /* ===== Restart ===== */
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -174,88 +208,110 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute; top: 14px; right: 14px; width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
-    font-size: 20px; z-index: 2; padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
   .settings-overlay {
-    position: fixed; inset: 0; background: rgba(20,24,54,0.75);
-    display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; overflow-y: auto;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
   }
   .settings-overlay.show { display: flex; }
+
   .settings-panel {
-    background: var(--navy-deep); border-radius: 22px; padding: 26px 22px; width: 100%; max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
-    max-height: 92vh; overflow-y: auto;
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
-  .settings-panel h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
-  .settings-panel .desc { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
-  .field-group { margin-bottom: 14px; }
-  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 7px; }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .field-row { display: flex; gap: 10px; align-items: center; }
   .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; flex-shrink: 0; }
   .field-row input {
-    flex: 1; font-family: inherit; font-size: 16px; font-weight: 700; color: var(--ink);
-    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
-    padding: 9px 9px; box-sizing: border-box; font-variant-numeric: tabular-nums; width: 100%; min-width: 0;
+    flex: 1;
+    width: 100%;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
   }
   .field-row input:focus { outline: none; border-color: var(--coral); }
-  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255,255,255,0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
   .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
 
-  /* ===== Media Queries ===== */
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
-    .settings-panel { padding: 14px 16px; max-height: 94vh; }
-    .field-group { margin-bottom: 8px; }
-    .settings-panel h2 { font-size: 16px; margin-bottom: 2px; }
-    .settings-panel .desc { font-size: 11px; margin-bottom: 8px; }
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
+
+    .stage { padding: 4px 20px; }
+    .graph-box { width: min(60vw, 260px); }
+    .answer-line.factored { margin-top: 6px; }
+    .mode-label { margin-top: 6px; }
   }
+
 </style>
 </head>
 <body>
 
-  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
-  <!-- ===== Header ===== -->
   <div class="eyebrow">สุ่มสมการกำลังสอง · หาราก</div>
 
-  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="graph-box" id="graphBox"></div>
       <div class="answer-line factored" id="factoredLine"></div>
       <div class="answer-line roots" id="rootsLine"></div>
     </div>
     <div class="mode-label" id="modeLabel">แยกตัวประกอบ แล้วหารากของสมการ</div>
   </div>
 
-  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
-  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
-  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มสมการ</h2>
@@ -286,21 +342,61 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
   const DEFAULT_CFG = { maxNumerator: 12, maxDenom: 4 };
   const STORAGE_KEY = "quadratic-root-gen-cfg";
+
   let cfg = { ...DEFAULT_CFG };
-  // ===== Saved Settings =====
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
 
-  // ===== Exercise Generator =====
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const graphBox = document.getElementById("graphBox");
+  const factoredLine = document.getElementById("factoredLine");
+  const rootsLine = document.getElementById("rootsLine");
+  const modeLabel = document.getElementById("modeLabel");
+
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["maxNumerator", "maxDenom"];
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
   function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
 
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+     ========================================================= */
   function randRootPQ(denomIsOne) {
     let p, q;
     if (denomIsOne) {
@@ -370,6 +466,7 @@
     const absP = Math.abs(r.p);
     return r.q === 1 ? `${sign}${absP}` : `${sign}${absP}/${r.q}`;
   }
+
   function fmtQuadratic(a, b, c) {
     let s = "";
     if (a === 1) s += "x\u00b2";
@@ -384,6 +481,7 @@
     s += " = 0";
     return s;
   }
+
   function fmtFactor(q, p) {
     // (q x - p) style, cleaned for q=1 and sign of p
     const qPart = q === 1 ? "x" : `${q}x`;
@@ -391,52 +489,129 @@
     return p > 0 ? `(${qPart} \u2212 ${p})` : `(${qPart} + ${Math.abs(p)})`;
   }
 
-  // ===== State =====
-  let current = null;
-  let showingAnswer = false;
-
   function newProblem() {
     current = generateQuadratic();
     return fmtQuadratic(current.a, current.b, current.c);
   }
 
-  // ===== DOM References =====
-  const exprEl = document.getElementById("exprEl");
-  const answerWrap = document.getElementById("answerWrap");
-  const factoredLine = document.getElementById("factoredLine");
-  const rootsLine = document.getElementById("rootsLine");
-  const modeLabel = document.getElementById("modeLabel");
-  const nextBtn = document.getElementById("nextBtn");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const endBtn = document.getElementById("endBtn");
-  const endScreen = document.getElementById("endScreen");
-  const restartBtn = document.getElementById("restartBtn");
+  /* =========================================================
+     6. GRAPH RENDERING
+     A standalone graph (no number-line alignment needed here) —
+     the focus is purely the two x-intercepts. The view window
+     is computed automatically from the roots, always widened
+     to include x=0 so the y-axis is visible on every graph.
+     ========================================================= */
+  function computeViewport(a, b, c, v1, v2) {
+    const rootLo = Math.min(v1, v2), rootHi = Math.max(v1, v2);
+    let dataMinX = Math.min(rootLo, 0), dataMaxX = Math.max(rootHi, 0);
+    let spanX = dataMaxX - dataMinX;
+    if (spanX < 2) {
+      const mid = (dataMinX + dataMaxX) / 2;
+      dataMinX = mid - 1; dataMaxX = mid + 1; spanX = 2;
+    }
+    const padX = spanX * 0.25;
+    const xLo = dataMinX - padX, xHi = dataMaxX + padX;
 
-  // ===== Display Functions =====
+    const vertexX = (v1 + v2) / 2;
+    const f = (x) => a * x * x + b * x + c;
+    const candidates = [0, f(xLo), f(xHi), f(vertexX)];
+    let yLo = Math.min(...candidates), yHi = Math.max(...candidates);
+    let spanY = yHi - yLo;
+    if (spanY < 2) {
+      const mid = (yLo + yHi) / 2;
+      yLo = mid - 1; yHi = mid + 1; spanY = 2;
+    }
+    const padY = spanY * 0.15;
+    return { xLo, xHi, yLo: yLo - padY, yHi: yHi + padY, f };
+  }
+
+  function buildRootGraph(a, b, c, v1, v2) {
+    const { xLo, xHi, yLo, yHi, f } = computeViewport(a, b, c, v1, v2);
+    const w = 340, h = 300, pad = 24;
+    const scaleX = (w - pad * 2) / (xHi - xLo);
+    const scaleY = (h - pad * 2) / (yHi - yLo);
+    const toPx = (x) => pad + (x - xLo) * scaleX;
+    const toPy = (y) => h - pad - (y - yLo) * scaleY;
+
+    let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+
+    // axes (always visible since the viewport always contains x=0 and y=0)
+    svg += `<line x1="${toPx(xLo)}" y1="${toPy(0)}" x2="${toPx(xHi)}" y2="${toPy(0)}" stroke="#7A8296" stroke-width="1.25"/>`;
+    svg += `<line x1="${toPx(0)}" y1="${toPy(yHi)}" x2="${toPx(0)}" y2="${toPy(yLo)}" stroke="#7A8296" stroke-width="1.25"/>`;
+
+    // curve
+    const steps = 60;
+    let d = "";
+    for (let i = 0; i <= steps; i++) {
+      const x = xLo + ((xHi - xLo) * i) / steps;
+      const px = toPx(x), py = toPy(f(x));
+      d += (i === 0 ? "M" : "L") + px.toFixed(1) + "," + py.toFixed(1) + " ";
+    }
+    svg += `<path d="${d}" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>`;
+
+    // intercept points + coordinate labels
+    const repeated = Math.abs(v1 - v2) < 1e-9;
+    const upward = a > 0;
+    function coordLabel(v) {
+      const frac = current.r1.p / current.r1.q === v ? current.r1 : current.r2;
+      return `(${fmtRoot(frac)}, 0)`;
+    }
+    const fontSize = 12.5;
+    if (repeated) {
+      const px = toPx(v1), py = toPy(0);
+      svg += `<circle cx="${px}" cy="${py}" r="5" fill="#F96167"/>`;
+      const ly = upward ? py + 18 : py - 14;
+      svg += `<text x="${px}" y="${ly}" font-size="${fontSize}" fill="#F96167" font-weight="700" text-anchor="middle" font-family="Calibri, sans-serif">${coordLabel(v1)}</text>`;
+    } else {
+      [[Math.min(v1, v2), "left"], [Math.max(v1, v2), "right"]].forEach(([v, side]) => {
+        const px = toPx(v), py = toPy(0);
+        svg += `<circle cx="${px}" cy="${py}" r="5" fill="#F96167"/>`;
+        const dx = side === "left" ? -8 : 8;
+        // up+left->SW, up+right->SE, down+left->NW, down+right->NE
+        const dy = upward ? 16 : -12;
+        const anchor = side === "left" ? "end" : "start";
+        svg += `<text x="${px + dx}" y="${py + dy}" font-size="${fontSize}" fill="#F96167" font-weight="700" text-anchor="${anchor}" font-family="Calibri, sans-serif">${coordLabel(v)}</text>`;
+      });
+    }
+
+    svg += "</svg>";
+    return svg;
+  }
+
+  /* =========================================================
+     7. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     exprEl.style.display = "";
     answerWrap.style.display = "none";
     modeLabel.textContent = "แยกตัวประกอบ แล้วหารากของสมการ";
   }
+
   function displayAnswer() {
     exprEl.style.display = "none";
     answerWrap.style.display = "";
+
+    const v1 = current.r1.p / current.r1.q, v2 = current.r2.p / current.r2.q;
+    graphBox.innerHTML = buildRootGraph(current.a, current.b, current.c, v1, v2);
+
     const kPrefix = current.k === 1 ? "" : (current.k === -1 ? "\u2212" : String(current.k));
-    const factorStr = `${kPrefix}${fmtFactor(current.q1, current.p1)}${fmtFactor(current.q2, current.p2)} = 0`;
-    factoredLine.textContent = factorStr;
+    factoredLine.textContent = `${kPrefix}${fmtFactor(current.q1, current.p1)}${fmtFactor(current.q2, current.p2)} = 0`;
     rootsLine.textContent = `x = ${fmtRoot(current.r1)}  หรือ  x = ${fmtRoot(current.r2)}`;
     modeLabel.textContent = "นี่คือเฉลย";
   }
 
   function showNext() {
-    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    exprEl.classList.add("swap");
+    answerWrap.classList.add("swap");
     setTimeout(() => {
       exprEl.textContent = newProblem();
       showingAnswer = false;
       displayProblem();
-      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+      exprEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? answerWrap : exprEl;
     el.classList.add("swap");
@@ -447,39 +622,54 @@
     }, 150);
   }
 
-  // ===== Main Button Events =====
+  /* =========================================================
+     8. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const fieldIds = ["maxNumerator", "maxDenom"];
-
+  /* =========================================================
+     9. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
   function openSettings() {
     fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
     settingsError.textContent = "";
     settingsOverlay.classList.add("show");
   }
-  function closeSettings() { settingsOverlay.classList.remove("show"); }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
   gearBtn.addEventListener("click", openSettings);
   cancelBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", (e) => { if (e.target === settingsOverlay) closeSettings(); });
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
 
   saveBtn.addEventListener("click", () => {
     const vals = {};
     for (const id of fieldIds) {
       const v = parseInt(document.getElementById(id).value, 10);
-      if (!Number.isInteger(v)) { settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง"; return; }
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
       vals[id] = v;
     }
-    if (vals.maxNumerator < 1) { settingsError.textContent = "ตัวเศษสูงสุดต้องอย่างน้อย 1"; return; }
-    if (vals.maxDenom < 1) { settingsError.textContent = "ตัวส่วนสูงสุดต้องอย่างน้อย 1"; return; }
+    if (vals.maxNumerator < 1) {
+      settingsError.textContent = "ตัวเศษสูงสุดต้องอย่างน้อย 1";
+      return;
+    }
+    if (vals.maxDenom < 1) {
+      settingsError.textContent = "ตัวส่วนสูงสุดต้องอย่างน้อย 1";
+      return;
+    }
 
     cfg = { ...cfg, ...vals };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
@@ -487,10 +677,12 @@
     showNext();
   });
 
-  // ===== Initial Load =====
-  // first problem on load
+  /* =========================================================
+     10. INITIAL LOAD
+     ========================================================= */
   exprEl.textContent = newProblem();
   displayProblem();
+
 </script>
 
 </body>
