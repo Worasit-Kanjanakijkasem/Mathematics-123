@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สุ่มอสมการกำลังสอง</title>
+<style>
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
+  :root {
+    --navy: #2F3C7E;
+    --navy-deep: #232D63;
+    --coral: #F96167;
+    --coral-deep: #E14A50;
+    --gold: #F9E795;
+    --ink: #FFFFFF;
+    --muted: #B9C0E0;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { margin: 0; overflow: hidden; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    position: relative;
+  }
+
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
+  .eyebrow {
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    z-index: 1;
+  }
+
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ---- note: the answer stacks a combined graph+number-line
+     SVG above the final solution-set line, which can run tall
+     on short mobile screens, so — like the other graph-based
+     tools — the stage keeps its own padding + scroll as a
+     deliberate exception. ----
+     ========================================================= */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 1;
+    padding: 10px 20px;
+    overflow-y: auto;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(22px, 4.6vw, 44px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.35;
+    max-width: 95vw;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.95); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.95); }
+
+  /* ---- exercise-specific: combined graph + number-line ---- */
+  .graph-box { width: min(90vw, 460px); margin: 0 auto; }
+  .graph-box svg { width: 100%; height: auto; display: block; }
+
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(22px, 4.4vw, 40px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .mode-label {
+    margin-top: 16px;
+    font-size: clamp(13px, 1.8vw, 18px);
+    color: var(--muted);
+    text-align: center;
+    z-index: 1;
+  }
+
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
+  .controls {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px);
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  button {
+    border: none;
+    border-radius: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+
+  .btn-next {
+    flex: 2;
+    background: var(--coral);
+    color: var(--ink);
+    font-size: clamp(13px, 2.1vw, 22px);
+    padding: clamp(12px, 2.4vh, 20px) 10px;
+    white-space: nowrap;
+  }
+
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(13px, 1.9vw, 20px);
+    padding: clamp(12px, 2.4vh, 20px) 16px;
+  }
+
+  .btn-end {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 2px solid var(--navy-deep);
+    font-size: clamp(12px, 1.6vw, 18px);
+    padding: clamp(12px, 2.4vh, 20px) 12px;
+  }
+  .btn-end:active { background: var(--navy-deep); }
+
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
+  .end-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
+  .btn-restart {
+    background: var(--gold);
+    color: var(--navy-deep);
+    font-size: clamp(17px, 2.4vw, 22px);
+    padding: 18px 40px;
+    border-radius: 20px;
+  }
+
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .settings-overlay.show { display: flex; }
+
+  .settings-panel {
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
+  }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+  .field-row { display: flex; gap: 10px; align-items: center; }
+  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; flex-shrink: 0; }
+  .field-row input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+  }
+  .field-row input:focus { outline: none; border-color: var(--coral); }
+
+  .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
+  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
+  @media (max-height: 480px) {
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
+
+    .stage { padding: 4px 20px; }
+    .graph-box { width: min(74vw, 340px); }
+    .answer-line { margin-top: 4px; }
+    .mode-label { margin-top: 6px; }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
+
+  <div class="eyebrow">สุ่มอสมการกำลังสอง</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="graph-box" id="graphBox"></div>
+      <div class="answer-line" id="answerLine"></div>
+    </div>
+    <div class="mode-label" id="modeLabel">แยกตัวประกอบ ร่างกราฟ แล้วหาคำตอบเป็นช่วง</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+      <h2>ตั้งค่าการสุ่มอสมการ</h2>
+      <div class="desc">กำหนดขนาดของตัวเศษและตัวส่วนของราก</div>
+
+      <div class="field-group">
+        <div class="label">ตัวเศษของรากสูงสุด (ค่าสัมบูรณ์)</div>
+        <div class="field-row">
+          <span class="mini-label">สูงสุด</span><input type="number" id="maxNumerator">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">ตัวส่วนของรากสูงสุด</div>
+        <div class="field-row">
+          <span class="mini-label">สูงสุด</span><input type="number" id="maxDenom">
+        </div>
+        <div class="field-note">ตัวส่วนต่ำสุดตรึงไว้ที่ 1 เสมอ (คือรากเป็นจำนวนเต็มได้)</div>
+      </div>
+
+      <div class="settings-error" id="settingsError"></div>
+
+      <div class="settings-actions">
+        <button class="btn-cancel" id="cancelBtn">ยกเลิก</button>
+        <button class="btn-save" id="saveBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
+  const DEFAULT_CFG = { maxNumerator: 12, maxDenom: 4 };
+  const STORAGE_KEY = "quadratic-ineq-gen-cfg";
+
+  let cfg = { ...DEFAULT_CFG };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved) cfg = { ...DEFAULT_CFG, ...saved };
+  } catch (e) {}
+
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const graphBox = document.getElementById("graphBox");
+  const answerLine = document.getElementById("answerLine");
+  const modeLabel = document.getElementById("modeLabel");
+
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["maxNumerator", "maxDenom"];
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
+
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+     Reuses the same root/coefficient construction as the
+     quadratic-equation tool (rational roots p/q, 70% simple
+     a=1, 30% general integer a via a clean divisor-pair of
+     denominators) — plus a deliberate ~18% chance of forcing
+     a repeated root, since that case has 4 genuinely distinct
+     inequality outcomes worth practicing on their own.
+     ========================================================= */
+  const REPEATED_ROOT_CHANCE = 0.18;
+  const SIGNS = ["\u003e", "\u003c", "\u2265", "\u2264"];
+
+  function randRootPQ(denomIsOne) {
+    let p, q;
+    if (denomIsOne) {
+      q = 1;
+      p = randInt(1, cfg.maxNumerator) * choice([1, -1]);
+    } else {
+      do {
+        q = randInt(1, cfg.maxDenom);
+        p = randInt(1, cfg.maxNumerator) * choice([1, -1]);
+      } while (gcd(Math.abs(p), q) !== 1);
+    }
+    return { p, q };
+  }
+
+  function divisorPairsOf(n) {
+    const pairs = [];
+    for (let q1 = 1; q1 <= cfg.maxDenom; q1++) {
+      for (let q2 = 1; q2 <= cfg.maxDenom; q2++) {
+        if (n % (q1 * q2) === 0) pairs.push([q1, q2]);
+      }
+    }
+    return pairs;
+  }
+
+  function generateQuadratic() {
+    const forceRepeated = Math.random() < REPEATED_ROOT_CHANCE;
+    const simple = Math.random() < 0.7;
+    let a, root1, root2;
+
+    if (forceRepeated) {
+      // keep the repeated root an integer (q=1) so it stays compatible with any leading
+      // coefficient below — (1,1) is always a valid divisor pair of any integer.
+      const p = randInt(1, cfg.maxNumerator) * choice([1, -1]);
+      root1 = { p, q: 1 };
+      root2 = { p, q: 1 };
+      a = simple ? 1 : choice([1, -1]) * randInt(2, 12);
+    } else if (simple) {
+      a = 1;
+      root1 = randRootPQ(true);
+      root2 = randRootPQ(true);
+    } else {
+      let attempts = 0, pairs = [], absA;
+      do {
+        absA = randInt(2, 12);
+        pairs = divisorPairsOf(absA);
+        attempts++;
+      } while (pairs.length === 0 && attempts < 50);
+      const [q1, q2] = choice(pairs);
+      a = choice([1, -1]) * absA;
+      const p1 = randInt(1, cfg.maxNumerator) * choice([1, -1]);
+      const p2 = randInt(1, cfg.maxNumerator) * choice([1, -1]);
+      root1 = { p: p1, q: q1 };
+      root2 = { p: p2, q: q2 };
+    }
+
+    const q1 = root1.q, q2 = root2.q, p1 = root1.p, p2 = root2.p;
+    const baseA = q1 * q2;
+    const baseB = -(p1 * q2 + p2 * q1);
+    const baseC = p1 * p2;
+    const k = a / baseA;
+    const b = k * baseB;
+    const c = k * baseC;
+
+    function reduce(r) {
+      const g = gcd(Math.abs(r.p), r.q) || 1;
+      return { p: r.p / g, q: r.q / g };
+    }
+    const r1 = reduce(root1), r2 = reduce(root2);
+
+    return { a, b, c, q1, q2, p1, p2, k, r1, r2, sign: choice(SIGNS) };
+  }
+
+  function fmtRoot(r) {
+    const sign = r.p < 0 ? "\u2212" : "";
+    const absP = Math.abs(r.p);
+    return r.q === 1 ? `${sign}${absP}` : `${sign}${absP}/${r.q}`;
+  }
+
+  function fmtQuadratic(a, b, c, sign) {
+    let s = "";
+    if (a === 1) s += "x\u00b2";
+    else if (a === -1) s += "\u2212x\u00b2";
+    else s += `${a}x\u00b2`;
+    if (b !== 0) {
+      const absB = Math.abs(b);
+      const bStr = absB === 1 ? "x" : `${absB}x`;
+      s += ` ${b > 0 ? "+" : "\u2212"} ${bStr}`;
+    }
+    if (c !== 0) s += ` ${c > 0 ? "+" : "\u2212"} ${Math.abs(c)}`;
+    s += ` ${sign} 0`;
+    return s;
+  }
+
+  function fmtFactor(q, p) {
+    const qPart = q === 1 ? "x" : `${q}x`;
+    if (p === 0) return `(${qPart})`;
+    return p > 0 ? `(${qPart} \u2212 ${p})` : `(${qPart} + ${Math.abs(p)})`;
+  }
+
+  function newProblem() {
+    current = generateQuadratic();
+    return fmtQuadratic(current.a, current.b, current.c, current.sign);
+  }
+
+  /* =========================================================
+     6. SOLUTION LOGIC
+     Six possible outcomes: the two ordinary interval shapes
+     (between the roots / outside the roots), plus the four
+     repeated-root special cases, verified against direct
+     numeric substitution across thousands of sampled cases
+     before implementation.
+     ========================================================= */
+  function solveInequality(a, v1, v2, sign) {
+    const repeated = Math.abs(v1 - v2) < 1e-9;
+    const lo = Math.min(v1, v2), hi = Math.max(v1, v2);
+    const upward = a > 0;
+
+    if (repeated) {
+      const r = v1;
+      const table = upward
+        ? { "\u003e": ["not-equal", r], "\u2265": ["all-reals", null], "\u003c": ["no-solution", null], "\u2264": ["single-point", r] }
+        : { "\u003e": ["no-solution", null], "\u2265": ["single-point", r], "\u003c": ["not-equal", r], "\u2264": ["all-reals", null] };
+      const [kind, point] = table[sign];
+      return { kind, point };
+    }
+
+    const outside = sign === "\u003e" || sign === "\u2265";
+    const wantOutside = upward ? outside : !outside;
+    const closed = sign === "\u2265" || sign === "\u2264";
+    return { kind: wantOutside ? "interval-outside" : "interval-between", lo, hi, closed };
+  }
+
+  function fmtSolution(sol) {
+    const closedLo = sol.closed ? "\u2264" : "\u003c";
+    const closedHi = sol.closed ? "\u2264" : "\u003c";
+    if (sol.kind === "interval-between") return `${fmtRoot(sol.loFrac)} ${closedLo} x ${closedHi} ${fmtRoot(sol.hiFrac)}`;
+    if (sol.kind === "interval-outside") return `x ${sol.closed ? "\u2264" : "\u003c"} ${fmtRoot(sol.loFrac)}  หรือ  x ${sol.closed ? "\u2265" : "\u003e"} ${fmtRoot(sol.hiFrac)}`;
+    if (sol.kind === "all-reals") return "เป็นจริงทุกจำนวน";
+    if (sol.kind === "no-solution") return "ไม่มีคำตอบ";
+    if (sol.kind === "not-equal") return `x \u2260 ${fmtRoot(sol.pointFrac)}`;
+    if (sol.kind === "single-point") return `x = ${fmtRoot(sol.pointFrac)}`;
+  }
+
+  /* =========================================================
+     7. GRAPH + NUMBER-LINE RENDERING
+     A single combined SVG: the parabola (with its factored-form
+     label, per the agreed answer format) sits above a number
+     line that shares the exact same horizontal x-scale — the
+     same "top view / front view" alignment used for the linear
+     inequality tool, just with a curve instead of a line and
+     up to two boundary points instead of one.
+     ========================================================= */
+  function computeXRange(v1, v2) {
+    const lo = Math.min(v1, v2, 0), hi = Math.max(v1, v2, 0);
+    let span = hi - lo;
+    if (span < 2) span = 2;
+    const pad = span * 0.3;
+    return { xLo: lo - pad, xHi: hi + pad };
+  }
+
+  function buildCombinedGraph(a, b, c, v1, v2, sol) {
+    const { xLo, xHi } = computeXRange(v1, v2);
+    const w = 400, pad = 26;
+    const scaleX = (w - pad * 2) / (xHi - xLo);
+    const toPx = (x) => pad + (x - xLo) * scaleX;
+
+    // ---- parabola zone (top view) ----
+    const graphTop = 10, graphBottom = 160;
+    const f = (x) => a * x * x + b * x + c;
+    const vertexX = -b / (2 * a);
+    const candidates = [0, f(xLo), f(xHi), f(vertexX)];
+    let yLo = Math.min(...candidates), yHi = Math.max(...candidates);
+    let spanY = yHi - yLo;
+    if (spanY < 2) { const mid = (yLo + yHi) / 2; yLo = mid - 1; yHi = mid + 1; spanY = 2; }
+    const padY = spanY * 0.15;
+    yLo -= padY; yHi += padY;
+    const scaleY = (graphBottom - graphTop) / (yHi - yLo);
+    const toPy = (y) => graphBottom - (y - yLo) * scaleY;
+
+    let svg = `<svg viewBox="0 0 ${w} 320" xmlns="http://www.w3.org/2000/svg">`;
+    const axisColor = "#7A8296";
+
+    // axes (always in view: x-range always spans 0, y-range always spans f(x)=0 candidates)
+    svg += `<line x1="${toPx(xLo)}" y1="${toPy(0)}" x2="${toPx(xHi)}" y2="${toPy(0)}" stroke="${axisColor}" stroke-width="1.1"/>`;
+    svg += `<line x1="${toPx(0)}" y1="${toPy(yHi)}" x2="${toPx(0)}" y2="${toPy(yLo)}" stroke="${axisColor}" stroke-width="1.1"/>`;
+
+    // curve
+    const steps = 60;
+    let d = "";
+    for (let i = 0; i <= steps; i++) {
+      const x = xLo + ((xHi - xLo) * i) / steps;
+      d += (i === 0 ? "M" : "L") + toPx(x).toFixed(1) + "," + toPy(f(x)).toFixed(1) + " ";
+    }
+    svg += `<path d="${d}" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>`;
+
+    // factored-form label: y = (kind-adjusted)(...)(...)  — this is the agreed
+    // replacement for a plain "y = ax²+bx+c" caption.
+    const kPrefix = current.k === 1 ? "" : current.k === -1 ? "\u2212" : String(current.k);
+    const factoredLabel = `y = ${kPrefix}${fmtFactor(current.q1, current.p1)}${fmtFactor(current.q2, current.p2)}`;
+    svg += `<text x="${w / 2}" y="22" font-size="13" fill="#FFFFFF" font-weight="700" text-anchor="middle" font-family="Calibri, sans-serif">${factoredLabel}</text>`;
+
+    // root markers on the curve itself (small reference dots at y=0)
+    const repeated = Math.abs(v1 - v2) < 1e-9;
+    if (repeated) {
+      svg += `<circle cx="${toPx(v1)}" cy="${toPy(0)}" r="4.5" fill="#F9E795" stroke="#232D63" stroke-width="1.25"/>`;
+    } else {
+      svg += `<circle cx="${toPx(v1)}" cy="${toPy(0)}" r="4.5" fill="#F9E795" stroke="#232D63" stroke-width="1.25"/>`;
+      svg += `<circle cx="${toPx(v2)}" cy="${toPy(0)}" r="4.5" fill="#F9E795" stroke="#232D63" stroke-width="1.25"/>`;
+    }
+
+    // ---- vertical projection guide(s) connecting top view to front view ----
+    const nlY = 260;
+    const guideXs = repeated ? [v1] : [v1, v2];
+    guideXs.forEach((v) => {
+      svg += `<line x1="${toPx(v)}" y1="${toPy(0)}" x2="${toPx(v)}" y2="${nlY}" stroke="#F9E795" stroke-width="1.1" stroke-dasharray="2 3" opacity="0.7"/>`;
+    });
+
+    // ---- number line zone (front view) ----
+    svg += `<line x1="${pad}" y1="${nlY}" x2="${w - pad}" y2="${nlY}" stroke="#26324A" stroke-width="2"/>`;
+    const tickLo = Math.ceil(xLo), tickHi = Math.floor(xHi);
+    for (let i = tickLo; i <= tickHi; i++) {
+      const px = toPx(i);
+      svg += `<line x1="${px}" y1="${nlY - 6}" x2="${px}" y2="${nlY + 6}" stroke="#26324A" stroke-width="1.5"/>`;
+      svg += `<text x="${px}" y="${nlY + 22}" font-size="11" fill="#B9C0E0" text-anchor="middle" font-family="Calibri, sans-serif">${i}</text>`;
+    }
+
+    function circleAt(v, closed) {
+      svg += `<circle cx="${toPx(v)}" cy="${nlY}" r="5.8" fill="${closed ? "#F96167" : "#FFFFFF"}" stroke="#F96167" stroke-width="2.25"/>`;
+    }
+    function arrowAt(px, dir) {
+      svg += `<polygon points="${px},${nlY} ${px - dir * 8},${nlY - 5} ${px - dir * 8},${nlY + 5}" fill="#F96167"/>`;
+    }
+    function shadeSeg(x1, x2) {
+      svg += `<line x1="${x1}" y1="${nlY}" x2="${x2}" y2="${nlY}" stroke="#F96167" stroke-width="3.25"/>`;
+    }
+
+    if (sol.kind === "interval-between") {
+      shadeSeg(toPx(sol.lo), toPx(sol.hi));
+      circleAt(sol.lo, sol.closed);
+      circleAt(sol.hi, sol.closed);
+    } else if (sol.kind === "interval-outside") {
+      shadeSeg(pad, toPx(sol.lo));
+      arrowAt(pad, -1);
+      shadeSeg(toPx(sol.hi), w - pad);
+      arrowAt(w - pad, 1);
+      circleAt(sol.lo, sol.closed);
+      circleAt(sol.hi, sol.closed);
+    } else if (sol.kind === "all-reals") {
+      shadeSeg(pad, w - pad);
+      arrowAt(pad, -1);
+      arrowAt(w - pad, 1);
+    } else if (sol.kind === "no-solution") {
+      // deliberately no shading, no circle — an empty number line communicates "nothing"
+    } else if (sol.kind === "not-equal") {
+      shadeSeg(pad, toPx(sol.point));
+      shadeSeg(toPx(sol.point), w - pad);
+      arrowAt(pad, -1);
+      arrowAt(w - pad, 1);
+      circleAt(sol.point, false);
+    } else if (sol.kind === "single-point") {
+      circleAt(sol.point, true);
+    }
+
+    svg += "</svg>";
+    return svg;
+  }
+
+  /* =========================================================
+     8. RENDER / DISPLAY
+     ========================================================= */
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    modeLabel.textContent = "แยกตัวประกอบ ร่างกราฟ แล้วหาคำตอบเป็นช่วง";
+  }
+
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+
+    const v1 = current.r1.p / current.r1.q, v2 = current.r2.p / current.r2.q;
+    const solRaw = solveInequality(current.a, v1, v2, current.sign);
+
+    // attach fraction-formatted versions of whichever boundary value(s) this outcome uses
+    const sol = { ...solRaw };
+    if (sol.kind === "interval-between" || sol.kind === "interval-outside") {
+      sol.loFrac = sol.lo === v1 ? current.r1 : current.r2;
+      sol.hiFrac = sol.hi === v1 ? current.r1 : current.r2;
+    } else if (sol.kind === "not-equal" || sol.kind === "single-point") {
+      sol.pointFrac = sol.point === v1 ? current.r1 : current.r2;
+    }
+
+    graphBox.innerHTML = buildCombinedGraph(current.a, current.b, current.c, v1, v2, sol);
+    answerLine.textContent = fmtSolution(sol);
+    modeLabel.textContent = "นี่คือเฉลย";
+  }
+
+  function showNext() {
+    exprEl.classList.add("swap");
+    answerWrap.classList.add("swap");
+    setTimeout(() => {
+      exprEl.textContent = newProblem();
+      showingAnswer = false;
+      displayProblem();
+      exprEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
+    }, 150);
+  }
+
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  /* =========================================================
+     9. MAIN CONTROLS — EVENTS
+     ========================================================= */
+  nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
+
+  /* =========================================================
+     10. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
+  function openSettings() {
+    fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
+    settingsError.textContent = "";
+    settingsOverlay.classList.add("show");
+  }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
+  gearBtn.addEventListener("click", openSettings);
+  cancelBtn.addEventListener("click", closeSettings);
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const vals = {};
+    for (const id of fieldIds) {
+      const v = parseInt(document.getElementById(id).value, 10);
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
+      vals[id] = v;
+    }
+    if (vals.maxNumerator < 1) {
+      settingsError.textContent = "ตัวเศษสูงสุดต้องอย่างน้อย 1";
+      return;
+    }
+    if (vals.maxDenom < 1) {
+      settingsError.textContent = "ตัวส่วนสูงสุดต้องอย่างน้อย 1";
+      return;
+    }
+
+    cfg = { ...cfg, ...vals };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    closeSettings();
+    showNext();
+  });
+
+  /* =========================================================
+     11. INITIAL LOAD
+     ========================================================= */
+  exprEl.textContent = newProblem();
+  displayProblem();
+
+</script>
+
+</body>
+</html>
