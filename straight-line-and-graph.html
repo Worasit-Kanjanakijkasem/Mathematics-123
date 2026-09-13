@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สมการและกราฟของเส้นตรง</title>
 <style>
-  /* ===== Base / Variables ===== */
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
   :root {
     --navy: #2F3C7E;
     --navy-deep: #232D63;
@@ -18,29 +21,32 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== Page Layout ===== */
   html, body { margin: 0; overflow: hidden; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
     background: var(--navy);
     color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100dvh;
-    min-height: 100dvh;
     user-select: none;
     position: relative;
   }
 
-  /* ===== Decoration ===== */
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
   .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
   .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
 
-  /* ===== Header ===== */
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
   .eyebrow {
     letter-spacing: 0.12em;
     font-size: clamp(13px, 1.6vw, 18px);
@@ -51,7 +57,30 @@
     z-index: 1;
   }
 
-  /* ===== Stage ===== */
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ---- note: the answer graph can run tall (a full SVG plot,
+     not just a line of text), so — like the other graph-based
+     tools — the stage keeps its own padding + scroll as a
+     deliberate exception. ----
+     ========================================================= */
   .stage {
     display: flex;
     flex-direction: column;
@@ -65,7 +94,6 @@
     min-height: 0;
   }
 
-  /* ===== Exercise-specific CSS ===== */
   .expr {
     font-family: "Cambria", "Georgia", serif;
     font-size: clamp(24px, 4.6vw, 42px);
@@ -75,7 +103,17 @@
   }
   .expr.swap { opacity: 0; transform: scale(0.94); }
 
-  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; min-height: 0; flex: 1; justify-content: center; }
+  .answer-wrap {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 0;
+    flex: 1;
+    justify-content: center;
+  }
   .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
   .answer-facts {
     font-size: clamp(12px, 2vw, 16px);
@@ -84,6 +122,8 @@
     margin-bottom: 6px;
     line-height: 1.5;
   }
+
+  /* ---- exercise-specific: intercept/slope graph ---- */
   .graph-box { width: min(78vh, 92vw, 560px); flex-shrink: 1; min-height: 0; }
   .graph-box svg { width: 100%; height: 100%; display: block; }
 
@@ -94,7 +134,9 @@
     text-align: center;
   }
 
-  /* ===== Standard Controls ===== */
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
   .controls {
     display: flex;
     gap: 14px;
@@ -122,10 +164,8 @@
     color: var(--ink);
     font-size: clamp(13px, 2.1vw, 22px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
-    box-shadow: none;
     white-space: nowrap;
   }
-  .btn-next:active { box-shadow: none; }
 
   .btn-toggle {
     flex: 2;
@@ -146,24 +186,25 @@
   }
   .btn-end:active { background: var(--navy-deep); }
 
-  /* ===== End Screen ===== */
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
   .end-screen {
-    position: fixed; inset: 0; background: var(--navy-deep);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; z-index: 10;
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
   }
   .end-screen.show { display: flex; }
-  .end-screen .headline {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .end-screen .sub {
-    color: var(--muted);
-    font-size: clamp(16px, 2.4vw, 22px);
-    margin-bottom: 36px;
-  }
-  /* ===== Restart ===== */
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
   .btn-restart {
     background: var(--gold);
     color: var(--navy-deep);
@@ -172,29 +213,16 @@
     border-radius: 20px;
   }
 
-  /* ===== Gear ===== */
-  .gear-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    z-index: 2;
-    padding: 0;
-  }
-  .gear-btn:active { background: rgba(255,255,255,0.18); }
-
-  /* ===== Settings ===== */
+  /* =========================================================
+     7. SETTINGS PANEL
+     ---- this exercise has no adjustable randomization range,
+     so the panel is just an informational message + close
+     button rather than the usual field-group form. ----
+     ========================================================= */
   .settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20,24,54,0.75);
+    background: rgba(20, 24, 54, 0.75);
     display: none;
     align-items: center;
     justify-content: center;
@@ -210,23 +238,19 @@
     padding: 28px 24px;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 -28px 22px -24px rgba(0,0,0,0.45);
     max-height: 92vh;
     overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
   }
   .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
   .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
-  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel {
-    flex: 1;
-    background: transparent;
-    border: 2px solid rgba(255,255,255,0.15);
-    color: var(--muted);
-    font-size: 15px;
-    padding: 14px;
-  }
 
-  /* ===== Media Queries ===== */
+  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
   @media (max-height: 480px) {
     .settings-panel { padding: 16px 18px; max-height: 94vh; }
     .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
@@ -237,17 +261,12 @@
 </head>
 <body>
 
-  <!-- ===== Decoration ===== -->
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
-
-  <!-- ===== Gear ===== -->
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
 
-  <!-- ===== Header ===== -->
   <div class="eyebrow">สมการและกราฟของเส้นตรง</div>
 
-  <!-- ===== Exercise Stage ===== -->
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
@@ -257,22 +276,18 @@
     <div class="prompt" id="promptEl">หาจุดตัดแกน x,y ระบุความชัน แล้วร่างกราฟ จากนั้นกดดูเฉลย</div>
   </div>
 
-  <!-- ===== Standard Controls ===== -->
   <div class="controls">
     <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
     <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
-  <!-- ===== End Screen ===== -->
   <div class="end-screen" id="endScreen">
     <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
     <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
     <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
   </div>
 
-
-  <!-- ===== Settings ===== -->
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่า</h2>
@@ -284,16 +299,52 @@
   </div>
 
 <script>
-  // ===== Configuration / Constants =====
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
   const DENOMS = [1, 2, 3, 4, 5, 6, 8, 9, 12];
   const RANGE_MIN = -50, RANGE_MAX = 50;
 
-  // ===== Exercise Generator =====
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerFacts = document.getElementById("answerFacts");
+  const graphBox = document.getElementById("graphBox");
+  const promptEl = document.getElementById("promptEl");
+
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const cancelBtn = document.getElementById("cancelBtn");
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
   function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
 
-  // ---- generate a line: pick slope M/D in lowest terms, pick x-intercept as multiple of D ----
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+     ========================================================= */
+  // generate a line: pick slope M/D in lowest terms, pick x-intercept as multiple of D
   function generateLine() {
     while (true) {
       const D = choice(DENOMS);
@@ -325,7 +376,7 @@
     }
   }
 
-  // ---- format Ax+By+C=0, coefficient 1 shown bare ----
+  // format Ax+By+C=0, coefficient 1 shown bare
   function fmtTerm(coef, varName, isFirst) {
     if (coef === 0) return "";
     const sign = coef < 0 ? "\u2212" : isFirst ? "" : "+";
@@ -333,6 +384,7 @@
     const numStr = abs === 1 ? "" : `${abs}`;
     return isFirst ? `${sign}${numStr}${varName}` : ` ${sign} ${numStr}${varName}`;
   }
+
   function fmtLineGeneral(A, B, C) {
     let out = "";
     let first = true;
@@ -343,12 +395,15 @@
     }
     return out + " = 0";
   }
+
   function fmtSlope(n, d) {
     const sign = (n < 0) !== (d < 0) ? "\u2212" : "";
     return d === 1 ? `${sign}${Math.abs(n)}` : `${sign}${Math.abs(n)}/${Math.abs(d)}`;
   }
 
-  // ---- build SVG graph for the answer ----
+  /* =========================================================
+     6. GRAPH RENDERING
+     ========================================================= */
   function buildGraphSVG(line) {
     const { p, q, slopeN, slopeD } = line;
     const maxAbs = Math.max(Math.abs(p), Math.abs(q));
@@ -434,28 +489,15 @@
     return svg;
   }
 
-  // ===== State =====
-  let current = null;
-  let showingAnswer = false;
-
-  // ===== DOM References =====
-  const exprEl = document.getElementById("exprEl");
-  const answerWrap = document.getElementById("answerWrap");
-  const answerFacts = document.getElementById("answerFacts");
-  const graphBox = document.getElementById("graphBox");
-  const promptEl = document.getElementById("promptEl");
-  const nextBtn = document.getElementById("nextBtn");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const endBtn = document.getElementById("endBtn");
-  const endScreen = document.getElementById("endScreen");
-  const restartBtn = document.getElementById("restartBtn");
-
-  // ===== Display Functions =====
+  /* =========================================================
+     7. RENDER / DISPLAY
+     ========================================================= */
   function displayProblem() {
     exprEl.style.display = "";
     answerWrap.style.display = "none";
     promptEl.textContent = "หาจุดตัดแกน x,y ระบุความชัน แล้วร่างกราฟ จากนั้นกดดูเฉลย";
   }
+
   function displayAnswer() {
     exprEl.style.display = "none";
     answerWrap.style.display = "flex";
@@ -465,15 +507,18 @@
   }
 
   function showNext() {
-    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    exprEl.classList.add("swap");
+    answerWrap.classList.add("swap");
     setTimeout(() => {
       current = generateLine();
       exprEl.textContent = fmtLineGeneral(current.A, current.B, current.C);
       showingAnswer = false;
       displayProblem();
-      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+      exprEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
     }, 150);
   }
+
   function toggleAnswer() {
     const el = showingAnswer ? answerWrap : exprEl;
     el.classList.add("swap");
@@ -483,20 +528,29 @@
       (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
     }, 150);
   }
-  // ===== Main Button Events =====
+
+  /* =========================================================
+     8. MAIN CONTROLS — EVENTS
+     ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
   endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showNext(); });
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
 
+  /* =========================================================
+     9. SETTINGS — EVENTS
+     (no adjustable fields in this exercise — just open/close)
+     ========================================================= */
+  function openSettings() {
+    settingsOverlay.classList.add("show");
+  }
 
-  // ===== Settings Logic =====
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const cancelBtn = document.getElementById("cancelBtn");
-
-  function openSettings() { settingsOverlay.classList.add("show"); }
-  function closeSettings() { settingsOverlay.classList.remove("show"); }
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
 
   gearBtn.addEventListener("click", openSettings);
   cancelBtn.addEventListener("click", closeSettings);
@@ -504,9 +558,11 @@
     if (e.target === settingsOverlay) closeSettings();
   });
 
-  // ===== Initial Load =====
-  // first problem on load
+  /* =========================================================
+     10. INITIAL LOAD
+     ========================================================= */
   showNext();
+
 </script>
 
 </body>
