@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สมการและกราฟของค่าสัมบูรณ์</title>
+<style>
+
+  /* =========================================================
+     1. BASE / VARIABLES
+     ========================================================= */
+  :root {
+    --navy: #2F3C7E;
+    --navy-deep: #232D63;
+    --coral: #F96167;
+    --coral-deep: #E14A50;
+    --gold: #F9E795;
+    --ink: #FFFFFF;
+    --muted: #B9C0E0;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { margin: 0; overflow: hidden; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    position: relative;
+  }
+
+  /* =========================================================
+     2. BACKGROUND DECORATION
+     ========================================================= */
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  /* =========================================================
+     3. HEADER (eyebrow) + GEAR BUTTON
+     ========================================================= */
+  .eyebrow {
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    z-index: 1;
+  }
+
+  .gear-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    padding: 0;
+  }
+  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+
+  /* =========================================================
+     4. STAGE (problem / answer area)
+     ---- note: the answer stacks a graph above three summary
+     lines, which can run tall on short mobile screens, so —
+     like the other graph-based tools — the stage keeps its own
+     padding + scroll as a deliberate exception. ----
+     ========================================================= */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 1;
+    padding: 10px 20px;
+    overflow-y: auto;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(22px, 4.6vw, 42px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.35;
+    max-width: 95vw;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.95); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.95); }
+
+  /* ---- exercise-specific: fraction display (h, k, roots, problem coefficients) ---- */
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 0.1em;
+    line-height: 1.05;
+  }
+  .frac .num, .frac .den { display: block; padding: 0 0.1em; }
+  .frac .num { border-bottom: 0.06em solid currentColor; padding-bottom: 0.04em; }
+  .frac .den { padding-top: 0.04em; }
+
+  .graph-box { width: min(78vw, 380px); margin: 0 auto; }
+  .graph-box svg { width: 100%; height: auto; display: block; }
+
+  .answer-lines { margin-top: 10px; }
+  .answer-line {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(17px, 3.2vw, 28px);
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .mode-label {
+    margin-top: 16px;
+    font-size: clamp(13px, 1.8vw, 18px);
+    color: var(--muted);
+    text-align: center;
+    z-index: 1;
+  }
+
+  /* =========================================================
+     5. MAIN CONTROLS (next / toggle / end)
+     ========================================================= */
+  .controls {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px);
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  button {
+    border: none;
+    border-radius: 20px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+
+  .btn-next {
+    flex: 2;
+    background: var(--coral);
+    color: var(--ink);
+    font-size: clamp(13px, 2.1vw, 22px);
+    padding: clamp(12px, 2.4vh, 20px) 10px;
+    white-space: nowrap;
+  }
+
+  .btn-toggle {
+    flex: 2;
+    background: var(--navy-deep);
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    font-size: clamp(13px, 1.9vw, 20px);
+    padding: clamp(12px, 2.4vh, 20px) 16px;
+  }
+
+  .btn-end {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: 2px solid var(--navy-deep);
+    font-size: clamp(12px, 1.6vw, 18px);
+    padding: clamp(12px, 2.4vh, 20px) 12px;
+  }
+  .btn-end:active { background: var(--navy-deep); }
+
+  /* =========================================================
+     6. END SCREEN
+     ========================================================= */
+  .end-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--navy-deep);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+
+  .btn-restart {
+    background: var(--gold);
+    color: var(--navy-deep);
+    font-size: clamp(17px, 2.4vw, 22px);
+    padding: 18px 40px;
+    border-radius: 20px;
+  }
+
+  /* =========================================================
+     7. SETTINGS PANEL
+     ========================================================= */
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 54, 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .settings-overlay.show { display: flex; }
+
+  .settings-panel {
+    background: var(--navy-deep);
+    border-radius: 22px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
+  }
+  .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
+  .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field-group { margin-bottom: 16px; }
+  .field-group .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .field-note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+  .field-row { display: flex; gap: 10px; align-items: center; }
+  .field-row .mini-label { font-size: 12px; color: var(--muted); width: 34px; flex-shrink: 0; }
+  .field-row input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+  }
+  .field-row input:focus { outline: none; border-color: var(--coral); }
+
+  .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
+
+  .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+
+  /* =========================================================
+     8. RESPONSIVE (short screens)
+     ========================================================= */
+  @media (max-height: 480px) {
+    .settings-panel { padding: 16px 18px; max-height: 94vh; }
+    .settings-panel h2 { font-size: 17px; margin-bottom: 2px; }
+    .settings-panel .desc { font-size: 11.5px; margin-bottom: 10px; }
+    .field-group { margin: 10px 0; }
+
+    .graph-box { width: min(64vw, 280px); }
+    .answer-lines { margin-top: 4px; }
+    .mode-label { margin-top: 6px; }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่า">⚙️</button>
+
+  <div class="eyebrow">สมการและกราฟของค่าสัมบูรณ์</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="graph-box" id="graphBox"></div>
+      <div class="answer-lines">
+        <div class="answer-line" id="axisLine"></div>
+        <div class="answer-line" id="vertexLine"></div>
+        <div class="answer-line" id="rootsLine"></div>
+      </div>
+    </div>
+    <div class="mode-label" id="modeLabel">หาแกนสมมาตร จุดยอด และจุดตัดแกน x</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+      <h2>ตั้งค่าการสุ่มสมการ</h2>
+      <div class="desc">กำหนดช่วงตัวเลขของ A, B, C, D</div>
+
+      <div class="field-group">
+        <div class="label">A (ตัวคูณนอกค่าสัมบูรณ์)</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="aMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="aMax">
+        </div>
+        <div class="field-note">ห้ามเป็น 0</div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">B (ตัวคูณ x ในค่าสัมบูรณ์)</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="bMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="bMax">
+        </div>
+        <div class="field-note">ห้ามเป็น 0</div>
+      </div>
+
+      <div class="field-group">
+        <div class="label">C, D (ค่าคงที่ที่เหลือ)</div>
+        <div class="field-row">
+          <span class="mini-label">ต่ำสุด</span><input type="number" id="cdMin">
+          <span class="mini-label">สูงสุด</span><input type="number" id="cdMax">
+        </div>
+        <div class="field-note">เป็น 0 ได้</div>
+      </div>
+
+      <div class="settings-error" id="settingsError"></div>
+
+      <div class="settings-actions">
+        <button class="btn-cancel" id="cancelBtn">ยกเลิก</button>
+        <button class="btn-save" id="saveBtn">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+  /* =========================================================
+     1. CONFIG
+     ========================================================= */
+  const DEFAULT_CFG = { aMin: -10, aMax: 10, bMin: -4, bMax: 4, cdMin: -10, cdMax: 10 };
+  const STORAGE_KEY = "abs-eq-axis-vertex-gen-cfg";
+  const HALF_CHANCE = 0.2; // 80% integer, 20% exact half (denominator 2) — same mechanic as the simple absolute-value inequality tool
+
+  let cfg = { ...DEFAULT_CFG };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved) cfg = { ...DEFAULT_CFG, ...saved };
+  } catch (e) {}
+
+  /* =========================================================
+     2. DOM REFERENCES
+     ========================================================= */
+  // stage
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const graphBox = document.getElementById("graphBox");
+  const axisLine = document.getElementById("axisLine");
+  const vertexLine = document.getElementById("vertexLine");
+  const rootsLine = document.getElementById("rootsLine");
+  const modeLabel = document.getElementById("modeLabel");
+
+  // main controls
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  // settings
+  const gearBtn = document.getElementById("gearBtn");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+  const settingsError = document.getElementById("settingsError");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const fieldIds = ["aMin", "aMax", "bMin", "bMax", "cdMin", "cdMax"];
+
+  /* =========================================================
+     3. STATE
+     ========================================================= */
+  let current = null;
+  let showingAnswer = false;
+
+  /* =========================================================
+     4. GENERIC UTILITIES
+     ========================================================= */
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
+
+  // exact fraction arithmetic — used for h, k, and the roots, so their displayed
+  // fractions are always the true reduced value straight from integer arithmetic,
+  // never a floating-point decimal reconstructed by guessing a denominator (which can
+  // fail silently whenever the true denominator is larger than the guess range).
+  function fracReduce(p, q) {
+    if (q < 0) { p = -p; q = -q; }
+    const g = gcd(Math.abs(p), q) || 1;
+    return { p: p / g, q: q / g };
+  }
+  function fracNeg(a) { return { p: -a.p, q: a.q }; }
+  function fracAdd(a, b) { return fracReduce(a.p * b.q + b.p * a.q, a.q * b.q); }
+  function fracSub(a, b) { return fracReduce(a.p * b.q - b.p * a.q, a.q * b.q); }
+  function fracDiv(a, b) { return fracReduce(a.p * b.q, a.q * b.p); }
+  function fracValue(a) { return a.p / a.q; }
+
+  function randValue(min, max, forbidZero) {
+    const isHalf = Math.random() < HALF_CHANCE;
+    if (isHalf) {
+      let p;
+      do { p = randInt(min * 2, max * 2); } while (p % 2 === 0 || (forbidZero && p === 0));
+      return { p, q: 2, value: p / 2 };
+    }
+    let n;
+    do { n = randInt(min, max); } while (forbidZero && n === 0);
+    return { p: n, q: 1, value: n };
+  }
+
+  function toSimpleFraction(x, maxDen = 48, eps = 1e-6) {
+    if (Math.abs(x - Math.round(x)) < eps) return { p: Math.round(x), q: 1 };
+    for (let d = 2; d <= maxDen; d++) {
+      const p = x * d;
+      if (Math.abs(p - Math.round(p)) < eps) {
+        let rp = Math.round(p), rd = d;
+        const g = gcd(Math.abs(rp), rd);
+        return { p: rp / g, q: rd / g };
+      }
+    }
+    return { p: x, q: 1 };
+  }
+
+  function fmtFracHTML(frac) {
+    const sign = frac.p < 0 ? "\u2212" : "";
+    const absP = Math.abs(frac.p);
+    if (frac.q === 1) return `${sign}${absP}`;
+    return `${sign}<span class="frac"><span class="num">${absP}</span><span class="den">${frac.q}</span></span>`;
+  }
+  function fmtValueHTML(v) { return fmtFracHTML(v); }
+  function fmtNumHTML(x) { return fmtFracHTML(toSimpleFraction(x)); }
+
+  /* =========================================================
+     5. EXPRESSION GENERATOR
+     Same 3-category structure as the parabola tool (2 roots /
+     no roots / touches, at 47.5% / 47.5% / 5%) but considerably
+     simpler to generate: for y=A|Bx+C|+D, the vertex height is
+     just D itself (no b²/4a-style adjustment needed, verified
+     symbolically before implementing), so the category only
+     depends on comparing sign(D) to sign(A) — no reverse
+     engineering required, just plain rejection sampling on D's
+     sign (or forcing D=0 for the touching case).
+     ========================================================= */
+  const CATEGORY_WEIGHTS = [["two-roots", 0.475], ["no-roots", 0.475], ["touch", 0.05]];
+
+  function pickCategory() {
+    const r = Math.random();
+    let acc = 0;
+    for (const [name, w] of CATEGORY_WEIGHTS) { acc += w; if (r < acc) return name; }
+    return CATEGORY_WEIGHTS[CATEGORY_WEIGHTS.length - 1][0];
+  }
+
+  function generateProblem() {
+    const category = pickCategory();
+    const A = randValue(cfg.aMin, cfg.aMax, true);
+    const B = randValue(cfg.bMin, cfg.bMax, true);
+    const C = randValue(cfg.cdMin, cfg.cdMax, false);
+
+    let D;
+    if (category === "touch") {
+      D = { p: 0, q: 1, value: 0 };
+    } else {
+      const wantSameSign = category === "no-roots";
+      for (let attempt = 0; attempt < 200; attempt++) {
+        const cand = randValue(cfg.cdMin, cfg.cdMax, true);
+        const sameSign = (cand.value > 0) === (A.value > 0);
+        if (sameSign === wantSameSign) { D = cand; break; }
+      }
+      if (D === undefined) D = { p: A.value > 0 === (category === "no-roots") ? 1 : -1, q: 1, value: A.value > 0 === (category === "no-roots") ? 1 : -1 };
+    }
+
+    return { A, B, C, D, category };
+  }
+
+  function fmtProblem(p) {
+    const aStr = p.A.value === 1 ? "" : p.A.value === -1 ? "\u2212" : fmtValueHTML(p.A);
+    const bStr = p.B.value === 1 ? "x" : p.B.value === -1 ? "\u2212x" : `${fmtValueHTML(p.B)}x`;
+    const cSign = p.C.value >= 0 ? "+" : "\u2212";
+    const cStr = p.C.value === 0 ? "" : ` ${cSign} ${fmtValueHTML({ ...p.C, p: Math.abs(p.C.p) })}`;
+    const dSign = p.D.value >= 0 ? "+" : "\u2212";
+    const dStr = p.D.value === 0 ? "" : ` ${dSign} ${fmtValueHTML({ ...p.D, p: Math.abs(p.D.p) })}`;
+    return `y = ${aStr}|${bStr}${cStr}|${dStr}`;
+  }
+
+  /* =========================================================
+     6. SOLUTION LOGIC
+     Vertex at (h, k) = (-C/B, D) exactly — since substituting
+     x=-C/B makes the bracket zero, leaving just D. Roots (where
+     they exist) come from solving |Bx+C| = -D/A, which only
+     ever involves linear algebra — never a square root — so
+     unlike the parabola tool, roots here are already guaranteed
+     rational without any extra "root-first" construction step.
+     ========================================================= */
+  function solveEquation(Af, Bf, Cf, Df) {
+    const hFrac = fracDiv(fracNeg(Cf), Bf);
+    const kFrac = Df;
+    let rootsFrac = null;
+    if (Df.p === 0) {
+      rootsFrac = [hFrac];
+    } else if ((Df.p > 0) !== (Af.p > 0)) {
+      const tFrac = fracDiv(fracNeg(Df), Af); // > 0 in this branch
+      const r1 = fracDiv(fracSub(fracNeg(tFrac), Cf), Bf);
+      const r2 = fracDiv(fracSub(tFrac, Cf), Bf);
+      rootsFrac = fracValue(r1) <= fracValue(r2) ? [r1, r2] : [r2, r1];
+    }
+    return { hFrac, kFrac, rootsFrac };
+  }
+
+  /* =========================================================
+     7. GRAPH RENDERING
+     Same vertex-anchored label placement convention as the
+     absolute-value inequality and parabola tools: below the
+     vertex when the V opens upward (A>0), above when it opens
+     downward (A<0) — the side the curve's own arms leave empty.
+     ========================================================= */
+  function computeViewport(A, B, C, D, h, k, roots) {
+    const keyXs = [h, 0];
+    if (roots) keyXs.push(...roots);
+    let xLo = Math.min(...keyXs), xHi = Math.max(...keyXs);
+    let spanX = xHi - xLo;
+    if (spanX < 2) { const mid = (xLo + xHi) / 2; xLo = mid - 1; xHi = mid + 1; spanX = 2; }
+    const padX = spanX * 0.3;
+    xLo -= padX; xHi += padX;
+
+    const f = (x) => A * Math.abs(B * x + C) + D;
+    const candidates = [0, f(xLo), f(xHi), k];
+    let yLo = Math.min(...candidates), yHi = Math.max(...candidates);
+    let spanY = yHi - yLo;
+    if (spanY < 2) { const mid = (yLo + yHi) / 2; yLo = mid - 1; yHi = mid + 1; spanY = 2; }
+    const padY = spanY * 0.15;
+    yLo -= padY; yHi += padY;
+    return { xLo, xHi, yLo, yHi };
+  }
+
+  function fmtNumPlain(frac) {
+    const sign = frac.p < 0 ? "\u2212" : "";
+    return frac.q === 1 ? `${sign}${Math.abs(frac.p)}` : `${sign}${Math.abs(frac.p)}/${frac.q}`;
+  }
+  function fmtVertexLabelPlain(A, hFrac, kFrac) {
+    const aPrefix = A === 1 ? "" : A === -1 ? "\u2212" : fmtNumPlain(toSimpleFraction(A));
+    const xPart = hFrac.p === 0 ? "x" : hFrac.p > 0 ? `x \u2212 ${fmtNumPlain(hFrac)}` : `x + ${fmtNumPlain(fracNeg(hFrac))}`;
+    const kPart = kFrac.p === 0 ? "" : kFrac.p > 0 ? ` + ${fmtNumPlain(kFrac)}` : ` \u2212 ${fmtNumPlain(fracNeg(kFrac))}`;
+    return `y = ${aPrefix}|${xPart}|${kPart}`;
+  }
+
+  function buildGraph(A, B, C, D, h, k, roots, hFrac, kFrac) {
+    const { xLo, xHi, yLo, yHi } = computeViewport(A, B, C, D, h, k, roots);
+    const w = 320, hgt = 320, pad = 28;
+    const scaleX = (w - pad * 2) / (xHi - xLo);
+    const scaleY = (hgt - pad * 2) / (yHi - yLo);
+    const toPx = (x) => pad + (x - xLo) * scaleX;
+    const toPy = (y) => hgt - pad - (y - yLo) * scaleY;
+
+    let svg = `<svg viewBox="0 0 ${w} ${hgt}" xmlns="http://www.w3.org/2000/svg">`;
+    const axisColor = "#7A8296";
+
+    svg += `<line x1="${toPx(xLo)}" y1="${toPy(0)}" x2="${toPx(xHi)}" y2="${toPy(0)}" stroke="${axisColor}" stroke-width="1.1"/>`;
+    svg += `<line x1="${toPx(0)}" y1="${toPy(yHi)}" x2="${toPx(0)}" y2="${toPy(yLo)}" stroke="${axisColor}" stroke-width="1.1"/>`;
+
+    // axis of symmetry (vertical dashed gold line through the vertex)
+    svg += `<line x1="${toPx(h)}" y1="${toPy(yHi)}" x2="${toPx(h)}" y2="${toPy(yLo)}" stroke="#F9E795" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+
+    // V-shape (exactly piecewise-linear: two straight segments meeting at the vertex)
+    const f = (x) => A * Math.abs(B * x + C) + D;
+    svg += `<polyline points="${toPx(xLo)},${toPy(f(xLo))} ${toPx(h)},${toPy(k)} ${toPx(xHi)},${toPy(f(xHi))}" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>`;
+
+    // x-intercept markers, if any
+    if (roots) {
+      roots.forEach((r) => {
+        svg += `<circle cx="${toPx(r)}" cy="${toPy(0)}" r="4" fill="#F96167" stroke="#232D63" stroke-width="1"/>`;
+      });
+    }
+
+    // vertex marker + vertex-form label — anchored to the vertex, placed on the side
+    // the curve's arms leave empty (below for A>0, above for A<0).
+    svg += `<circle cx="${toPx(h)}" cy="${toPy(k)}" r="4.5" fill="#F9E795" stroke="#232D63" stroke-width="1.25"/>`;
+    const vLabelPlain = fmtVertexLabelPlain(A, hFrac, kFrac);
+    const vertexPx = toPx(h), vertexPy = toPy(k);
+    const vLabelY = A > 0 ? vertexPy + 20 : vertexPy - 12;
+    const vHalfWidth = (vLabelPlain.length * 12.5 * 0.58) / 2 + 4;
+    const vLabelX = Math.max(vHalfWidth, Math.min(w - vHalfWidth, vertexPx));
+    svg += `<text x="${vLabelX}" y="${vLabelY}" font-size="12.5" fill="#F9E795" font-weight="700" text-anchor="middle" font-family="Calibri, sans-serif">${vLabelPlain}</text>`;
+
+    svg += "</svg>";
+    return svg;
+  }
+
+  /* =========================================================
+     8. RENDER / DISPLAY
+     ========================================================= */
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    modeLabel.textContent = "หาแกนสมมาตร จุดยอด และจุดตัดแกน x";
+  }
+
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+
+    const { A, B, C, D } = current;
+    const { hFrac, kFrac, rootsFrac } = solveEquation(A, B, C, D);
+    const h = fracValue(hFrac), k = fracValue(kFrac);
+    const roots = rootsFrac ? rootsFrac.map(fracValue) : null;
+
+    graphBox.innerHTML = buildGraph(A.value, B.value, C.value, D.value, h, k, roots, hFrac, kFrac);
+    axisLine.innerHTML = `แกนสมมาตร: x = ${fmtFracHTML(hFrac)}`;
+    vertexLine.innerHTML = `จุดยอด: (${fmtFracHTML(hFrac)}, ${fmtFracHTML(kFrac)})`;
+    if (rootsFrac === null) {
+      rootsLine.textContent = "จุดตัดแกน x: ไม่ตัดแกน x";
+    } else if (rootsFrac.length === 1) {
+      rootsLine.innerHTML = `จุดตัดแกน x: x = ${fmtFracHTML(rootsFrac[0])}`;
+    } else {
+      rootsLine.innerHTML = `จุดตัดแกน x: x = ${fmtFracHTML(rootsFrac[0])}  หรือ  x = ${fmtFracHTML(rootsFrac[1])}`;
+    }
+    modeLabel.textContent = "นี่คือเฉลย";
+  }
+
+  function showNext() {
+    exprEl.classList.add("swap");
+    answerWrap.classList.add("swap");
+    setTimeout(() => {
+      current = generateProblem();
+      exprEl.innerHTML = fmtProblem(current);
+      showingAnswer = false;
+      displayProblem();
+      exprEl.classList.remove("swap");
+      answerWrap.classList.remove("swap");
+    }, 150);
+  }
+
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  /* =========================================================
+     9. MAIN CONTROLS — EVENTS
+     ========================================================= */
+  nextBtn.addEventListener("click", showNext);
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => {
+    endScreen.classList.remove("show");
+    showNext();
+  });
+
+  /* =========================================================
+     10. SETTINGS — EVENTS + VALIDATION
+     ========================================================= */
+  function openSettings() {
+    fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
+    settingsError.textContent = "";
+    settingsOverlay.classList.add("show");
+  }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove("show");
+  }
+
+  gearBtn.addEventListener("click", openSettings);
+  cancelBtn.addEventListener("click", closeSettings);
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const vals = {};
+    for (const id of fieldIds) {
+      const v = parseInt(document.getElementById(id).value, 10);
+      if (!Number.isInteger(v)) {
+        settingsError.textContent = "กรอกตัวเลขให้ครบทุกช่อง";
+        return;
+      }
+      vals[id] = v;
+    }
+    if (vals.aMin >= vals.aMax) { settingsError.textContent = "A: ต่ำสุดต้องน้อยกว่าสูงสุด"; return; }
+    if (vals.aMin > 0 || vals.aMax < 0) { settingsError.textContent = "A: ช่วงต้องคร่อม 0"; return; }
+    if (vals.bMin >= vals.bMax) { settingsError.textContent = "B: ต่ำสุดต้องน้อยกว่าสูงสุด"; return; }
+    if (vals.bMin > 0 || vals.bMax < 0) { settingsError.textContent = "B: ช่วงต้องคร่อม 0"; return; }
+    if (vals.cdMin >= vals.cdMax) { settingsError.textContent = "C,D: ต่ำสุดต้องน้อยกว่าสูงสุด"; return; }
+
+    cfg = { ...cfg, ...vals };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    closeSettings();
+    showNext();
+  });
+
+  /* =========================================================
+     11. INITIAL LOAD
+     ========================================================= */
+  current = generateProblem();
+  exprEl.innerHTML = fmtProblem(current);
+  displayProblem();
+
+</script>
+
+</body>
+</html>
