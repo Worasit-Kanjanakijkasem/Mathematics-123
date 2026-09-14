@@ -472,7 +472,7 @@
   }
 
   function fmtProblem(p) {
-    const aStr = fmtValueHTML(p.A);
+    const aStr = p.A.value === 1 ? "" : p.A.value === -1 ? "\u2212" : fmtValueHTML(p.A);
     const bStr = p.B.value === 1 ? "x" : p.B.value === -1 ? "\u2212x" : `${fmtValueHTML(p.B)}x`;
     const cSign = p.C.value >= 0 ? "\u2212" : "+";
     const cStr = p.C.value === 0 ? "" : ` ${cSign} ${fmtValueHTML({ ...p.C, p: Math.abs(p.C.p) })}`;
