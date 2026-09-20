@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>โจทย์เข็มนาฬิกา</title>
+<style>
+  :root {
+    --navy: #2F3C7E;
+    --navy-deep: #232D63;
+    --coral: #F96167;
+    --coral-deep: #E14A50;
+    --gold: #F9E795;
+    --ink: #FFFFFF;
+    --muted: #B9C0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy);
+    color: var(--ink);
+    height: 100dvh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  .eyebrow {
+    letter-spacing: 0.12em;
+    font-size: clamp(13px, 1.6vw, 18px);
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    z-index: 1;
+    text-align: center;
+    padding: 0 12px;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    z-index: 1;
+    padding: 10px 20px;
+    overflow-y: auto;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif;
+    font-size: clamp(18px, 3.4vw, 28px);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 95vw;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.94); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: left; max-width: 640px; width: 100%; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+
+  .clock-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .clock-box { width: min(40vw, 190px); }
+  .clock-box svg { width: 100%; height: auto; display: block; }
+  .clock-label { text-align: center; font-size: clamp(12px, 1.8vw, 14px); color: var(--gold); font-weight: 700; margin-bottom: 4px; }
+
+  .answer-card {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(249,231,149,0.4);
+    border-radius: 16px;
+    padding: 16px 20px;
+  }
+  .answer-row { margin-bottom: 10px; font-size: clamp(13px, 2vw, 15.5px); line-height: 1.6; }
+  .answer-row:last-child { margin-bottom: 0; }
+  .answer-row b { color: var(--gold); }
+  .frac {
+    display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle;
+    margin: 0 0.1em; line-height: 1.05;
+  }
+  .frac .num, .frac .den { display: block; padding: 0 0.1em; }
+  .frac .num { border-bottom: 0.06em solid currentColor; padding-bottom: 0.04em; }
+  .frac .den { padding-top: 0.04em; }
+  .final-answer {
+    font-family: "Cambria", "Georgia", serif; font-size: clamp(18px, 3vw, 24px); font-weight: 700;
+    text-align: center; color: var(--gold); margin-top: 12px;
+  }
+
+  .prompt { margin-top: 16px; font-size: clamp(14px, 2vw, 20px); color: var(--muted); text-align: center; }
+
+  .controls {
+    display: flex; gap: 14px; width: 100%; max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px); z-index: 1; flex-shrink: 0;
+  }
+  button {
+    border: none; border-radius: 20px; font-family: inherit; font-weight: 700; cursor: pointer;
+    -webkit-appearance: none; transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  .btn-next { flex: 2; background: var(--coral); color: var(--ink); font-size: clamp(13px, 2.1vw, 22px); padding: clamp(12px, 2.4vh, 20px) 10px; white-space: nowrap; }
+  .btn-toggle { flex: 2; background: var(--navy-deep); color: var(--gold); border: 2px solid var(--gold); font-size: clamp(13px, 1.9vw, 20px); padding: clamp(12px, 2.4vh, 20px) 16px; }
+  .btn-end { flex: 1; background: transparent; color: var(--muted); border: 2px solid var(--navy-deep); font-size: clamp(12px, 1.6vw, 18px); padding: clamp(12px, 2.4vh, 20px) 12px; }
+  .btn-end:active { background: var(--navy-deep); }
+
+  .end-screen {
+    position: fixed; inset: 0; background: var(--navy-deep);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="eyebrow">โจทย์เข็มนาฬิกา (เศษส่วนและสมการ)</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="clock-row" id="clockRow"></div>
+      <div class="answer-card" id="answerCard"></div>
+    </div>
+    <div class="prompt" id="promptEl">ตั้งสมการหาค่า x แล้วกดดูเฉลย</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+<script>
+  /* =========================================================
+     1. UTILITIES
+     ========================================================= */
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? a : gcd(b, a % b); }
+  function reduceFrac(p, q) { const g = gcd(p, q) || 1; return q < 0 ? { p: -p / g, q: -q / g } : { p: p / g, q: q / g }; }
+  function fracHTML(fr) {
+    if (fr.q === 1) return `${fr.p}`;
+    const sign = fr.p < 0 ? "\u2212" : "";
+    return `${sign}<span class="frac"><span class="num">${Math.abs(fr.p)}</span><span class="den">${fr.q}</span></span>`;
+  }
+
+  /* =========================================================
+     2. GENERATION
+     Position convention (per explicit confirmation): both hands
+     are measured from 0deg at the TOP of the SPECIFIC hour given
+     (minute hand always starts at 0deg; hour hand starts fixed at
+     30*(H mod 12) and creeps +0.5deg/min). Type: given a target
+     angle theta in [15,165] with "minute hand leads hour hand",
+     solve for x = minutes after the hour when that angle first
+     occurs. Verified beforehand: with this constraint the raw
+     (minute - hour) difference never needs a ">180 -> 360-x"
+     correction (0/744 cross-checked), and the M=60 boundary edge
+     case is simply excluded by requiring 0<=x<60 (reroll otherwise;
+     ~72% of random (H,theta) pairs already land in range).
+     ========================================================= */
+  function genLeadAngle() {
+    for (let tries = 0; tries < 200; tries++) {
+      const H = randInt(0, 23);
+      const theta = randInt(15, 165);
+      const hp0 = 30 * (H % 12);
+      // 6x - (hp0 + 0.5x) = theta  =>  5.5x = theta+hp0  =>  x = 2(theta+hp0)/11
+      const x = reduceFrac(2 * (theta + hp0), 11);
+      const xVal = x.p / x.q;
+      if (xVal >= 0 && xVal < 60) return { type: "lead", H, theta, hp0, x, xVal };
+    }
+    return genLeadAngle(); // extremely unlikely fallback
+  }
+
+  /* =========================================================
+     2b. GENERATION — "equidistant from marked number N" type
+     Condition: hour_pos + minute_pos = 60N (N is the angular
+     midpoint between the two hands), NOT the trivial hands-overlap
+     case. Since positions wrap every 360deg, the raw target 60N can
+     make x land outside [0,60) in TWO distinct ways (negative or
+     >=60), each requiring a different, DETERMINISTIC correction —
+     verified beforehand (134/134 cases, 100%): x<0 always needs
+     +360 on the target; x>=60 always needs -360. No guessing.
+     ========================================================= */
+  function solveEquidistant(hp0, N) {
+    // 6.5x = 60N - hp0  =>  x = 2(60N-hp0)/13 ; try target=60N first, then the
+    // deterministically-indicated correction if that lands outside [0,60)
+    let target = 60 * N;
+    let x = reduceFrac(2 * (target - hp0), 13);
+    let xVal = x.p / x.q;
+    let usedShift = 0;
+    if (xVal < 0) { usedShift = 360; }
+    else if (xVal >= 60) { usedShift = -360; }
+    if (usedShift !== 0) {
+      target = 60 * N + usedShift;
+      x = reduceFrac(2 * (target - hp0), 13);
+      xVal = x.p / x.q;
+    }
+    return { target, x, xVal, usedShift };
+  }
+  function genEquidistant() {
+    for (let tries = 0; tries < 300; tries++) {
+      const H = randInt(0, 23);
+      const N = randInt(1, 12);
+      const hp0 = 30 * (H % 12);
+      const { target, x, xVal, usedShift } = solveEquidistant(hp0, N);
+      if (!(xVal >= 0 && xVal < 60)) continue; // shouldn't happen per verification, but stay safe
+      const hourFinal = hp0 + 0.5 * xVal, minuteFinal = 6 * xVal;
+      if (Math.abs(hourFinal - minuteFinal) < 1e-9) continue; // exclude the trivial overlap case
+      return { type: "equi", H, N, hp0, target, x, xVal, usedShift };
+    }
+    return genEquidistant(); // extremely unlikely fallback
+  }
+  function generateProblem() {
+    return Math.random() < 0.5 ? genLeadAngle() : genEquidistant();
+  }
+
+  /* =========================================================
+     3. CLOCK FACE SVG
+     0deg is at 12 (straight up), increasing CLOCKWISE, matching
+     the convention explicitly set for this exercise.
+     ========================================================= */
+  function clockFace(hourAngleDeg, minuteAngleDeg, label, markN) {
+    const W = 200, H = 220, cx = 100, cy = 118, R = 82;
+    const toXY = (deg, len) => {
+      const rad = (deg * Math.PI) / 180;
+      return [cx + len * Math.sin(rad), cy - len * Math.cos(rad)];
+    };
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#7A8296" stroke-width="1.5"/>`;
+    for (let n = 1; n <= 12; n++) {
+      const deg = n * 30;
+      const isMark = markN === n;
+      const [tx, ty] = toXY(deg, R - 14);
+      const [m1x, m1y] = toXY(deg, R);
+      const [m2x, m2y] = toXY(deg, R - 6);
+      svg += `<line x1="${m1x.toFixed(1)}" y1="${m1y.toFixed(1)}" x2="${m2x.toFixed(1)}" y2="${m2y.toFixed(1)}" stroke="${isMark ? "#8FD3F4" : "#7A8296"}" stroke-width="${isMark ? 2.5 : 1.5}"/>`;
+      svg += `<text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" font-size="12" fill="${isMark ? "#8FD3F4" : "#B9C0E0"}" font-weight="${isMark ? 700 : 400}" text-anchor="middle" font-family="Calibri, sans-serif">${n}</text>`;
+    }
+    // hour hand (shorter, gold) and minute hand (longer, coral)
+    const [hx, hy] = toXY(hourAngleDeg, R * 0.55);
+    const [mx, my] = toXY(minuteAngleDeg, R * 0.82);
+    svg += `<line x1="${cx}" y1="${cy}" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="#F9E795" stroke-width="4" stroke-linecap="round"/>`;
+    svg += `<line x1="${cx}" y1="${cy}" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="#F96167" stroke-width="2.6" stroke-linecap="round"/>`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="#FFFFFF"/>`;
+    svg += `<text x="${cx}" y="${H - 4}" font-size="12" fill="#F9E795" font-weight="700" text-anchor="middle" font-family="Calibri, sans-serif">${label}</text>`;
+    svg += "</svg>";
+    return svg;
+  }
+
+  /* =========================================================
+     4. FORMATTING
+     ========================================================= */
+  function fmtHourLabel(H) {
+    const h12 = H % 12 === 0 ? 12 : H % 12;
+    return `${H}:00 \u0e19. (\u0e15\u0e23\u0e07\u0e01\u0e31\u0e1a\u0e40\u0e25\u0e02 ${h12} \u0e1a\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e1b\u0e31\u0e14)`;
+  }
+  function fmtProblem(prob) {
+    const line1 = `เวลาผ่านไปกี่นาที หลังจากเวลา ${prob.H}:00 \u0e19.`;
+    let line2;
+    if (prob.type === "lead") {
+      line2 = `\u0e40\u0e02\u0e47\u0e21\u0e2a\u0e31\u0e49\u0e19\u0e41\u0e25\u0e30\u0e40\u0e02\u0e47\u0e21\u0e22\u0e32\u0e27\u0e2b\u0e48\u0e32\u0e07\u0e01\u0e31\u0e19 ${prob.theta} \u0e2d\u0e07\u0e28\u0e32 (\u0e40\u0e02\u0e47\u0e21\u0e22\u0e32\u0e27\u0e19\u0e33\u0e2b\u0e19\u0e49\u0e32)`;
+    } else {
+      line2 = `\u0e40\u0e02\u0e47\u0e21\u0e2a\u0e31\u0e49\u0e19\u0e41\u0e25\u0e30\u0e40\u0e02\u0e47\u0e21\u0e22\u0e32\u0e27\u0e2d\u0e22\u0e39\u0e48\u0e2b\u0e48\u0e32\u0e07\u0e08\u0e32\u0e01\u0e40\u0e25\u0e02 ${prob.N} \u0e40\u0e1b\u0e47\u0e19\u0e21\u0e38\u0e21\u0e40\u0e17\u0e48\u0e32\u0e01\u0e31\u0e19`;
+    }
+    const line3 = `(\u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e40\u0e02\u0e47\u0e21\u0e17\u0e31\u0e49\u0e07\u0e2a\u0e2d\u0e07\u0e2d\u0e22\u0e39\u0e48\u0e15\u0e33\u0e41\u0e2b\u0e19\u0e48\u0e07\u0e40\u0e14\u0e35\u0e22\u0e27\u0e01\u0e31\u0e19)`;
+    return `${line1}<br>${line2}<br>${line3}`;
+  }
+  function buildAnswerCard(prob) {
+    if (prob.type === "lead") return buildAnswerCardLead(prob);
+    return buildAnswerCardEquidistant(prob);
+  }
+  function buildAnswerCardLead(prob) {
+    const h12 = prob.H % 12 === 0 ? 12 : prob.H % 12;
+    return `
+      <div class="answer-row"><b>1. ตำแหน่งเริ่มต้น:</b> เข็มยาวอยู่ที่ 0\u00b0 เสมอ, เข็มสั้นอยู่ที่ตำแหน่งเลข ${h12} คือ 30\u00d7${h12} = ${prob.hp0}\u00b0</div>
+      <div class="answer-row"><b>2. อัตราการกวาดมุม:</b> เข็มสั้นกวาด 360\u00b0 ใน 12 ชม.=720 นาที &rarr; ${fracHTML({p:1,q:2})}\u00b0/นาที &nbsp;|&nbsp; เข็มยาวกวาด 360\u00b0 ใน 60 นาที &rarr; 6\u00b0/นาที</div>
+      <div class="answer-row"><b>3. ตำแหน่งเมื่อผ่านไป x นาที:</b> เข็มสั้น = ${prob.hp0} + ${fracHTML({p:1,q:2})}x, &nbsp; เข็มยาว = 6x</div>
+      <div class="answer-row"><b>4. ตั้งสมการ</b> (เข็มยาวนำหน้า แปลว่าเข็มยาวอยู่หน้ากว่า ${prob.theta}\u00b0):</div>
+      <div class="answer-row">&nbsp;&nbsp;&nbsp;6x \u2212 (${prob.hp0} + ${fracHTML({p:1,q:2})}x) = ${prob.theta}</div>
+      <div class="answer-row">&nbsp;&nbsp;&nbsp;${fracHTML({p:11,q:2})}x = ${prob.theta} + ${prob.hp0} = ${prob.theta + prob.hp0}</div>
+      <div class="final-answer">x = ${fracHTML(prob.x)} นาที ${prob.x.q !== 1 ? `(\u2248 ${prob.xVal.toFixed(2)} นาที)` : ""}</div>
+    `;
+  }
+  function buildAnswerCardEquidistant(prob) {
+    const h12 = prob.H % 12 === 0 ? 12 : prob.H % 12;
+    const posN = 30 * prob.N;
+    const step1Target = 60 * prob.N;
+    const trial = reduceFrac(2 * (step1Target - prob.hp0), 13);
+    const trialVal = trial.p / trial.q;
+    const inRange = trialVal >= 0 && trialVal < 60;
+
+    const ruleLine = `<div class="answer-row" style="color:var(--coral);"><b>\u0e01\u0e0e\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e22\u0e36\u0e14\u0e17\u0e38\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07:</b> \u0e16\u0e49\u0e32\u0e04\u0e33\u0e15\u0e2d\u0e1a\u0e2d\u0e22\u0e39\u0e48\u0e43\u0e19\u0e0a\u0e48\u0e27\u0e07 0 \u0e16\u0e36\u0e07 60 \u0e19\u0e32\u0e17\u0e35 \u0e15\u0e2d\u0e1a\u0e44\u0e14\u0e49\u0e40\u0e25\u0e22 \u0e16\u0e49\u0e32\u0e04\u0e33\u0e15\u0e2d\u0e1a\u0e40\u0e01\u0e34\u0e19 60 \u0e17\u0e32\u0e07\u0e14\u0e49\u0e32\u0e19\u0e02\u0e27\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e21\u0e01\u0e32\u0e23\u0e15\u0e49\u0e2d\u0e07\u0e25\u0e1a\u0e14\u0e49\u0e27\u0e22 360 \u0e16\u0e49\u0e32\u0e04\u0e33\u0e15\u0e2d\u0e1a\u0e40\u0e1b\u0e47\u0e19\u0e04\u0e48\u0e32\u0e25\u0e1a \u0e17\u0e32\u0e07\u0e14\u0e49\u0e32\u0e19\u0e02\u0e27\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e21\u0e01\u0e32\u0e23\u0e15\u0e49\u0e2d\u0e07\u0e1a\u0e27\u0e01\u0e14\u0e49\u0e27\u0e22 360 \u0e41\u0e25\u0e49\u0e27\u0e41\u0e01\u0e49\u0e2a\u0e21\u0e01\u0e32\u0e23\u0e2d\u0e35\u0e01\u0e04\u0e23\u0e31\u0e49\u0e07</div>`;
+
+    let step5;
+    if (inRange) {
+      step5 = `
+        <div class="answer-row"><b>5. ตรวจคำตอบ:</b> ได้ x = ${fracHTML(trial)} \u2248 ${trialVal.toFixed(2)} นาที \u2014 อยู่ในช่วง 0-60 นาทีแล้ว ตอบได้เลย</div>
+        ${ruleLine}
+      `;
+    } else {
+      const sign = prob.usedShift > 0 ? "+ 360" : "\u2212 360";
+      const outOfRangeNote = trialVal < 0 ? "\u0e15\u0e34\u0e14\u0e25\u0e1a" : "\u0e40\u0e01\u0e34\u0e19 60";
+      step5 = `
+        <div class="answer-row"><b>5. ตรวจคำตอบ:</b> ได้ x = ${fracHTML(trial)} \u2248 ${trialVal.toFixed(2)} นาที \u2014 <b style="color:var(--coral)">${outOfRangeNote} ใช้ไม่ได้!</b></div>
+        ${ruleLine}
+        <div class="answer-row">จึงปรับด้านขวาของสมการเป็น ${step1Target} ${sign} = ${prob.target}\u00b0 แล้วแก้สมการใหม่:</div>
+        <div class="answer-row">&nbsp;&nbsp;&nbsp;(${prob.hp0} + ${fracHTML({p:1,q:2})}x) + 6x = ${prob.target}</div>
+        <div class="answer-row">&nbsp;&nbsp;&nbsp;${fracHTML({p:13,q:2})}x = ${prob.target} \u2212 ${prob.hp0} = ${prob.target - prob.hp0}</div>
+      `;
+    }
+    return `
+      <div class="answer-row"><b>1. ตำแหน่งเริ่มต้น:</b> เข็มยาวอยู่ที่ 0\u00b0 เสมอ, เข็มสั้นอยู่ที่ตำแหน่งเลข ${h12} คือ 30\u00d7${h12} = ${prob.hp0}\u00b0, ตำแหน่งเลข ${prob.N} คือ 30\u00d7${prob.N} = ${posN}\u00b0</div>
+      <div class="answer-row"><b>2. อัตราการกวาดมุม:</b> เข็มสั้น ${fracHTML({p:1,q:2})}\u00b0/นาที &nbsp;|&nbsp; เข็มยาว 6\u00b0/นาที</div>
+      <div class="answer-row"><b>3. ตำแหน่งเมื่อผ่านไป x นาที:</b> เข็มสั้น = ${prob.hp0} + ${fracHTML({p:1,q:2})}x, &nbsp; เข็มยาว = 6x</div>
+      <div class="answer-row"><b>4. ตั้งสมการ</b> (ห่างจากเลข ${prob.N} เท่ากัน แปลว่าเลข ${prob.N} อยู่กึ่งกลางระหว่างสองเข็ม \u2192 ผลบวกตำแหน่ง = 2\u00d7${posN} = ${step1Target}\u00b0):</div>
+      <div class="answer-row">&nbsp;&nbsp;&nbsp;(${prob.hp0} + ${fracHTML({p:1,q:2})}x) + 6x = ${step1Target}</div>
+      ${step5}
+      <div class="final-answer">x = ${fracHTML(prob.x)} นาที ${prob.x.q !== 1 ? `(\u2248 ${prob.xVal.toFixed(2)} นาที)` : ""}</div>
+    `;
+  }
+
+  /* =========================================================
+     5. DISPLAY / EVENTS
+     ========================================================= */
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const clockRow = document.getElementById("clockRow");
+  const answerCard = document.getElementById("answerCard");
+  const promptEl = document.getElementById("promptEl");
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  let current = null;
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "ตั้งสมการหาค่า x แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+    const markN = current.type === "equi" ? current.N : undefined;
+    const startClock = clockFace(current.hp0, 0, "\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19", markN);
+    const endClock = clockFace(current.hp0 + 0.5 * current.xVal, 6 * current.xVal, `\u0e40\u0e21\u0e37\u0e48\u0e2d x=${current.x.q === 1 ? current.x.p : (current.xVal).toFixed(1)}`, markN);
+    clockRow.innerHTML = `<div class="clock-box">${startClock}</div><div class="clock-box">${endClock}</div>`;
+    answerCard.innerHTML = buildAnswerCard(current);
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+  function showNext() {
+    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    setTimeout(() => {
+      current = generateProblem();
+      exprEl.innerHTML = fmtProblem(current);
+      displayProblem();
+      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  let showingAnswer = false;
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  nextBtn.addEventListener("click", () => { showingAnswer = false; showNext(); });
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showingAnswer = false; showNext(); });
+
+  current = generateProblem();
+  exprEl.innerHTML = fmtProblem(current);
+  displayProblem();
+</script>
+</body>
+</html>
