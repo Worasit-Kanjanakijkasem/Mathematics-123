@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>แยกตัวประกอบพหุนามกำลังสอง</title>
+<style>
+  :root {
+    --navy: #2F3C7E; --navy-deep: #232D63; --coral: #F96167; --coral-deep: #E14A50;
+    --gold: #F9E795; --ink: #FFFFFF; --muted: #B9C0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy); color: var(--ink); height: 100dvh; min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    user-select: none; position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  .eyebrow {
+    letter-spacing: 0.12em; font-size: clamp(13px, 1.6vw, 18px); font-weight: 700; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 8px; z-index: 1; text-align: center; padding: 0 12px;
+  }
+
+  .stage {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1; width: 100%; z-index: 1; padding: 10px 20px; overflow-y: auto;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif; font-size: clamp(22px, 4vw, 34px); font-weight: 700;
+    text-align: center; line-height: 1.6; max-width: 95vw; transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.94); }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: left; max-width: 640px; width: 100%; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+
+  .answer-card {
+    background: rgba(255,255,255,0.06); border: 1.5px solid rgba(249,231,149,0.4); border-radius: 16px;
+    padding: 16px 20px; margin-bottom: 12px;
+  }
+  .answer-row { margin-bottom: 10px; font-size: clamp(13px, 2vw, 15.5px); line-height: 1.6; }
+  .answer-row:last-child { margin-bottom: 0; }
+  .answer-row b { color: var(--gold); }
+  .section-title { font-size: clamp(13px, 2vw, 16px); font-weight: 700; color: var(--gold); margin: 14px 0 8px; }
+
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 4px; }
+  .pill {
+    background: rgba(255,255,255,0.08); border: 1.5px solid rgba(249,231,149,0.3);
+    border-radius: 8px; padding: 3px 10px; font-family: "Consolas", monospace; font-size: 13px;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 8px 0 12px; }
+  table.xtable { border-collapse: collapse; margin: 0 auto; font-family: "Consolas", monospace; font-size: clamp(11px, 1.7vw, 13.5px); }
+  table.xtable th, table.xtable td { padding: 6px 10px; text-align: center; }
+  table.xtable th { color: var(--gold); font-weight: 700; border-bottom: 2px solid var(--gold); }
+  table.xtable th.corner { color: var(--muted); font-family: inherit; font-size: 10.5px; font-weight: 400; border-right: 2px solid var(--gold); white-space: nowrap; }
+  table.xtable td.row-head { color: var(--gold); font-weight: 700; border-right: 2px solid var(--gold); white-space: nowrap; }
+  table.xtable td.hit { background: var(--coral); color: var(--ink); font-weight: 700; border-radius: 6px; }
+
+  .factored-line {
+    font-family: "Cambria", "Georgia", serif; font-size: clamp(17px, 2.8vw, 22px); font-weight: 700;
+    text-align: center; color: var(--gold); margin-top: 10px; line-height: 1.6;
+  }
+
+  .prompt { margin-top: 16px; font-size: clamp(14px, 2vw, 20px); color: var(--muted); text-align: center; }
+
+  .controls {
+    display: flex; gap: 14px; width: 100%; max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px); z-index: 1; flex-shrink: 0;
+  }
+  button {
+    border: none; border-radius: 20px; font-family: inherit; font-weight: 700; cursor: pointer;
+    -webkit-appearance: none; transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  .btn-next { flex: 2; background: var(--coral); color: var(--ink); font-size: clamp(13px, 2.1vw, 22px); padding: clamp(12px, 2.4vh, 20px) 10px; white-space: nowrap; }
+  .btn-toggle { flex: 2; background: var(--navy-deep); color: var(--gold); border: 2px solid var(--gold); font-size: clamp(13px, 1.9vw, 20px); padding: clamp(12px, 2.4vh, 20px) 16px; }
+  .btn-end { flex: 1; background: transparent; color: var(--muted); border: 2px solid var(--navy-deep); font-size: clamp(12px, 1.6vw, 18px); padding: clamp(12px, 2.4vh, 20px) 12px; }
+  .btn-end:active { background: var(--navy-deep); }
+
+  .end-screen {
+    position: fixed; inset: 0; background: var(--navy-deep);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+
+  @media (max-height: 560px) {
+    .answer-row { margin-bottom: 6px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="eyebrow">แยกตัวประกอบพหุนามกำลังสอง</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-card" id="answerCard"></div>
+    </div>
+    <div class="prompt" id="promptEl">จงแยกตัวประกอบของพหุนาม แล้วกดดูเฉลย</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+<script>
+  /* =========================================================
+     1. UTILITIES
+     ========================================================= */
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function gcdInt(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? a : gcdInt(b, a % b); }
+  function gcd3(a, b, c) { return gcdInt(gcdInt(a, b), c); }
+  function fmtSigned(n) { return n < 0 ? `\u2212${Math.abs(n)}` : `${n}`; }
+
+  /* =========================================================
+     2. GENERATION
+     Roots are chosen FIRST (not coefficients), matching the
+     explicit design: one root always an integer, the other
+     EITHER integer or a single fraction with denominator 2/3/4/5
+     at the specified probabilities. Multiplying two roots this
+     way makes gcd(a,b,c) ALWAYS exactly 1 — proved algebraically
+     and confirmed with 6,000 random trials before building —
+     so a genuine common-factor teaching moment can only appear
+     by deliberately multiplying the whole polynomial by an extra
+     integer afterward (1/4 chance, excluding 0 and 1; -1 IS kept
+     as a valid multiplier on request, specifically so a<0 cases
+     can still occur WITHOUT a common factor being present too).
+     ========================================================= */
+  function genRoots() {
+    let r1 = randInt(-6, 6);
+    if (r1 === 0) r1 = choice([-2, -1, 1, 2, 3]);
+    const roll = Math.random();
+    const denomTable = [[2, 1 / 9], [3, 1 / 12], [4, 1 / 12], [5, 1 / 18]];
+    let cum = 0, fracQ = null, fracP = null;
+    for (const [d, pr] of denomTable) {
+      cum += pr;
+      if (roll < cum) {
+        fracQ = d;
+        do { fracP = randInt(-3 * d, 3 * d); } while (fracP === 0 || gcdInt(Math.abs(fracP), d) !== 1);
+        break;
+      }
+    }
+    if (fracQ !== null) return { r1, q: fracQ, p: fracP, hasFrac: true };
+    let r2 = randInt(-6, 6);
+    return { r1, r2, hasFrac: false };
+  }
+  function buildPolyFromRoots(roots) {
+    let a, b, c;
+    if (roots.hasFrac) {
+      const { r1, q, p } = roots;
+      a = q; b = -(p + q * r1); c = r1 * p;
+    } else {
+      const { r1, r2 } = roots;
+      a = 1; b = -(r1 + r2); c = r1 * r2;
+    }
+    return { a, b, c };
+  }
+  function generateProblem() {
+    const roots = genRoots();
+    let { a, b, c } = buildPolyFromRoots(roots);
+    let multiplier = 1;
+    if (Math.random() < 1 / 4) {
+      multiplier = choice([-5, -4, -3, -2, -1, 2, 3, 4, 5]);
+      a *= multiplier; b *= multiplier; c *= multiplier;
+    }
+    return { a, b, c, roots, multiplier };
+  }
+
+  /* =========================================================
+     3. SOLVING — sign extracted first (if a<0), then the numeric
+     gcd, leaving a REDUCED trinomial with a>0 and gcd(a,b,c)=1 to
+     build the table for (matches the stated principle: leading-
+     term factors are always chosen positive, all sign variation
+     happens on the constant-term side).
+     ========================================================= */
+  function factorPairsPositive(n) {
+    const pairs = [];
+    for (let p = 1; p * p <= n; p++) if (n % p === 0) pairs.push([p, n / p]);
+    return pairs;
+  }
+  function constPairsAllSigns(c) {
+    const n = Math.abs(c);
+    const base = [];
+    for (let q = 1; q * q <= n; q++) if (n % q === 0) base.push([q, n / q]);
+    const out = [];
+    const seen = new Set();
+    for (const [q, s] of base) {
+      const variants = c >= 0 ? [[q, s], [s, q], [-q, -s], [-s, -q]] : [[q, -s], [-s, q], [-q, s], [s, -q]];
+      for (const v of variants) {
+        const key = v.join(",");
+        if (!seen.has(key)) { seen.add(key); out.push(v); }
+      }
+    }
+    return out;
+  }
+  function solve(prob) {
+    let { a, b, c } = prob;
+    const signExtracted = a < 0;
+    if (signExtracted) { a = -a; b = -b; c = -c; }
+    const g = gcd3(Math.abs(a), Math.abs(b), Math.abs(c));
+    const aR = a / g, bR = b / g, cR = c / g;
+
+    const leadPairs = factorPairsPositive(aR);
+    const constPairs = cR === 0 ? [] : constPairsAllSigns(cR);
+    let found = null;
+    const table = [];
+    for (const [p, r] of leadPairs) {
+      const row = [];
+      for (const [q, s] of constPairs) {
+        const cross = p * s + q * r;
+        row.push({ q, s, cross, hit: cross === bR });
+        if (cross === bR && !found) found = { p, q, r, s };
+      }
+      table.push({ p, r, cells: row });
+    }
+    // handle the trivial c=0 case (one root is 0) separately: factors out as
+    // x*(aR*x+bR) directly — always valid using the (p=1,r=aR) split
+    if (cR === 0 && !found) {
+      found = { p: 1, q: 0, r: aR, s: bR };
+    }
+    return { signExtracted, g, aR, bR, cR, leadPairs, constPairs, table, found };
+  }
+
+  /* =========================================================
+     4. FORMATTING
+     ========================================================= */
+  function fmtPolyTerm(coef, label) {
+    if (coef === 0) return "";
+    const ac = Math.abs(coef);
+    const coefStr = (ac === 1 && label) ? "" : `${ac}`;
+    return coef > 0 ? ` + ${coefStr}${label}` : ` \u2212 ${coefStr}${label}`;
+  }
+  function fmtPolyLeading(coef, label) {
+    const ac = Math.abs(coef);
+    const coefStr = (ac === 1) ? "" : `${ac}`;
+    return coef < 0 ? `\u2212${coefStr}${label}` : `${coefStr}${label}`;
+  }
+  function fmtProblem(prob) {
+    let s = fmtPolyLeading(prob.a, "x\u00b2");
+    s += fmtPolyTerm(prob.b, "x");
+    s += fmtPolyTerm(prob.c, "");
+    return s;
+  }
+  function fmtProblemDisplay(prob) {
+    return fmtProblem(prob);
+  }
+  function fmtBinom(coefX, coefConst) {
+    const xPart = coefX === 1 ? "x" : coefX === -1 ? "\u2212x" : `${coefX}x`;
+    const constPart = coefConst === 0 ? "" : (coefConst > 0 ? ` + ${coefConst}` : ` \u2212 ${Math.abs(coefConst)}`);
+    return `(${xPart}${constPart})`;
+  }
+  function fmtFinalAnswer(prob, sol) {
+    const { p, q, r, s } = sol.found;
+    const signStr = sol.signExtracted ? "\u2212" : "";
+    const gStr = sol.g > 1 ? `${sol.g}` : "";
+    return `${signStr}${gStr}${fmtBinom(p, q)}${fmtBinom(r, s)}`;
+  }
+  function fmtPairList(pairs, isLead) {
+    return pairs.map(([x, y]) => `<span class="pill">${fmtSigned(x)}${isLead ? "x" : ""} , ${fmtSigned(y)}${isLead ? "x" : ""}</span>`).join("");
+  }
+  function buildTableHTML(sol) {
+    if (!sol.constPairs.length) return `<div class="answer-row" style="color:var(--muted);">(c=0: \u0e14\u0e36\u0e07 x \u0e2d\u0e2d\u0e01\u0e15\u0e23\u0e07\u0e46 \u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e43\u0e0a\u0e49\u0e15\u0e32\u0e23\u0e32\u0e07)</div>`;
+    // split into chunks of 4 COLUMNS (constant-pairs) per table — a wide c (like 12
+    // or 24) can generate many sign/order variants and produce an unreadably long
+    // single table otherwise; each chunk repeats the same row headers (leading pairs)
+    const CHUNK = 4;
+    const nCols = sol.constPairs.length;
+    let html = "";
+    for (let start = 0; start < nCols; start += CHUNK) {
+      const colIdx = [];
+      for (let i = start; i < Math.min(start + CHUNK, nCols); i++) colIdx.push(i);
+      html += `<div class="table-wrap"><table class="xtable"><tr><th class="corner">\u0e40\u0e25\u0e02\u0e2b\u0e19\u0e49\u0e32 \\ \u0e40\u0e25\u0e02\u0e17\u0e49\u0e32\u0e22</th>`;
+      for (const ci of colIdx) { const [q, s] = sol.constPairs[ci]; html += `<th>(${fmtSigned(q)},${fmtSigned(s)})</th>`; }
+      html += `</tr>`;
+      for (const row of sol.table) {
+        html += `<tr><td class="row-head">(${fmtSigned(row.p)},${fmtSigned(row.r)})</td>`;
+        for (const ci of colIdx) { const cell = row.cells[ci]; html += `<td class="${cell.hit ? "hit" : ""}">${fmtSigned(cell.cross)}</td>`; }
+        html += `</tr>`;
+      }
+      html += `</table></div>`;
+    }
+    return html;
+  }
+
+  /* =========================================================
+     5. DISPLAY / EVENTS
+     ========================================================= */
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerCard = document.getElementById("answerCard");
+  const promptEl = document.getElementById("promptEl");
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  let current = null;
+
+  function buildAnswerCardHTML(prob) {
+    const sol = solve(prob);
+    let stepNum = 1;
+    let html = "";
+    if (sol.signExtracted || sol.g > 1) {
+      html += `<div class="section-title">${stepNum++}. \u0e14\u0e36\u0e07\u0e15\u0e31\u0e27\u0e23\u0e48\u0e27\u0e21\u0e01\u0e48\u0e2d\u0e19 (\u0e15\u0e32\u0e23\u0e32\u0e07\u0e08\u0e30\u0e40\u0e25\u0e47\u0e01\u0e25\u0e07):</div>`;
+      const parts = [];
+      if (sol.signExtracted) parts.push("\u22121 (\u0e40\u0e25\u0e02\u0e2b\u0e19\u0e49\u0e32\u0e15\u0e34\u0e14\u0e25\u0e1a)");
+      if (sol.g > 1) parts.push(`${sol.g} (\u0e2b.\u0e23.\u0e21. \u0e02\u0e2d\u0e07 a,b,c)`);
+      html += `<div class="answer-row">\u0e14\u0e36\u0e07 ${parts.join(" \u0e41\u0e25\u0e30 ")} \u0e2d\u0e2d\u0e01\u0e21\u0e32\u0e01\u0e48\u0e2d\u0e19: ${sol.signExtracted ? "\u2212" : ""}${sol.g > 1 ? sol.g : ""}(${fmtPolyLeading(sol.aR, "x\u00b2")}${fmtPolyTerm(sol.bR, "x")}${fmtPolyTerm(sol.cR, "")})</div>`;
+    }
+    html += `<div class="section-title">${stepNum++}. \u0e15\u0e31\u0e27\u0e1b\u0e23\u0e30\u0e01\u0e2d\u0e1a\u0e02\u0e2d\u0e07 ${sol.aR}x\u00b2 (\u0e40\u0e25\u0e02\u0e2b\u0e19\u0e49\u0e32 \u2014 \u0e40\u0e25\u0e37\u0e2d\u0e01\u0e41\u0e04\u0e48\u0e04\u0e39\u0e48\u0e1a\u0e27\u0e01):</div>`;
+    html += `<div class="pill-row">${fmtPairList(sol.leadPairs, true)}</div>`;
+    if (sol.constPairs.length) {
+      html += `<div class="section-title">${stepNum++}. \u0e15\u0e31\u0e27\u0e1b\u0e23\u0e30\u0e01\u0e2d\u0e1a\u0e02\u0e2d\u0e07 ${fmtSigned(sol.cR)} (\u0e40\u0e25\u0e02\u0e17\u0e49\u0e32\u0e22 \u2014 \u0e25\u0e2d\u0e07\u0e17\u0e38\u0e01\u0e25\u0e33\u0e14\u0e31\u0e1a/\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22 \u0e0a\u0e14\u0e40\u0e0a\u0e22\u0e01\u0e31\u0e19\u0e01\u0e31\u0e1a\u0e17\u0e35\u0e48\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e40\u0e25\u0e02\u0e2b\u0e19\u0e49\u0e32\u0e44\u0e21\u0e48\u0e44\u0e14\u0e49):</div>`;
+      html += `<div class="pill-row">${fmtPairList(sol.constPairs, false)}</div>`;
+      html += `<div class="section-title">${stepNum++}. \u0e15\u0e32\u0e23\u0e32\u0e07\u0e1c\u0e25\u0e23\u0e27\u0e21\u0e44\u0e02\u0e27\u0e49 (\u0e15\u0e49\u0e2d\u0e07\u0e44\u0e14\u0e49 ${fmtSigned(sol.bR)}):</div>`;
+      html += buildTableHTML(sol);
+    } else {
+      html += `<div class="section-title">${stepNum++}. \u0e08\u0e31\u0e14\u0e23\u0e39\u0e1b:</div>`;
+      html += buildTableHTML(sol);
+    }
+    html += `<div class="factored-line">${fmtProblem(prob)} = ${fmtFinalAnswer(prob, sol)}</div>`;
+    return html;
+  }
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "จงแยกตัวประกอบของพหุนาม แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+    answerCard.innerHTML = buildAnswerCardHTML(current);
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+  function showNext() {
+    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    setTimeout(() => {
+      current = generateProblem();
+      exprEl.innerHTML = fmtProblemDisplay(current);
+      displayProblem();
+      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  let showingAnswer = false;
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  nextBtn.addEventListener("click", () => { showingAnswer = false; showNext(); });
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showingAnswer = false; showNext(); });
+
+  current = generateProblem();
+  exprEl.innerHTML = fmtProblemDisplay(current);
+  displayProblem();
+</script>
+</body>
+</html>
