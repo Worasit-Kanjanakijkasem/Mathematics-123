@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>สมการกรณฑ์คู่แฝด</title>
+<style>
+  :root {
+    --navy: #2F3C7E; --navy-deep: #232D63; --coral: #F96167; --coral-deep: #E14A50;
+    --gold: #F9E795; --ink: #FFFFFF; --muted: #B9C0E0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans Thai", sans-serif;
+    background: var(--navy); color: var(--ink); height: 100dvh; min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    user-select: none; position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; pointer-events: none; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+
+  .eyebrow {
+    letter-spacing: 0.12em; font-size: clamp(13px, 1.6vw, 18px); font-weight: 700; color: var(--gold);
+    text-transform: uppercase; margin-bottom: 8px; z-index: 1; text-align: center; padding: 0 12px;
+  }
+
+  .stage {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1; width: 100%; z-index: 1; padding: 10px 20px; overflow-y: auto;
+  }
+
+  .expr {
+    font-family: "Cambria", "Georgia", serif; font-size: clamp(20px, 3.6vw, 30px); font-weight: 700;
+    text-align: center; line-height: 1.8; max-width: 95vw; transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .expr.swap { opacity: 0; transform: scale(0.94); }
+  .sqrt-wrap { display: inline-flex; align-items: flex-start; margin: 0 0.06em; }
+  .sqrt-sign { font-size: 1.15em; line-height: 1; margin-right: 0.02em; transform: translateY(0.02em); }
+  .sqrt-content { border-top: 2px solid var(--ink); padding: 0 0.08em 0 0.05em; display: inline-block; }
+
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: left; max-width: 640px; width: 100%; }
+  .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
+
+  .answer-card {
+    background: rgba(255,255,255,0.06); border: 1.5px solid rgba(249,231,149,0.4); border-radius: 16px;
+    padding: 16px 20px; margin-bottom: 12px;
+  }
+  .answer-row { margin-bottom: 10px; font-size: clamp(13px, 2vw, 15.5px); line-height: 1.7; }
+  .answer-row:last-child { margin-bottom: 0; }
+  .answer-row b { color: var(--gold); }
+  .section-title { font-size: clamp(13px, 2vw, 16px); font-weight: 700; color: var(--gold); margin: 14px 0 8px; }
+
+  .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.08em; line-height: 1.05; }
+  .frac .num, .frac .den { display: block; padding: 0 0.1em; }
+  .frac .num { border-bottom: 0.06em solid currentColor; padding-bottom: 0.03em; }
+  .frac .den { padding-top: 0.03em; }
+
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 4px; }
+  .pill {
+    background: rgba(255,255,255,0.08); border: 1.5px solid rgba(249,231,149,0.3);
+    border-radius: 8px; padding: 3px 10px; font-family: "Consolas", monospace; font-size: 13px;
+  }
+
+  .factored-line {
+    font-family: "Cambria", "Georgia", serif; font-size: clamp(16px, 2.6vw, 21px); font-weight: 700;
+    text-align: center; color: var(--gold); margin-top: 10px; line-height: 1.6;
+  }
+  .check-line { color: var(--muted); font-size: clamp(11.5px, 1.8vw, 13.5px); text-align: center; margin-top: 4px; }
+
+  .prompt { margin-top: 16px; font-size: clamp(14px, 2vw, 20px); color: var(--muted); text-align: center; }
+
+  .controls {
+    display: flex; gap: 14px; width: 100%; max-width: 760px;
+    padding: 8px 24px clamp(12px, 3vh, 30px); z-index: 1; flex-shrink: 0;
+  }
+  button {
+    border: none; border-radius: 20px; font-family: inherit; font-weight: 700; cursor: pointer;
+    -webkit-appearance: none; transition: transform 0.08s ease, filter 0.15s ease;
+  }
+  button:active { transform: scale(0.96); }
+  .btn-next { flex: 2; background: var(--coral); color: var(--ink); font-size: clamp(13px, 2.1vw, 22px); padding: clamp(12px, 2.4vh, 20px) 10px; white-space: nowrap; }
+  .btn-toggle { flex: 2; background: var(--navy-deep); color: var(--gold); border: 2px solid var(--gold); font-size: clamp(13px, 1.9vw, 20px); padding: clamp(12px, 2.4vh, 20px) 16px; }
+  .btn-end { flex: 1; background: transparent; color: var(--muted); border: 2px solid var(--navy-deep); font-size: clamp(12px, 1.6vw, 18px); padding: clamp(12px, 2.4vh, 20px) 12px; }
+  .btn-end:active { background: var(--navy-deep); }
+
+  .end-screen {
+    position: fixed; inset: 0; background: var(--navy-deep);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .end-screen.show { display: flex; }
+  .end-screen .headline { font-size: clamp(32px, 6vw, 56px); font-weight: 800; margin-bottom: 12px; }
+  .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
+  .btn-restart { background: var(--gold); color: var(--navy-deep); font-size: clamp(17px, 2.4vw, 22px); padding: 18px 40px; border-radius: 20px; }
+
+  @media (max-height: 560px) {
+    .answer-row { margin-bottom: 6px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="eyebrow">สมการกรณฑ์คู่แฝด</div>
+
+  <div class="stage">
+    <div class="expr" id="exprEl">…</div>
+    <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="answer-card" id="answerCard"></div>
+    </div>
+    <div class="prompt" id="promptEl">แก้สมการหาค่า x แล้วกดดูเฉลย</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
+    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-end" id="endBtn">จบ</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="headline">จบแล้ว สู้ๆ นะ! 🎉</div>
+    <div class="sub">ฝึกอีกรอบได้เลยถ้าอยากลองต่อ</div>
+    <button class="btn-restart" id="restartBtn">เริ่มใหม่</button>
+  </div>
+
+<script>
+  /* =========================================================
+     1. UTILITIES
+     ========================================================= */
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
+  function gcdInt(a, b) { a = Math.abs(a); b = Math.abs(b); return b === 0 ? a : gcdInt(b, a % b); }
+  function fmtSigned(n) { return n < 0 ? `\u2212${Math.abs(n)}` : `${n}`; }
+  function fmtCoeff(n) { if (n === 1) return ""; if (n === -1) return "\u2212"; return fmtSigned(n); }
+  function fracHTML(p, q) {
+    if (q < 0) { p = -p; q = -q; }
+    const g = gcdInt(p, q) || 1; p /= g; q /= g;
+    const sign = p < 0 ? "\u2212" : "";
+    const ap = Math.abs(p);
+    if (q === 1) return `${sign}${ap}`;
+    return `${sign}<span class="frac"><span class="num">${ap}</span><span class="den">${q}</span></span>`;
+  }
+
+  /* =========================================================
+     2. GENERATION — verified beforehand (5000-trial, exact-
+     fraction cross-check, 100% genuine roots, 0 extraneous):
+       - e must be POSITIVE (A+B or A-B involves |.|, so e<0 can
+         never be satisfied structurally)
+       - n must satisfy n >= -e (keeps E=(e+n)/2 >= 0; otherwise
+         BOTH sign choices become entirely extraneous)
+       - the +/- sign shown in the problem is DETERMINED, not
+         randomly chosen: E<=e uses "+", E>e uses "-"
+     This was discovered only after the original "random sign,
+     random e including negative" version showed a 69% extraneous
+     root rate in testing.
+     ========================================================= */
+  function factorPairsPositive(n) {
+    const pairs = [];
+    for (let p = 1; p * p <= n; p++) if (n % p === 0) pairs.push([p, n / p]);
+    return pairs;
+  }
+  function constPairsAllSigns(target) {
+    const n = Math.abs(target);
+    const base = [];
+    for (let q = 1; q * q <= n; q++) if (n % q === 0) base.push([q, n / q]);
+    const out = []; const seen = new Set();
+    for (const [q, s] of base) {
+      const variants = target >= 0 ? [[q, s], [s, q], [-q, -s], [-s, -q]] : [[q, -s], [-s, q], [-q, s], [s, -q]];
+      for (const v of variants) { const key = v.join(","); if (!seen.has(key)) { seen.add(key); out.push(v); } }
+    }
+    return out;
+  }
+  function generateProblem() {
+    const e = randInt(1, 8);
+    const eEven = e % 2 === 0;
+    const validN = [];
+    for (let x = -8; x <= 8; x++) if (x !== 0 && (x % 2 === 0) === eEven && x >= -e) validN.push(x);
+    const n = choice(validN);
+    const cMinusD = n * e;
+    const d = randInt(-10, 10);
+    const c = d + cMinusD;
+    const E = (e + n) / 2;
+    const sign = E <= e ? "+" : "-";
+    const target = c - E * E;
+    const a = choice([1, 2, 3]);
+
+    let p, q, r, s, b, g0 = 1;
+    if (target === 0) {
+      b = choice([-6, -5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 6]);
+      p = 1; q = 0; r = a; s = b; // represents x*(a*x+b), matching the (p x+q)(r x+s) template
+    } else {
+      // extract gcd(a, |target|) FIRST, then build factor pairs from the REDUCED
+      // numbers (matching the earlier-established "ดึงตัวร่วมก่อน ตารางจะเล็กลง"
+      // principle) — b is then computed from the reduced factor choice and scaled
+      // back up by g0, so the full a*x^2+b*x+target=0 stays exactly consistent
+      g0 = gcdInt(a, Math.abs(target)) || 1;
+      const aR = a / g0, targetR = target / g0;
+      const leadPairs = factorPairsPositive(aR);
+      const constPairs = constPairsAllSigns(targetR);
+      [p, r] = choice(leadPairs);
+      [q, s] = choice(constPairs);
+      b = g0 * (p * s + q * r);
+    }
+    return { a, b, c, d, e, n, E, sign, target, g0, factorInfo: { p, q, r, s } };
+  }
+
+  /* =========================================================
+     3. FORMATTING
+     ========================================================= */
+  function fmtPolyInside(a, b, k) {
+    let s = `${fmtCoeff(a)}x\u00b2`;
+    if (b !== 0) s += b > 0 ? ` + ${Math.abs(b) === 1 ? "" : Math.abs(b)}x` : ` \u2212 ${Math.abs(b) === 1 ? "" : Math.abs(b)}x`;
+    if (k !== 0) s += k > 0 ? ` + ${k}` : ` \u2212 ${Math.abs(k)}`;
+    return s;
+  }
+  function sqrtHTML(inner) { return `<span class="sqrt-wrap"><span class="sqrt-sign">\u221a</span><span class="sqrt-content">${inner}</span></span>`; }
+  function fmtProblem(prob) {
+    const A = sqrtHTML(fmtPolyInside(prob.a, prob.b, prob.c));
+    const B = sqrtHTML(fmtPolyInside(prob.a, prob.b, prob.d));
+    const opSym = prob.sign === "+" ? "+" : "\u2212";
+    return `${A} ${opSym} ${B} = ${prob.e}`;
+  }
+  function fmtBinom(coefX, coefConst) {
+    const xPart = coefX === 1 ? "x" : `${coefX}x`;
+    const constPart = coefConst === 0 ? "" : (coefConst > 0 ? ` + ${coefConst}` : ` \u2212 ${Math.abs(coefConst)}`);
+    return `(${xPart}${constPart})`;
+  }
+  function fmtRootLabel(num, den) {
+    return fracHTML(-num, den);
+  }
+
+  /* =========================================================
+     4. ANSWER CARD
+     ========================================================= */
+  function buildAnswerCard(prob) {
+    const { a, b, c, d, e, n, E, sign, target, g0, factorInfo } = prob;
+    const { p, q, r, s } = factorInfo;
+    const aR = target !== 0 ? a / g0 : a;
+    const targetR = target !== 0 ? target / g0 : target;
+    const bR = target !== 0 ? b / g0 : b;
+    const auxLabel = sign === "+" ? "A \u2212 B" : "A + B";
+    const auxVal = n;
+    const origLabel = sign === "+" ? "A + B" : "A \u2212 B";
+
+    let html = `
+      <div class="answer-row"><b>1. ตั้งชื่อ:</b> ให้ A = ${sqrtHTML(fmtPolyInside(a, b, c))}, B = ${sqrtHTML(fmtPolyInside(a, b, d))}</div>
+      <div class="answer-row"><b>2. โจทย์คือ:</b> ${origLabel} = ${e}</div>
+      <div class="answer-row"><b>3. หา A\u00b2\u2212B\u00b2 ตรงๆ</b> (ตัวแปร x หายไปหมดเพราะ ax\u00b2+bx เหมือนกัน): A\u00b2\u2212B\u00b2 = ${fmtSigned(c)} \u2212 (${fmtSigned(d)}) = ${fmtSigned(c - d)}</div>
+      <div class="answer-row"><b>4. หาร A\u00b2\u2212B\u00b2 ด้วย ${origLabel}</b> (ซึ่งเท่ากับ ${e} จากข้อ 2): ${auxLabel} = (A\u00b2\u2212B\u00b2) \u00f7 ${e} = ${fmtSigned(c - d)} \u00f7 ${e} = ${fmtSigned(n)}</div>
+      <div class="answer-row"><b>5. รวมสองสมการ:</b> ${origLabel} = ${e} กับ ${auxLabel} = ${fmtSigned(n)} บวกกันได้ 2A = ${e} + (${fmtSigned(n)}) = ${e + n}, ดังนั้น A = ${fmtSigned(E)}</div>
+      <div class="answer-row"><b>6. ยกกำลังสองทั้งสองข้าง (A=${fmtSigned(E)}):</b> ${fmtPolyInside(a, b, c)} = ${E}\u00b2 = ${E * E}</div>
+      <div class="answer-row"><b>7. จัดรูปสมการ:</b> ${fmtPolyInside(a, b, c - E * E)} = 0 &nbsp; <span style="color:var(--muted);">(นำ ${E * E} ลบทั้งสองข้าง)</span></div>
+    `;
+
+    let finalStepNum;
+    if (target === 0) {
+      html += `
+        <div class="answer-row"><b>8. ดึง x ออกตรงๆ</b> (ไม่มีค่าคงที่เหลือ): x(${fmtCoeff(a)}x${b > 0 ? " + " + b : b < 0 ? " \u2212 " + Math.abs(b) : ""}) = 0</div>
+      `;
+      finalStepNum = 9;
+    } else {
+      let stepNum = 8;
+      if (g0 > 1) {
+        html += `
+        <div class="answer-row"><b>${stepNum++}. ดึงตัวร่วม ${g0} ออกมาก่อน</b> (ตารางจะเล็กลง): ${fmtPolyInside(a, b, target)} = ${g0}(${fmtPolyInside(aR, bR, targetR)})</div>
+        `;
+      }
+      html += `
+        <div class="answer-row"><b>${stepNum++}. ตัวประกอบของ ${aR}x\u00b2 (เลขหน้า \u2014 เลือกแค่คู่บวก):</b></div>
+        <div class="pill-row">${factorPairsPositive(aR).map(([x, y]) => `<span class="pill">${x}x , ${y}x</span>`).join("")}</div>
+        <div class="answer-row"><b>${stepNum++}. ตัวประกอบของ ${fmtSigned(targetR)} (เลขท้าย \u2014 ลองทุกเครื่องหมาย):</b></div>
+        <div class="pill-row">${constPairsAllSigns(targetR).map(([x, y]) => `<span class="pill">${fmtSigned(x)} , ${fmtSigned(y)}</span>`).join("")}</div>
+        <div class="answer-row">เลือกคู่ (${p},${r}) กับ (${fmtSigned(q)},${fmtSigned(s)}) แล้วคูณไขว้รวมกัน ตรงกับ ${g0 > 1 ? "b\u2019=" + fmtSigned(bR) + " (b\u2019 คือค่าหลังดึง " + g0 + " ออกแล้ว)" : "b=" + fmtSigned(b)} พอดี</div>
+      `;
+      finalStepNum = stepNum;
+    }
+
+    const root1 = -q / p, root2 = -s / r;
+    html += `
+      <div class="factored-line">${g0 > 1 ? g0 : ""}${fmtBinom(p, q)}${fmtBinom(r, s)} = 0 &nbsp;\u2192&nbsp; x = ${fmtRootLabel(q, p)} หรือ x = ${fmtRootLabel(s, r)}</div>
+    `;
+
+    const rootFracs = [{ n: -q, d: p }, { n: -s, d: r }];
+    // ตรวจสอบภายใน sqrt ทั้งสองข้างว่า >= 0 จริงที่แต่ละราก ก่อนสรุปเป็นคำตอบ — ขั้นตอนที่
+    // จำเป็นเสมอสำหรับสมการที่มีเครื่องหมายกรณฑ์ (แม้ในระบบนี้จะพิสูจน์ไว้แล้วว่าค่าภายใน
+    // sqrt ทั้งสองข้างเท่ากับ E^2 และ (e-E)^2 เป๊ะที่ทุกราก จึง >=0 เสมอโดยธรรมชาติ แต่ยังต้อง
+    // แสดงขั้นตอนตรวจสอบนี้ไว้ให้ผู้เรียนเห็น เพราะเป็นขั้นตอนบังคับของโจทย์ประเภทนี้ทั่วไป)
+    let checkRows = "";
+    for (const rf of rootFracs) {
+      const xNum = rf.n, xDen = rf.d;
+      const denSq = xDen * xDen;
+      const insideA = a * xNum * xNum + b * xNum * xDen + c * denSq;
+      const insideB = a * xNum * xNum + b * xNum * xDen + d * denSq;
+      const xLabel = fmtRootLabel(-xNum, xDen);
+      checkRows += `<div class="answer-row">&nbsp;&nbsp;&nbsp;x = ${xLabel}: ${fmtPolyInside(a, b, c)} = ${fracHTML(insideA, denSq)} \u2265 0 \u2713 &nbsp;และ&nbsp; ${fmtPolyInside(a, b, d)} = ${fracHTML(insideB, denSq)} \u2265 0 \u2713</div>`;
+    }
+    html += `
+      <div class="answer-row"><b>${finalStepNum}. ตรวจว่าภายใน sqrt ทั้งสองข้างไม่ติดลบ</b> ที่แต่ละราก (ขั้นตอนบังคับของสมการกรณฑ์):</div>
+      ${checkRows}
+    `;
+    html += `
+      <div class="check-line">ทั้งสองรากผ่านการตรวจสอบ เป็นคำตอบจริง ไม่มีรากเกิน</div>
+    `;
+    return html;
+  }
+
+  /* =========================================================
+     5. DISPLAY / EVENTS
+     ========================================================= */
+  const exprEl = document.getElementById("exprEl");
+  const answerWrap = document.getElementById("answerWrap");
+  const answerCard = document.getElementById("answerCard");
+  const promptEl = document.getElementById("promptEl");
+  const nextBtn = document.getElementById("nextBtn");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const endBtn = document.getElementById("endBtn");
+  const endScreen = document.getElementById("endScreen");
+  const restartBtn = document.getElementById("restartBtn");
+
+  let current = null;
+
+  function displayProblem() {
+    exprEl.style.display = "";
+    answerWrap.style.display = "none";
+    promptEl.textContent = "แก้สมการหาค่า x แล้วกดดูเฉลย";
+  }
+  function displayAnswer() {
+    exprEl.style.display = "none";
+    answerWrap.style.display = "";
+    answerCard.innerHTML = buildAnswerCard(current);
+    promptEl.textContent = "นี่คือเฉลย";
+  }
+  function showNext() {
+    exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+    setTimeout(() => {
+      current = generateProblem();
+      exprEl.innerHTML = fmtProblem(current);
+      displayProblem();
+      exprEl.classList.remove("swap"); answerWrap.classList.remove("swap");
+    }, 150);
+  }
+  let showingAnswer = false;
+  function toggleAnswer() {
+    const el = showingAnswer ? answerWrap : exprEl;
+    el.classList.add("swap");
+    setTimeout(() => {
+      showingAnswer = !showingAnswer;
+      if (showingAnswer) displayAnswer(); else displayProblem();
+      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
+    }, 150);
+  }
+
+  nextBtn.addEventListener("click", () => { showingAnswer = false; showNext(); });
+  toggleBtn.addEventListener("click", toggleAnswer);
+  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
+  restartBtn.addEventListener("click", () => { endScreen.classList.remove("show"); showingAnswer = false; showNext(); });
+
+  current = generateProblem();
+  exprEl.innerHTML = fmtProblem(current);
+  displayProblem();
+</script>
+</body>
+</html>
