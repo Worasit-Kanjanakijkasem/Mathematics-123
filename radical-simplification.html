@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มโจทย์การลดรูปกรณฑ์</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
 
   /* =========================================================
@@ -399,6 +401,10 @@
   function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function choice(arr) { return arr[randInt(0, arr.length - 1)]; }
   function isPerfectSquare(n) { const r = Math.round(Math.sqrt(n)); return r * r === n; }
+  function KT(latex) {
+    try { return katex.renderToString(latex, { throwOnError: false }); }
+    catch (e) { return latex; }
+  }
 
   /* =========================================================
      5. EXPRESSION GENERATOR
@@ -417,18 +423,17 @@
   }
 
   function displayType1(g) {
-    const signStr = g.sign === 1 ? "+" : "\u2212";
-    const denom = `\u221a${g.a} ${signStr} \u221a${g.b}`;
-    return `<span class="frac"><span class="frac-num">1</span><span class="frac-den">${denom}</span></span>`;
+    const signStr = g.sign === 1 ? "+" : "-";
+    return KT(`\\dfrac{1}{\\sqrt{${g.a}} ${signStr} \\sqrt{${g.b}}}`);
   }
 
   function answerType1(g) {
-    const conjSignStr = g.sign === 1 ? "\u2212" : "+";
-    const conjExpr = `\u221a${g.a} ${conjSignStr} \u221a${g.b}`;
-    const stepHTML = `\u00d7 <span class="frac"><span class="frac-num">${conjExpr}</span><span class="frac-den">${conjExpr}</span></span>`;
+    const conjSignStr = g.sign === 1 ? "-" : "+";
+    const conjLatex = `\\sqrt{${g.a}} ${conjSignStr} \\sqrt{${g.b}}`;
+    const stepHTML = KT(`\\times \\dfrac{${conjLatex}}{${conjLatex}}`);
     const finalHTML = g.diff === 1
-      ? conjExpr
-      : `<span class="frac"><span class="frac-num">${conjExpr}</span><span class="frac-den">${g.diff}</span></span>`;
+      ? KT(conjLatex)
+      : KT(`\\dfrac{${conjLatex}}{${g.diff}}`);
     return { stepHTML, finalHTML };
   }
 
@@ -447,12 +452,12 @@
   }
 
   function displayType2(g) {
-    return `\u221a(${g.a} + \u221a${g.b})`;
+    return KT(`\\sqrt{${g.a} + \\sqrt{${g.b}}}`);
   }
 
   function answerType2(g) {
     const step = `หา c+d=${g.a}, cd=${g.b / 4}`;
-    const finalAns = `\u221a${g.c} + \u221a${g.d}`;
+    const finalAns = KT(`\\sqrt{${g.c}} + \\sqrt{${g.d}}`);
     return { step, finalAns };
   }
 
@@ -485,7 +490,7 @@
     } else {
       const ans = answerType2(current);
       stepLine.textContent = ans.step;
-      finalLine.textContent = ans.finalAns;
+      finalLine.innerHTML = ans.finalAns;
     }
     modeLabel.textContent = "นี่คือเฉลย";
   }

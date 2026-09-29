@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สมการกรณฑ์คู่แฝด</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
+  /* KaTeX font override: swap its built-in italic math font for Times New Roman
+     (closer to the classic serif-italic look the rest of the page uses), and make
+     exponents slightly smaller with a touch more space before them — KaTeX's
+     defaults render them a bit large and tight against the base variable */
+  .katex .mathnormal, .katex .mathdefault, .katex .mathit { font-family: "Times New Roman", Georgia, "Cambria", serif !important; }
+  .katex .katex-sizing.reset-size6.size3.mtight { font-size: 0.78em !important; }
+  .katex .msupsub { margin-left: 0.08em; }
   :root {
     --navy: #2F3C7E; --navy-deep: #232D63; --coral: #F96167; --coral-deep: #E14A50;
     --gold: #F9E795; --ink: #FFFFFF; --muted: #B9C0E0;
@@ -36,9 +45,6 @@
     text-align: center; line-height: 1.8; max-width: 95vw; transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .expr.swap { opacity: 0; transform: scale(0.94); }
-  .sqrt-wrap { display: inline-flex; align-items: flex-end; margin: 0 0.05em; }
-  .sqrt-sign { font-size: 1em; transform: scaleY(1.35) translateY(0.05em); transform-origin: bottom; }
-  .sqrt-content { border-top: 0.09em solid var(--ink); padding: 0 0.07em 0.02em 0.1em; display: inline-block; }
 
   .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: left; max-width: 640px; width: 100%; }
   .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
@@ -209,30 +215,46 @@
   }
 
   /* =========================================================
-     3. FORMATTING
+     3. FORMATTING — uses KaTeX (via CDN) to render all math,
+     rather than hand-built CSS/Unicode approximations. This
+     replaces several rounds of hand-drawn sqrt-symbol attempts
+     (Unicode √ + custom overline, then a single clip-path shape)
+     that kept breaking in edge cases (nested radicals, fraction
+     denominators, different font sizes) — KaTeX handles all of
+     that correctly natively, at any nesting depth or context.
      ========================================================= */
-  function fmtPolyInside(a, b, k) {
-    let s = `${fmtCoeff(a)}x\u00b2`;
-    if (b !== 0) s += b > 0 ? ` + ${Math.abs(b) === 1 ? "" : Math.abs(b)}x` : ` \u2212 ${Math.abs(b) === 1 ? "" : Math.abs(b)}x`;
-    if (k !== 0) s += k > 0 ? ` + ${k}` : ` \u2212 ${Math.abs(k)}`;
+  function KT(latex) {
+    try { return katex.renderToString(latex, { throwOnError: false }); }
+    catch (e) { return latex; }
+  }
+  function polyLatex(a, b, k) {
+    const coefA = a === 1 ? "" : a === -1 ? "-" : `${a}`;
+    let s = `${coefA}x^2`;
+    if (b !== 0) s += b > 0 ? ` + ${Math.abs(b) === 1 ? "" : Math.abs(b)}x` : ` - ${Math.abs(b) === 1 ? "" : Math.abs(b)}x`;
+    if (k !== 0) s += k > 0 ? ` + ${k}` : ` - ${Math.abs(k)}`;
     return s;
   }
-  function sqrtHTML(inner) {
-    return `<span class="sqrt-wrap"><span class="sqrt-sign">\u221a</span><span class="sqrt-content">${inner}</span></span>`;
+  function sqrtKT(a, b, k) {
+    return KT(`\\sqrt{${polyLatex(a, b, k)}}`);
   }
   function fmtProblem(prob) {
-    const A = sqrtHTML(fmtPolyInside(prob.a, prob.b, prob.c));
-    const B = sqrtHTML(fmtPolyInside(prob.a, prob.b, prob.d));
-    const opSym = prob.sign === "+" ? "+" : "\u2212";
-    return `${A} ${opSym} ${B} = ${prob.e}`;
+    const opSym = prob.sign === "+" ? "+" : "-";
+    const latex = `\\sqrt{${polyLatex(prob.a, prob.b, prob.c)}} ${opSym} \\sqrt{${polyLatex(prob.a, prob.b, prob.d)}} = ${prob.e}`;
+    return KT(latex);
   }
-  function fmtBinom(coefX, coefConst) {
+  function binomLatex(coefX, coefConst) {
     const xPart = coefX === 1 ? "x" : `${coefX}x`;
-    const constPart = coefConst === 0 ? "" : (coefConst > 0 ? ` + ${coefConst}` : ` \u2212 ${Math.abs(coefConst)}`);
+    const constPart = coefConst === 0 ? "" : (coefConst > 0 ? `+${coefConst}` : `-${Math.abs(coefConst)}`);
     return `(${xPart}${constPart})`;
   }
-  function fmtRootLabel(num, den) {
-    return fracHTML(-num, den);
+  function fracLatex(p, q) {
+    if (q < 0) { p = -p; q = -q; }
+    const g = gcdInt(p, q) || 1; p /= g; q /= g;
+    if (q === 1) return `${p}`;
+    return p < 0 ? `-\\frac{${Math.abs(p)}}{${q}}` : `\\frac{${p}}{${q}}`;
+  }
+  function rootLatex(num, den) {
+    return fracLatex(-num, den);
   }
 
   /* =========================================================
@@ -245,30 +267,29 @@
     const targetR = target !== 0 ? target / g0 : target;
     const bR = target !== 0 ? b / g0 : b;
     const auxLabel = sign === "+" ? "A \u2212 B" : "A + B";
-    const auxVal = n;
     const origLabel = sign === "+" ? "A + B" : "A \u2212 B";
 
     let html = `
-      <div class="answer-row"><b>1. ตั้งชื่อ:</b> ให้ A = ${sqrtHTML(fmtPolyInside(a, b, c))}, B = ${sqrtHTML(fmtPolyInside(a, b, d))}</div>
+      <div class="answer-row"><b>1. ตั้งชื่อ:</b> ให้ A = ${sqrtKT(a, b, c)}, B = ${sqrtKT(a, b, d)}</div>
       <div class="answer-row"><b>2. โจทย์คือ:</b> ${origLabel} = ${e}</div>
       <div class="answer-row"><b>3. หา A\u00b2\u2212B\u00b2 ตรงๆ</b> (ตัวแปร x หายไปหมดเพราะ ax\u00b2+bx เหมือนกัน): A\u00b2\u2212B\u00b2 = ${fmtSigned(c)} \u2212 (${fmtSigned(d)}) = ${fmtSigned(c - d)}</div>
       <div class="answer-row"><b>4. หาร A\u00b2\u2212B\u00b2 ด้วย ${origLabel}</b> (ซึ่งเท่ากับ ${e} จากข้อ 2): ${auxLabel} = (A\u00b2\u2212B\u00b2) \u00f7 ${e} = ${fmtSigned(c - d)} \u00f7 ${e} = ${fmtSigned(n)}</div>
       <div class="answer-row"><b>5. รวมสองสมการ:</b> ${origLabel} = ${e} กับ ${auxLabel} = ${fmtSigned(n)} บวกกันได้ 2A = ${e} + (${fmtSigned(n)}) = ${e + n}, ดังนั้น A = ${fmtSigned(E)}</div>
-      <div class="answer-row"><b>6. ยกกำลังสองทั้งสองข้าง (A=${fmtSigned(E)}):</b> ${fmtPolyInside(a, b, c)} = ${E}\u00b2 = ${E * E}</div>
-      <div class="answer-row"><b>7. จัดรูปสมการ:</b> ${fmtPolyInside(a, b, c - E * E)} = 0 &nbsp; <span style="color:var(--muted);">(นำ ${E * E} ลบทั้งสองข้าง)</span></div>
+      <div class="answer-row"><b>6. ยกกำลังสองทั้งสองข้าง (A=${fmtSigned(E)}):</b> ${KT(polyLatex(a, b, c))} = ${E}\u00b2 = ${E * E}</div>
+      <div class="answer-row"><b>7. จัดรูปสมการ:</b> ${KT(polyLatex(a, b, c - E * E))} = 0 &nbsp; <span style="color:var(--muted);">(นำ ${E * E} ลบทั้งสองข้าง)</span></div>
     `;
 
     let finalStepNum;
     if (target === 0) {
       html += `
-        <div class="answer-row"><b>8. ดึง x ออกตรงๆ</b> (ไม่มีค่าคงที่เหลือ): x(${fmtCoeff(a)}x${b > 0 ? " + " + b : b < 0 ? " \u2212 " + Math.abs(b) : ""}) = 0</div>
+        <div class="answer-row"><b>8. ดึง x ออกตรงๆ</b> (ไม่มีค่าคงที่เหลือ): ${KT(`x(${a === 1 ? "" : a}x${b > 0 ? "+" + b : b < 0 ? "-" + Math.abs(b) : ""})`)} = 0</div>
       `;
       finalStepNum = 9;
     } else {
       let stepNum = 8;
       if (g0 > 1) {
         html += `
-        <div class="answer-row"><b>${stepNum++}. ดึงตัวร่วม ${g0} ออกมาก่อน</b> (ตารางจะเล็กลง): ${fmtPolyInside(a, b, target)} = ${g0}(${fmtPolyInside(aR, bR, targetR)})</div>
+        <div class="answer-row"><b>${stepNum++}. ดึงตัวร่วม ${g0} ออกมาก่อน</b> (ตารางจะเล็กลง): ${KT(polyLatex(a, b, target))} = ${g0}(${KT(polyLatex(aR, bR, targetR))})</div>
         `;
       }
       html += `
@@ -281,9 +302,8 @@
       finalStepNum = stepNum;
     }
 
-    const root1 = -q / p, root2 = -s / r;
     html += `
-      <div class="factored-line">${g0 > 1 ? g0 : ""}${fmtBinom(p, q)}${fmtBinom(r, s)} = 0 &nbsp;\u2192&nbsp; x = ${fmtRootLabel(q, p)} หรือ x = ${fmtRootLabel(s, r)}</div>
+      <div class="factored-line">${KT(`${g0 > 1 ? g0 : ""}${binomLatex(p, q)}${binomLatex(r, s)} = 0 \\;\\rightarrow\\; x = ${rootLatex(q, p)} \\text{ หรือ } x = ${rootLatex(s, r)}`)}</div>
     `;
 
     const rootFracs = [{ n: -q, d: p }, { n: -s, d: r }];
@@ -297,8 +317,8 @@
       const denSq = xDen * xDen;
       const insideA = a * xNum * xNum + b * xNum * xDen + c * denSq;
       const insideB = a * xNum * xNum + b * xNum * xDen + d * denSq;
-      const xLabel = fmtRootLabel(-xNum, xDen);
-      checkRows += `<div class="answer-row">&nbsp;&nbsp;&nbsp;x = ${xLabel}: ${fmtPolyInside(a, b, c)} = ${fracHTML(insideA, denSq)} \u2265 0 \u2713 &nbsp;และ&nbsp; ${fmtPolyInside(a, b, d)} = ${fracHTML(insideB, denSq)} \u2265 0 \u2713</div>`;
+      const xLabelKT = KT(`x = ${rootLatex(-xNum, xDen)}`);
+      checkRows += `<div class="answer-row">&nbsp;&nbsp;&nbsp;${xLabelKT}: ${KT(polyLatex(a, b, c))} = ${KT(fracLatex(insideA, denSq))} \u2265 0 \u2713 &nbsp;และ&nbsp; ${KT(polyLatex(a, b, d))} = ${KT(fracLatex(insideB, denSq))} \u2265 0 \u2713</div>`;
     }
     html += `
       <div class="answer-row"><b>${finalStepNum}. ตรวจว่าภายใน sqrt ทั้งสองข้างไม่ติดลบ</b> ที่แต่ละราก (ขั้นตอนบังคับของสมการกรณฑ์):</div>
