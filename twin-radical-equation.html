@@ -36,9 +36,9 @@
     text-align: center; line-height: 1.8; max-width: 95vw; transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .expr.swap { opacity: 0; transform: scale(0.94); }
-  .sqrt-wrap { display: inline-flex; align-items: flex-start; margin: 0 0.06em; }
-  .sqrt-sign { font-size: 1.15em; line-height: 1; margin-right: 0.02em; transform: translateY(0.02em); }
-  .sqrt-content { border-top: 2px solid var(--ink); padding: 0 0.08em 0 0.05em; display: inline-block; }
+  .sqrt-wrap { display: inline-flex; align-items: flex-end; margin: 0 0.05em; }
+  .sqrt-sign { font-size: 1em; transform: scaleY(1.35) translateY(0.05em); transform-origin: bottom; }
+  .sqrt-content { border-top: 0.09em solid var(--ink); padding: 0 0.07em 0.02em 0.1em; display: inline-block; }
 
   .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: left; max-width: 640px; width: 100%; }
   .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
@@ -217,7 +217,9 @@
     if (k !== 0) s += k > 0 ? ` + ${k}` : ` \u2212 ${Math.abs(k)}`;
     return s;
   }
-  function sqrtHTML(inner) { return `<span class="sqrt-wrap"><span class="sqrt-sign">\u221a</span><span class="sqrt-content">${inner}</span></span>`; }
+  function sqrtHTML(inner) {
+    return `<span class="sqrt-wrap"><span class="sqrt-sign">\u221a</span><span class="sqrt-content">${inner}</span></span>`;
+  }
   function fmtProblem(prob) {
     const A = sqrtHTML(fmtPolyInside(prob.a, prob.b, prob.c));
     const B = sqrtHTML(fmtPolyInside(prob.a, prob.b, prob.d));
