@@ -4,19 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มระบบสมการเชิงเส้นสองตัวแปร</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
 
   /* =========================================================
      1. BASE / VARIABLES
      ========================================================= */
   :root {
-    --navy: #2F3C7E;
-    --navy-deep: #232D63;
-    --coral: #F96167;
-    --coral-deep: #E14A50;
-    --gold: #F9E795;
-    --ink: #FFFFFF;
-    --muted: #B9C0E0;
+    --navy: #EAF4FF;
+    --navy-deep: #315B92;
+    --coral: #DF655D;
+    --coral-deep: #C84D47;
+    --gold: #315B92;
+    --ink: #192E43;
+    --muted: #52677C;
+    --panel: #FFFFFF;
+    --border: #C5D9EC;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,8 +45,8 @@
      2. BACKGROUND DECORATION
      ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
-  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
-  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.06; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.05; bottom: -10vmax; left: -8vmax; }
 
   /* =========================================================
      3. HEADER (eyebrow) + GEAR BUTTON
@@ -64,7 +68,7 @@
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(49, 91, 146, 0.10);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,7 +76,7 @@
     z-index: 2;
     padding: 0;
   }
-  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+  .gear-btn:active { background: rgba(49, 91, 146, 0.18); }
 
   /* =========================================================
      4. STAGE (problem / answer area)
@@ -88,6 +92,7 @@
     justify-content: center;
     flex: 1;
     width: 100%;
+    max-width: 850px;
     z-index: 1;
     padding: 8px 20px;
     gap: clamp(8px, 1.8vh, 18px);
@@ -95,7 +100,7 @@
   }
 
   .equation {
-    font-family: "Cambria", "Georgia", serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: clamp(20px, 4vw, 40px);
     font-weight: 700;
     text-align: center;
@@ -105,7 +110,7 @@
   }
   .equation.swap { opacity: 0; transform: scale(0.94); }
 
-  .eq-pair { display: flex; align-items: center; justify-content: center; }
+  .eq-pair { display: flex; align-items: center; justify-content: center; width:100%; background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:clamp(18px,3vh,32px) 12px; }
   .eq-lines { display: flex; flex-direction: column; gap: clamp(6px, 1.5vh, 14px); }
 
   /* ---- exercise-specific: fraction display ---- */
@@ -121,7 +126,7 @@
   .frac .num { border-bottom: 0.06em solid currentColor; padding-bottom: 0.04em; }
   .frac .den { padding-top: 0.04em; }
 
-  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; width:100%; background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:12px 10px 18px; }
   .answer-wrap.swap { opacity: 0; transform: scale(0.94); }
 
   /* ---- exercise-specific: intersection graph ---- */
@@ -129,7 +134,7 @@
   .graph-box svg { width: 100%; height: auto; display: block; }
 
   .answer-line {
-    font-family: "Cambria", "Georgia", serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: clamp(24px, 4.6vw, 46px);
     font-weight: 700;
     color: var(--gold);
@@ -162,7 +167,8 @@
     border: none;
     border-radius: 20px;
     font-family: inherit;
-    font-weight: 700;
+    font-weight: 400;
+    font-size: clamp(13px, 1.9vw, 20px);
     cursor: pointer;
     -webkit-appearance: none;
     transition: transform 0.08s ease, filter 0.15s ease;
@@ -172,8 +178,7 @@
   .btn-next {
     flex: 2;
     background: var(--coral);
-    color: var(--ink);
-    font-size: clamp(13px, 2.1vw, 22px);
+    color: #FFFFFF;
     padding: clamp(12px, 2.4vh, 20px) 10px;
     white-space: nowrap;
   }
@@ -181,9 +186,8 @@
   .btn-toggle {
     flex: 2;
     background: var(--navy-deep);
-    color: var(--gold);
-    border: 2px solid var(--gold);
-    font-size: clamp(13px, 1.9vw, 20px);
+    color: #FFFFFF;
+    border: 2px solid var(--navy-deep);
     padding: clamp(12px, 2.4vh, 20px) 16px;
   }
 
@@ -191,11 +195,10 @@
     flex: 1;
     background: transparent;
     color: var(--muted);
-    border: 2px solid var(--navy-deep);
-    font-size: clamp(12px, 1.6vw, 18px);
+    border: 2px solid var(--border);
     padding: clamp(12px, 2.4vh, 20px) 12px;
   }
-  .btn-end:active { background: var(--navy-deep); }
+  .btn-end:active { background: #D6E4F2; }
 
   /* =========================================================
      6. END SCREEN
@@ -203,7 +206,7 @@
   .end-screen {
     position: fixed;
     inset: 0;
-    background: var(--navy-deep);
+    background: var(--navy);
     display: none;
     flex-direction: column;
     align-items: center;
@@ -217,8 +220,8 @@
   .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
 
   .btn-restart {
-    background: var(--gold);
-    color: var(--navy-deep);
+    background: var(--navy-deep);
+    color: #FFFFFF;
     font-size: clamp(17px, 2.4vw, 22px);
     padding: 18px 40px;
     border-radius: 20px;
@@ -230,7 +233,7 @@
   .settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20, 24, 54, 0.75);
+    background: rgba(25, 46, 67, 0.50);
     display: none;
     align-items: center;
     justify-content: center;
@@ -241,22 +244,23 @@
   .settings-overlay.show { display: flex; }
 
   .settings-panel {
-    background: var(--navy-deep);
+    background: var(--panel);
+    border: 1px solid var(--border);
     border-radius: 22px;
     padding: 28px 24px;
     width: 100%;
     max-width: 420px;
     max-height: 92vh;
     overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 20px 60px rgba(25, 46, 67, 0.18);
   }
   .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
   .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
 
   /* ---- exercise-specific: per-variable settings sub-sections ---- */
-  .var-section { background: rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 12px 14px 4px; margin-bottom: 14px; }
+  .var-section { background: #F0F6FD; border-radius: 14px; padding: 12px 14px 4px; margin-bottom: 14px; }
   .var-section-title { font-size: 14px; font-weight: 800; color: var(--gold); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-  .var-badge { width: 22px; height: 22px; border-radius: 50%; background: var(--coral); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; }
+  .var-badge { width: 22px; height: 22px; border-radius: 50%; background: var(--coral); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #FFFFFF; }
 
   .shared-section { margin-top: 4px; margin-bottom: 8px; }
   .shared-section .label { font-size: 13px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
@@ -275,8 +279,8 @@
     font-size: 15px;
     font-weight: 700;
     color: var(--ink);
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: rgba(49, 91, 146, 0.10);
+    border: 2px solid var(--border);
     border-radius: 9px;
     padding: 8px;
     box-sizing: border-box;
@@ -287,8 +291,8 @@
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
 
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
-  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid var(--border); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: #FFFFFF; font-size: 15px; padding: 14px; }
 
   /* =========================================================
      8. RESPONSIVE (short screens)
@@ -300,6 +304,38 @@
     .var-section { padding: 8px 10px 2px; margin-bottom: 8px; }
     .field-group { margin-bottom: 6px; }
   }
+
+
+  /* =========================================================
+     9. KATEX + SOLUTION HEADER LINES + GRAPH LABELS + SETTINGS CHECKBOXES
+     ========================================================= */
+  .katex .mathnormal, .katex .mathdefault, .katex .mathit { font-family: "Times New Roman", Times, serif !important; }
+  .katex .katex-sizing.reset-size6.size3.mtight { font-size: 0.78em !important; }
+  .katex .msupsub { margin-left: 0.08em; }
+  .katex .ordinary-number { font-family:"Times New Roman",Times,serif !important; font-style:normal; font-size:calc(1em - 1pt); }
+
+  /* the answer view is now taller (header lines + graph + x=,y=): centre with spacers instead of
+     justify-content:center, so when it overflows the top is not clipped but scrollable */
+  .stage { justify-content: flex-start; }
+  .stage::before, .stage::after { content: ""; flex: 1 0 0; }
+  @media (max-width: 600px) { .eq-lines { gap: 22px; } }
+
+  .pre-lines { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .pre-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2px 14px;
+    font-size: clamp(13px, 2.4vw, 22px);
+    max-width: 95vw;
+  }
+  .pre-line .seg { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+
+  .glabel { font-size: 11px; line-height: 1.2; white-space: nowrap; text-align: center; }
+
+  .check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 0; cursor: pointer; }
+  .check-row input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--coral); }
 
 </style>
 </head>
@@ -319,6 +355,7 @@
       </div>
     </div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
+      <div class="pre-lines" id="preLines"></div>
       <div class="graph-box" id="graphBox"></div>
       <div class="answer-line" id="answerLine"></div>
     </div>
@@ -326,8 +363,8 @@
   </div>
 
   <div class="controls">
-    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
-    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-next" id="nextBtn">ข้อต่อไป</button>
+    <button class="btn-toggle" id="toggleBtn">ดูเฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
@@ -340,56 +377,25 @@
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มระบบสมการ</h2>
-      <div class="desc">ปรับความยากของแต่ละตัวแปรแยกกันได้ และกำหนดช่วงคำตอบ</div>
+      <div class="desc">เลือกเลเวลความยาก ชนิดของสมการ และช่วงคำตอบ</div>
 
       <div class="var-section">
-        <div class="var-section-title"><span class="var-badge">1</span> ตัวแปรตัวที่ 1</div>
+        <div class="var-section-title">ระดับความยาก (1 ง่ายสุด – 5 ยากสุด)</div>
         <div class="field-group">
-          <div class="label">จำนวนครั้ง บวก/ลบ</div>
+          <div class="label">สุ่มเลเวลในช่วง</div>
           <div class="field-row">
-            <span class="mini-label">ต่ำสุด</span><input type="number" id="v1AsMin">
-            <span class="mini-label">สูงสุด</span><input type="number" id="v1AsMax">
+            <span class="mini-label">ต่ำสุด</span><input type="number" id="lvMin" min="1" max="5">
+            <span class="mini-label">สูงสุด</span><input type="number" id="lvMax" min="1" max="5">
           </div>
-        </div>
-        <div class="field-group">
-          <div class="label">จำนวนครั้ง คูณ/หาร</div>
-          <div class="field-row">
-            <span class="mini-label">ต่ำสุด</span><input type="number" id="v1MdMin">
-            <span class="mini-label">สูงสุด</span><input type="number" id="v1MdMax">
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="label">จำนวนครั้ง วงเล็บ</div>
-          <div class="field-row">
-            <span class="mini-label">ต่ำสุด</span><input type="number" id="v1BrMin">
-            <span class="mini-label">สูงสุด</span><input type="number" id="v1BrMax">
-          </div>
+          <div class="field-note">เลเวล 1–2 คำตอบเป็นจำนวนเต็ม เลเวล 3–5 คำตอบเป็นเศษส่วนได้</div>
         </div>
       </div>
 
       <div class="var-section">
-        <div class="var-section-title"><span class="var-badge">2</span> ตัวแปรตัวที่ 2</div>
-        <div class="field-group">
-          <div class="label">จำนวนครั้ง บวก/ลบ</div>
-          <div class="field-row">
-            <span class="mini-label">ต่ำสุด</span><input type="number" id="v2AsMin">
-            <span class="mini-label">สูงสุด</span><input type="number" id="v2AsMax">
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="label">จำนวนครั้ง คูณ/หาร</div>
-          <div class="field-row">
-            <span class="mini-label">ต่ำสุด</span><input type="number" id="v2MdMin">
-            <span class="mini-label">สูงสุด</span><input type="number" id="v2MdMax">
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="label">จำนวนครั้ง วงเล็บ</div>
-          <div class="field-row">
-            <span class="mini-label">ต่ำสุด</span><input type="number" id="v2BrMin">
-            <span class="mini-label">สูงสุด</span><input type="number" id="v2BrMax">
-          </div>
-        </div>
+        <div class="var-section-title">ชนิดของสมการที่สุ่ม</div>
+        <label class="check-row"><input type="checkbox" id="t1"> แบบที่ 1: Ax + By + C = 0</label>
+        <label class="check-row"><input type="checkbox" id="t2"> แบบที่ 2: บวก ลบ คูณ หาร วงเล็บ (แบบเดิม)</label>
+        <label class="check-row"><input type="checkbox" id="t3"> แบบที่ 3: A/B (ax + b) + C/D (cy + d) = E</label>
       </div>
 
       <div class="shared-section">
@@ -416,16 +422,36 @@
      ========================================================= */
   const DEFAULT_CFG = {
     xMin: -15, xMax: 15,
-    v1AsMin: 1, v1AsMax: 2, v1MdMin: 1, v1MdMax: 2, v1BrMin: 0, v1BrMax: 1,
-    v2AsMin: 1, v2AsMax: 2, v2MdMin: 1, v2MdMax: 2, v2BrMin: 0, v2BrMax: 1,
+    lvMin: 1, lvMax: 5,          // difficulty level range (each problem draws one level in this range)
+    t1: true, t2: true, t3: true // which equation types may appear
   };
-  const STORAGE_KEY = "linear-system-2var-gen-cfg";
+  const STORAGE_KEY = "linear-system-2var-gen-cfg-v2";
 
   let cfg = { ...DEFAULT_CFG };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) cfg = { ...DEFAULT_CFG, ...saved };
   } catch (e) {}
+
+  /* ---------------------------------------------------------
+     LEVEL TABLE  (edit the numbers here to retune difficulty)
+     fracCoord : may the solution (x0,y0) be fractions?
+     t1.coefMax: |A|,|B| max for  Ax+By+C=0
+     t2        : per-variable counts [min,max] of +/-, x/÷, brackets (original generator)
+     t3        : A/B(ax+b) ± C/D(cy+d) = E
+        bdMax   B,D range 2..bdMax          lcmCap  lcm(B,D) cap (0 = none)
+        numMax  |A|,|C| max                 inMax   |a|,|c| max
+        constMax |b|,|d| max                signed  a,c may be negative
+        pFracE  probability that E is a (non-integer) fraction
+     --------------------------------------------------------- */
+  const ECAP = 48; // max denominator allowed for E
+  const LEVELS = {
+    1: { fracCoord: false, t1: { coefMax: 3 },  t2: { as: [1, 1], md: [1, 1], br: [0, 0] }, t3: { bdMax: 4,  lcmCap: 0,  numMax: 3,  inMax: 2, constMax: 6,  signed: false, pFracE: 0.0 } },
+    2: { fracCoord: false, t1: { coefMax: 5 },  t2: { as: [1, 2], md: [1, 2], br: [0, 1] }, t3: { bdMax: 6,  lcmCap: 0,  numMax: 5,  inMax: 3, constMax: 9,  signed: false, pFracE: 0.0 } },
+    3: { fracCoord: true,  t1: { coefMax: 7 },  t2: { as: [1, 2], md: [1, 2], br: [1, 1] }, t3: { bdMax: 12, lcmCap: 0,  numMax: 7,  inMax: 4, constMax: 12, signed: true,  pFracE: 0.5 } },
+    4: { fracCoord: true,  t1: { coefMax: 9 },  t2: { as: [2, 3], md: [2, 3], br: [1, 1] }, t3: { bdMax: 18, lcmCap: 48, numMax: 9,  inMax: 5, constMax: 15, signed: true,  pFracE: 0.8 } },
+    5: { fracCoord: true,  t1: { coefMax: 12 }, t2: { as: [2, 3], md: [2, 3], br: [1, 2] }, t3: { bdMax: 24, lcmCap: 48, numMax: 11, inMax: 6, constMax: 20, signed: true,  pFracE: 1.0 } },
+  };
 
   /* =========================================================
      2. DOM REFERENCES
@@ -435,6 +461,7 @@
   const eq1El = document.getElementById("eq1El");
   const eq2El = document.getElementById("eq2El");
   const answerWrap = document.getElementById("answerWrap");
+  const preLines = document.getElementById("preLines");
   const graphBox = document.getElementById("graphBox");
   const answerLine = document.getElementById("answerLine");
   const promptEl = document.getElementById("promptEl");
@@ -452,11 +479,8 @@
   const settingsError = document.getElementById("settingsError");
   const cancelBtn = document.getElementById("cancelBtn");
   const saveBtn = document.getElementById("saveBtn");
-  const fieldIds = [
-    "xMin", "xMax",
-    "v1AsMin", "v1AsMax", "v1MdMin", "v1MdMax", "v1BrMin", "v1BrMax",
-    "v2AsMin", "v2AsMax", "v2MdMin", "v2MdMax", "v2BrMin", "v2BrMax",
-  ];
+  const fieldIds = ["xMin", "xMax", "lvMin", "lvMax"];
+  const checkIds = ["t1", "t2", "t3"];
 
   /* =========================================================
      3. STATE
@@ -487,14 +511,45 @@
   }
 
   function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; }
+  function lcm(a, b) { return (a / gcd(a, b)) * b; }
+
+  /* ---- exact rational numbers {n,d}, d > 0, always in lowest terms ---- */
+  const F = (n, d = 1) => { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); return { n: n / g + 0, d: d / g }; };
+  const fadd = (a, b) => F(a.n * b.d + b.n * a.d, a.d * b.d);
+  const fsub = (a, b) => F(a.n * b.d - b.n * a.d, a.d * b.d);
+  const fmul = (a, b) => F(a.n * b.n, a.d * b.d);
+  const fdiv = (a, b) => F(a.n * b.d, a.d * b.n);
+  const fneg = (a) => F(-a.n, a.d);
+  const fzero = (a) => a.n === 0;
+  const fint = (a) => a.d === 1;
+  const fnum = (a) => a.n / a.d;
+
+  /* Standard 2026-10-14: reduce only standalone ordinary numeric KaTeX atoms. */
+  function styleOrdinaryMathNumbers(renderedHtml) {
+    const template = document.createElement("template");
+    template.innerHTML = renderedHtml;
+    template.content.querySelectorAll(".katex-html .mord").forEach(atom => {
+      if (atom.children.length || !/^\d+(?:\.\d+)?$/.test(atom.textContent.trim())) return;
+      if (atom.closest(".mfrac, .msupsub, .vlist, .sqrt, .root, .sizing, .accent, .op-limits")) return;
+      atom.classList.add("ordinary-number");
+    });
+    return template.innerHTML;
+  }
+  /* ---- KaTeX helpers ---- */
+  function KT(tex) {
+    try { return styleOrdinaryMathNumbers(katex.renderToString(tex, { throwOnError: false, displayMode: false })); }
+    catch (e) { return tex; }
+  }
+  function absTex(f) { return f.d === 1 ? `${Math.abs(f.n)}` : `\\frac{${Math.abs(f.n)}}{${f.d}}`; }
+  function texFrac(f) { return (f.n < 0 ? "-" : "") + absTex(f); }
 
   // ---- coordinate fraction helpers ----
   // pick which denominator applies (1 most common, then 2, 3, 4 progressively rarer),
   // then a numerator scaled by that same denominator so the resulting VALUE still lands
-  // in [xMin,xMax] regardless of which denominator was chosen — e.g. denom=2 needs a
-  // numerator up to 2x wider, then dividing back by 2 returns it to the original range.
+  // in [xMin,xMax] regardless of which denominator was chosen.
   const DENOM_WEIGHTS = [[1, 2 / 3], [2, 1 / 6], [3, 1 / 12], [4, 1 / 12]];
-  function randFractionCoord(xMin, xMax) {
+  function randFractionCoord(xMin, xMax, allowFrac) {
+    if (!allowFrac) { const p = randInt(xMin, xMax); return { p, d: 1, value: p }; }
     const r = Math.random();
     let acc = 0, d = 1;
     for (const [den, w] of DENOM_WEIGHTS) { acc += w; if (r < acc) { d = den; break; } }
@@ -509,48 +564,40 @@
     return frac.d === 1 ? `${sign}${absP}` : `${sign}${absP}/${frac.d}`;
   }
 
-  // stacked visual form (matches the .frac style already used inside the equation body)
-  function fmtFractionHTML(frac) {
-    if (frac.d === 1) return fmtFraction(frac);
-    const sign = frac.p < 0 ? "\u2212" : "";
-    return `${sign}<span class="frac"><span class="num">${Math.abs(frac.p)}</span><span class="den">${frac.d}</span></span>`;
-  }
-
-  // reduce a (possibly messy, floating-point) total back to the simplest p/d that
-  // reproduces it — needed because combining two fractional coordinates through a chain
-  // of +,-,x,/ steps can leave the equation's right-hand side as an ugly decimal.
-  function toSimpleFraction(x, maxDen = 48, eps = 1e-6) {
-    if (Math.abs(x - Math.round(x)) < eps) return { p: Math.round(x), d: 1 };
-    for (let d = 2; d <= maxDen; d++) {
-      const p = x * d;
-      if (Math.abs(p - Math.round(p)) < eps) {
-        const rp = Math.round(p);
-        const g = gcd(Math.abs(rp), d);
-        return { p: rp / g, d: d / g };
-      }
-    }
-    return { p: Math.round(x * maxDen), d: maxDen }; // fallback (not expected to trigger)
-  }
-
-  function fmtTotalHTML(total) {
-    const frac = toSimpleFraction(total);
-    if (frac.d === 1) return `${frac.p}`;
-    const sign = frac.p < 0 ? "\u2212" : "";
-    return `${sign}<span class="frac"><span class="num">${Math.abs(frac.p)}</span><span class="den">${frac.d}</span></span>`;
-  }
-
   /* =========================================================
-     5. EXPRESSION GENERATOR
+     5. EQUATION GENERATORS
+     Every generator returns { type, tex, A, B, C } where
+        A·x + B·y + C = 0   (A,B,C exact rationals)
+     is the equation moved to one side, so no string parsing is
+     ever needed to recover the coefficients.
      ========================================================= */
-  const VAR_POOL = ["x", "y", "a", "b", "m", "n", "p", "q"];
+  // variable pairs: x,y 2/3 of the time; otherwise one of these pairs (1/9 each)
+  const VAR_PAIRS = [["a", "b"], ["m", "n"], ["p", "q"]];
 
-  function divisionDisplay(numeratorHTML, denominator, wrapInParens) {
-    if (Math.random() < 0.5) {
-      return `<span class="frac"><span class="num">${numeratorHTML}</span><span class="den">${denominator}</span></span>`;
-    }
-    return wrapInParens ? `(${numeratorHTML}) \u00f7 ${denominator}` : `${numeratorHTML} \u00f7 ${denominator}`;
+  /* ---------- type 1 : standard form  Ax + By + C = 0 ---------- */
+  function stdTex(A, B, Cf, vx, vy) {
+    const termVar = (n, v) => (Math.abs(n) === 1 ? "" : `${Math.abs(n)}`) + v;
+    let out = (A < 0 ? "-" : "") + termVar(A, vx);
+    out += ` ${B < 0 ? "-" : "+"} ` + termVar(B, vy);
+    if (Cf.n !== 0) out += ` ${Cf.n < 0 ? "-" : "+"} ` + absTex(Cf);
+    return out + " = 0";
   }
 
+  function genType1(varX, x0, varY, y0, lv) {
+    const M = LEVELS[lv].t1.coefMax;
+    for (let i = 0; i < 500; i++) {
+      const A = randInt(1, M);                 // A > 0 (standard form convention)
+      const B = randInt(1, M) * (Math.random() < 0.5 ? -1 : 1);
+      const C = fneg(fadd(fmul(F(A), x0), fmul(F(B), y0)));
+      // an integer C must not share a common factor with A and B (keep the equation reduced);
+      // a fractional C cannot be reduced, so A,B are left completely free.
+      if (fint(C) && gcd(gcd(A, B), C.n) !== 1) continue;
+      return { type: 1, tex: stdTex(A, B, C, varX, varY), A: F(A), B: F(B), C };
+    }
+    return null;
+  }
+
+  /* ---------- type 2 : the original expression builder (division always as a stacked fraction) ---------- */
   function buildVarExpr(variable, val0, vcfg) {
     const nBrackets = randInt(vcfg.brMin, vcfg.brMax);
     const nAS = randInt(Math.max(vcfg.asMin, nBrackets), Math.max(vcfg.asMax, nBrackets));
@@ -559,8 +606,8 @@
     const freeMDCount = nMD - nBrackets;
     const freeASCount = nAS - nBrackets;
 
-    function makeAS() { return { op: choice(["+", "\u2212"]), c: randInt(1, 12) }; }
-    function makeMDPlan() { return { op: choice(["\u00d7", "\u00f7"]) }; }
+    function makeAS() { return { op: choice(["+", "-"]), c: randInt(1, 12) }; }
+    function makeMDPlan() { return { op: choice(["*", "/"]) }; }
 
     const blocks = [];
     for (let i = 0; i < nBrackets; i++) blocks.push({ kind: "block", as: makeAS(), md: makeMDPlan() });
@@ -573,10 +620,14 @@
     const orderedAtoms = [...shuffle(freeMD), ...middlePool];
 
     let expr = variable;
-    let value = val0;
+    let value = val0;                 // value of the expression at the solution (exact)
+    let slope = F(1), icpt = F(0);    // expression = slope·variable + icpt  (exact, tracked alongside)
     let bareMode = true;
     let bareCoef = 1;
     let isSumAtTop = false;
+
+    const scale = (f) => { value = fmul(value, f); slope = fmul(slope, f); icpt = fmul(icpt, f); };
+    const intDivisors = (f, min, max) => (fint(f) ? divisorsOf(f.n, min, max) : []);
 
     function materialize() {
       expr = bareCoef === 1 ? variable : `${bareCoef}${variable}`;
@@ -585,37 +636,38 @@
     function applyAS(layer) {
       if (bareMode) materialize();
       expr += ` ${layer.op} ${layer.c}`;
-      value = layer.op === "+" ? value + layer.c : value - layer.c;
+      const c = F(layer.c);
+      if (layer.op === "+") { value = fadd(value, c); icpt = fadd(icpt, c); }
+      else { value = fsub(value, c); icpt = fsub(icpt, c); }
       isSumAtTop = true;
     }
     function applyMDDirect(layerPlan) {
       let op = layerPlan.op, c;
-      if (op === "\u00f7") {
+      if (op === "/") {
         if (bareMode) {
           const divs = divisorsOf(bareCoef, 2, 9);
-          if (divs.length > 0) { c = choice(divs); bareCoef /= c; value /= c; return; }
+          if (divs.length > 0) { c = choice(divs); bareCoef /= c; scale(F(1, c)); return; }
         }
-        const valDivs = divisorsOf(value, 2, 9);
-        if (valDivs.length === 0) { op = "\u00d7"; c = randInt(2, 9); }
+        const valDivs = intDivisors(value, 2, 9);
+        if (valDivs.length === 0) { op = "*"; c = randInt(2, 9); }
         else { c = choice(valDivs); }
       } else { c = randInt(2, 9); }
-      if (op === "\u00d7") {
-        if (bareMode) { bareCoef *= c; value *= c; return; }
-        expr = `${c}(${expr})`; value *= c; isSumAtTop = false;
+      if (op === "*") {
+        if (bareMode) { bareCoef *= c; scale(F(c)); return; }
+        expr = `${c}\\left(${expr}\\right)`; scale(F(c)); isSumAtTop = false;
       } else {
-        if (bareMode) { materialize(); expr = divisionDisplay(expr, c, false); }
-        else { expr = divisionDisplay(expr, c, true); }
-        value /= c; isSumAtTop = false;
+        if (bareMode) materialize();
+        expr = `\\frac{${expr}}{${c}}`; scale(F(1, c)); isSumAtTop = false;
       }
     }
     function applyMDBlock(layerPlan) {
       let op = layerPlan.op, c;
-      if (op === "\u00f7") {
-        const divs = divisorsOf(value, 2, 9);
-        if (divs.length === 0) { op = "\u00d7"; c = randInt(2, 9); } else c = choice(divs);
+      if (op === "/") {
+        const divs = intDivisors(value, 2, 9);
+        if (divs.length === 0) { op = "*"; c = randInt(2, 9); } else c = choice(divs);
       } else { c = randInt(2, 9); }
-      if (op === "\u00d7") { expr = `${c}(${expr})`; value *= c; }
-      else { expr = divisionDisplay(expr, c, true); value /= c; }
+      if (op === "*") { expr = `${c}\\left(${expr}\\right)`; scale(F(c)); }
+      else { expr = `\\frac{${expr}}{${c}}`; scale(F(1, c)); }
       isSumAtTop = false;
     }
 
@@ -625,122 +677,158 @@
       else if (atom.kind === "md") applyMDDirect(atom.layer);
     });
     if (bareMode) materialize();
-    return { expr, value, isSumAtTop };
+    return { expr, value, isSumAtTop, slope, icpt };
   }
 
-  function generateOneEquation(varX, x0, varY, y0, vcfg1, vcfg2) {
-    const partX = buildVarExpr(varX, x0, vcfg1);
-    const partY = buildVarExpr(varY, y0, vcfg2);
-    const joinOp = choice(["+", "\u2212"]);
-    const total = joinOp === "+" ? partX.value + partY.value : partX.value - partY.value;
-    const yExprSafe = (joinOp === "\u2212" && partY.isSumAtTop) ? `(${partY.expr})` : partY.expr;
-    return `${partX.expr} ${joinOp} ${yExprSafe} = ${fmtTotalHTML(total)}`;
+  function genType2(varX, x0, varY, y0, lv) {
+    const r = LEVELS[lv].t2;
+    const vcfg = { asMin: r.as[0], asMax: r.as[1], mdMin: r.md[0], mdMax: r.md[1], brMin: r.br[0], brMax: r.br[1] };
+    const partX = buildVarExpr(varX, x0, vcfg);
+    const partY = buildVarExpr(varY, y0, vcfg);
+    const plus = Math.random() < 0.5;
+    const total = plus ? fadd(partX.value, partY.value) : fsub(partX.value, partY.value);
+    const ySafe = (!plus && partY.isSumAtTop) ? `\\left(${partY.expr}\\right)` : partY.expr;
+    const A = partX.slope;
+    const B = plus ? partY.slope : fneg(partY.slope);
+    const C = fsub(plus ? fadd(partX.icpt, partY.icpt) : fsub(partX.icpt, partY.icpt), total);
+    return { type: 2, tex: `${partX.expr} ${plus ? "+" : "-"} ${ySafe} = ${texFrac(total)}`, A, B, C };
+  }
+
+  /* ---------- type 3 : A/B (ax+b) ± C/D (cy+d) = E ---------- */
+  function innerTex(a, b, v) {
+    const aa = Math.abs(a);
+    return (a < 0 ? "-" : "") + (aa === 1 ? "" : aa) + v + (b > 0 ? ` + ${b}` : ` - ${-b}`);
+  }
+
+  function genType3(varX, x0, varY, y0, lv) {
+    const P = LEVELS[lv].t3;
+    const wantFrac = Math.random() < P.pFracE; // decided ONCE per equation, outside the retry loop
+    const coprimeNum = (den) => {
+      const pool = [];
+      for (let n = 1; n <= P.numMax; n++) if (gcd(n, den) === 1) pool.push(n);
+      return choice(pool);
+    };
+    for (let attempt = 0; attempt < 400; attempt++) {
+      const den1 = randInt(2, P.bdMax), den2 = randInt(2, P.bdMax);
+      if (P.lcmCap && lcm(den1, den2) > P.lcmCap) continue;
+      const num1 = coprimeNum(den1) * (Math.random() < 0.5 ? -1 : 1);
+      const num2 = coprimeNum(den2) * (Math.random() < 0.5 ? -1 : 1);
+      const sgn = () => (P.signed && Math.random() < 0.5 ? -1 : 1);
+      const a = randInt(1, P.inMax) * sgn();
+      const c = randInt(1, P.inMax) * sgn();
+      const k1 = F(num1, den1), k2 = F(num2, den2);
+      const ax0 = fmul(F(a), x0), cy0 = fmul(F(c), y0);
+
+      // every (b,d) with b,d ≠ 0 whose E has the required nature (integer / proper fraction with small denominator)
+      const t1 = [], t2 = [];
+      for (let b = -P.constMax; b <= P.constMax; b++) if (b !== 0) t1.push([b, fmul(k1, fadd(ax0, F(b)))]);
+      for (let d = -P.constMax; d <= P.constMax; d++) if (d !== 0) t2.push([d, fmul(k2, fadd(cy0, F(d)))]);
+      const cands = [];
+      for (const [b, v1] of t1) for (const [d, v2] of t2) {
+        const E = fadd(v1, v2);
+        if (wantFrac ? (!fint(E) && E.d <= ECAP) : fint(E)) cands.push([b, d, E]);
+      }
+      if (cands.length === 0) continue;
+      const [b, d, E] = choice(cands);
+
+      const term1 = `${num1 < 0 ? "-" : ""}\\frac{${Math.abs(num1)}}{${den1}}\\left(${innerTex(a, b, varX)}\\right)`;
+      const term2 = `\\frac{${Math.abs(num2)}}{${den2}}\\left(${innerTex(c, d, varY)}\\right)`;
+      const tex = `${term1} ${num2 < 0 ? "-" : "+"} ${term2} = ${texFrac(E)}`;
+      const A = fmul(k1, F(a)), B = fmul(k2, F(c));
+      const C = fsub(fadd(fmul(k1, F(b)), fmul(k2, F(d))), E);
+      return { type: 3, tex, A, B, C };
+    }
+    return null;
+  }
+
+  function buildEquation(type, varX, x0, varY, y0, lv) {
+    const eq = type === 1 ? genType1(varX, x0, varY, y0, lv)
+             : type === 2 ? genType2(varX, x0, varY, y0, lv)
+             : genType3(varX, x0, varY, y0, lv);
+    if (!eq || fzero(eq.A) || fzero(eq.B)) return null; // never a vertical / horizontal line
+    return eq;
+  }
+
+  // sin of the angle between two lines (0 = parallel/identical, 1 = perpendicular)
+  const MIN_SIN = 0.2; // ≈ 11.5°
+  function crossingSin(e1, e2) {
+    const det = Math.abs(fnum(fsub(fmul(e1.A, e2.B), fmul(e2.A, e1.B))));
+    return det / (Math.hypot(fnum(e1.A), fnum(e1.B)) * Math.hypot(fnum(e2.A), fnum(e2.B)));
   }
 
   function generateSystem() {
-    const useXY = Math.random() < 0.7;
-    let varX, varY;
-    if (useXY) { varX = "x"; varY = "y"; }
-    else {
-      const pool = shuffle(VAR_POOL.filter((v) => v !== "x" && v !== "y"));
-      varX = pool[0]; varY = pool[1];
+    const lv = randInt(cfg.lvMin, cfg.lvMax);
+    const L = LEVELS[lv];
+    const types = [1, 2, 3].filter((t) => cfg["t" + t]);
+    for (let tries = 0; tries < 200; tries++) {
+      let varX = "x", varY = "y";
+      if (Math.random() >= 2 / 3) [varX, varY] = choice(VAR_PAIRS);
+      const x0Frac = randFractionCoord(cfg.xMin, cfg.xMax, L.fracCoord);
+      const y0Frac = randFractionCoord(cfg.xMin, cfg.xMax, L.fracCoord);
+      const x0 = F(x0Frac.p, x0Frac.d), y0 = F(y0Frac.p, y0Frac.d);
+
+      const make = () => buildEquation(choice(types), varX, x0, varY, y0, lv);
+      const eq1 = make();
+      if (!eq1) continue;
+      // Both lines pass through (x0,y0) by construction, so "exactly one solution" is equivalent to
+      // "the lines are not the same line", i.e. A1·B2 − A2·B1 ≠ 0. On top of that, reject pairs that cross at
+      // such a shallow angle that the two lines are indistinguishable on the graph (sin of the angle < MIN_SIN).
+      let eq2 = null;
+      for (let k = 0; k < 25 && !eq2; k++) {
+        const e = make();
+        if (e && crossingSin(eq1, e) >= MIN_SIN) eq2 = e;
+      }
+      if (!eq2) continue;
+      return { eq1, eq2, varX, varY, x0: x0Frac.value, y0: y0Frac.value, x0Frac, y0Frac, level: lv };
     }
-    const x0Frac = randFractionCoord(cfg.xMin, cfg.xMax);
-    const y0Frac = randFractionCoord(cfg.xMin, cfg.xMax);
-    const x0 = x0Frac.value, y0 = y0Frac.value;
-
-    const vcfg1 = { asMin: cfg.v1AsMin, asMax: cfg.v1AsMax, mdMin: cfg.v1MdMin, mdMax: cfg.v1MdMax, brMin: cfg.v1BrMin, brMax: cfg.v1BrMax };
-    const vcfg2 = { asMin: cfg.v2AsMin, asMax: cfg.v2AsMax, mdMin: cfg.v2MdMin, mdMax: cfg.v2MdMax, brMin: cfg.v2BrMin, brMax: cfg.v2BrMax };
-
-    const eq1 = generateOneEquation(varX, x0, varY, y0, vcfg1, vcfg2);
-    let eq2 = generateOneEquation(varX, x0, varY, y0, vcfg1, vcfg2);
-
-    // Ensure the system has exactly ONE solution (not a coincident/duplicate line).
-    // A "no solution" (parallel) outcome is mathematically impossible here since both
-    // equations are built from the same (x0,y0) by construction, so (x0,y0) always
-    // satisfies both. The only real risk is the two equations reducing to the same line.
-    const abc1 = getLinearCoeffs(eq1, varX, varY);
-    let attempts = 0;
-    while (attempts < 25 && areProportional(abc1, getLinearCoeffs(eq2, varX, varY))) {
-      eq2 = generateOneEquation(varX, x0, varY, y0, vcfg1, vcfg2);
-      attempts++;
-    }
-
-    return { eq1, eq2, varX, varY, x0, y0, x0Frac, y0Frac };
-  }
-
-  // ---- helpers to detect a coincident (dependent) system: strip fraction spans, evaluate
-  // the LHS at sample points, and extract the effective linear coefficients (A, B, C) ----
-  function stripHTMLForEval(s) {
-    let prev;
-    do {
-      prev = s;
-      s = s.replace(/<span class="frac"><span class="num">(.*?)<\/span><span class="den">(.*?)<\/span><\/span>/g, "(($1)/($2))");
-    } while (s !== prev);
-    return s.replace(/<[^>]+>/g, "");
-  }
-  function evalLHSat(lhs, varX, varY, xv, yv) {
-    let s = stripHTMLForEval(lhs);
-    s = s.replace(new RegExp(varX, "g"), `(${xv})`).replace(new RegExp(varY, "g"), `(${yv})`);
-    s = s.replace(/(\d)\(/g, "$1*(").replace(/\)\(/g, ")*(");
-    s = s.replace(/\u00d7/g, "*").replace(/\u00f7/g, "/").replace(/\u2212/g, "-");
-    return eval(s);
-  }
-  function getLinearCoeffs(eqStr, varX, varY) {
-    const [lhs, rhsStr] = eqStr.split(" = ");
-    const total = eval(stripHTMLForEval(rhsStr).replace(/\u2212/g, "-"));
-    const e00 = evalLHSat(lhs, varX, varY, 0, 0);
-    const e10 = evalLHSat(lhs, varX, varY, 1, 0);
-    const e01 = evalLHSat(lhs, varX, varY, 0, 1);
-    return [e10 - e00, e01 - e00, total - e00];
-  }
-  function areProportional(v1, v2, eps = 1e-6) {
-    let k = null;
-    for (let i = 0; i < 3; i++) {
-      if (Math.abs(v2[i]) > eps) { k = v1[i] / v2[i]; break; }
-      if (Math.abs(v1[i]) > eps) return false;
-    }
-    if (k === null) return true;
-    return v1.every((val, i) => Math.abs(val - k * v2[i]) < eps);
+    throw new Error("generateSystem: could not build a system");
   }
 
   /* =========================================================
-     6. GRAPH RENDERING
-     Reduces each equation to Ax+By+C=0 (reusing the same
-     coefficient extraction used to reject coincident systems),
-     clears any leftover fractional coefficients from the
-     division-heavy construction, then draws both lines with
-     their known intersection (x0,y0) — no retry/search needed,
-     since that point is exact by construction.
+     6. STANDARD FORM / y = … HELPERS (exact)
      ========================================================= */
-  // A, B, C from division-built equations are often rational (e.g. 1/3, 1/7) rather than
-  // integer — scale all three by the smallest k that clears every denominator, so the
-  // label shown on the graph reads as a clean "Ax+By+C=0" line.
-  function clearDenominators(A, B, C) {
-    const EPS = 1e-6, MAX_K = 5040;
-    for (let k = 1; k <= MAX_K; k++) {
-      const kA = k * A, kB = k * B, kC = k * C;
-      if (Math.abs(kA - Math.round(kA)) < EPS && Math.abs(kB - Math.round(kB)) < EPS && Math.abs(kC - Math.round(kC)) < EPS) {
-        let rA = Math.round(kA), rB = Math.round(kB), rC = Math.round(kC);
-        const g = gcd(gcd(rA, rB), rC);
-        return [rA / g, rB / g, rC / g];
-      }
-    }
-    return [A, B, C]; // fallback (should not happen given the bounded denominators used above)
+  // scale A,B,C to coprime integers with A > 0
+  function standardForm(eq) {
+    const L = [eq.A, eq.B, eq.C].reduce((l, f) => lcm(l, f.d), 1);
+    let a = eq.A.n * (L / eq.A.d), b = eq.B.n * (L / eq.B.d), c = eq.C.n * (L / eq.C.d);
+    const g = gcd(gcd(a, b), c);
+    a /= g; b /= g; c /= g;
+    if (a < 0) { a = -a; b = -b; c = -c; }
+    return [a + 0, b + 0, c + 0];
   }
 
-  function fmtLineGeneral(A, B, C, vx, vy) {
-    let out = "";
-    let first = true;
-    for (const [coef, v] of [[A, vx], [B, vy], [C, ""]]) {
-      if (coef === 0) continue;
-      const sign = coef < 0 ? "\u2212" : first ? "" : "+";
-      const abs = Math.abs(coef);
-      const numStr = abs === 1 && v !== "" ? "" : `${abs}`;
-      out += first ? `${sign}${numStr}${v}` : ` ${sign} ${numStr}${v}`;
-      first = false;
-    }
-    return out + " = 0";
+  function standardTex(eq, vx, vy) {
+    const [a, b, c] = standardForm(eq);
+    return stdTex(a, b, F(c), vx, vy);
+  }
+
+  // y = m·x + k  with m = −A/B, k = −C/B
+  function yFormTex(eq, vx, vy) {
+    const m = fdiv(fneg(eq.A), eq.B);
+    const k = fdiv(fneg(eq.C), eq.B);
+    let mt;
+    if (Math.abs(m.n) === 1 && m.d === 1) mt = (m.n < 0 ? "-" : "") + vx;
+    else mt = texFrac(m) + vx;
+    let out = `${vy} = ${mt}`;
+    if (k.n !== 0) out += ` ${k.n < 0 ? "-" : "+"} ${absTex(k)}`;
+    return out;
+  }
+
+  /* =========================================================
+     7. GRAPH RENDERING
+     Draws both lines with their known intersection (x0,y0) — exact by construction.
+     Line labels are KaTeX (y = …), measured first so the placement logic can keep
+     them clear of the lines, the axes and each other.
+     ========================================================= */
+  function measureTex(tex) {
+    const d = document.createElement("div");
+    d.className = "glabel";
+    d.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;display:inline-block;";
+    d.innerHTML = KT(tex);
+    document.body.appendChild(d);
+    const r = d.getBoundingClientRect();
+    d.remove();
+    return { w: Math.ceil(r.width), h: Math.ceil(r.height) };
   }
 
   // full-circle direction angle of a line's own direction vector (-B, A), via
@@ -769,7 +857,7 @@
     return { dx: Math.cos(rad), dy: Math.sin(rad) };
   }
 
-  function buildIntersectionGraph(A1, B1, C1, A2, B2, C2, x0, y0, vx, vy, x0Frac, y0Frac) {
+  function buildIntersectionGraph(A1, B1, C1, A2, B2, C2, x0, y0, vx, vy, x0Frac, y0Frac, tex1, tex2) {
     // the viewport must always show the origin AND the intersection point — take the
     // smallest square window that comfortably covers both, rather than a fixed span
     // centered only on the intersection (which could leave the origin off-screen).
@@ -812,7 +900,7 @@
     let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
 
     // axes + origin (always in view by construction of xLo/xHi/yLo/yHi above)
-    const axisColor = "#7A8296";
+    const axisColor = "#7189A1";
     svg += `<line x1="${toPx(xLo)}" y1="${toPy(0)}" x2="${toPx(xHi)}" y2="${toPy(0)}" stroke="${axisColor}" stroke-width="1.25"/>`;
     svg += `<line x1="${toPx(0)}" y1="${toPy(yHi)}" x2="${toPx(0)}" y2="${toPy(yLo)}" stroke="${axisColor}" stroke-width="1.25"/>`;
     svg += `<text x="${toPx(xHi) - 4}" y="${toPy(0) - 6}" font-size="12" fill="${axisColor}" font-weight="700" text-anchor="end" font-family="Calibri, sans-serif">${vx}</text>`;
@@ -820,12 +908,12 @@
     svg += `<circle cx="${toPx(0)}" cy="${toPy(0)}" r="2.5" fill="${axisColor}"/>`;
     svg += `<text x="${toPx(0) - 6}" y="${toPy(0) + 14}" font-size="10" fill="${axisColor}" text-anchor="end" font-family="Calibri, sans-serif">0</text>`;
 
-    svg += `<line x1="${toPx(seg1[0][0])}" y1="${toPy(seg1[0][1])}" x2="${toPx(seg1[1][0])}" y2="${toPy(seg1[1][1])}" stroke="#FFFFFF" stroke-width="2.5"/>`;
-    svg += `<line x1="${toPx(seg2[0][0])}" y1="${toPy(seg2[0][1])}" x2="${toPx(seg2[1][0])}" y2="${toPy(seg2[1][1])}" stroke="#F9E795" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+    svg += `<line x1="${toPx(seg1[0][0])}" y1="${toPy(seg1[0][1])}" x2="${toPx(seg1[1][0])}" y2="${toPy(seg1[1][1])}" stroke="#244C7A" stroke-width="2.5"/>`;
+    svg += `<line x1="${toPx(seg2[0][0])}" y1="${toPy(seg2[0][1])}" x2="${toPx(seg2[1][0])}" y2="${toPy(seg2[1][1])}" stroke="#DF655D" stroke-width="2.5" stroke-dasharray="6 4"/>`;
 
     // intersection point + coordinate label
     const ix = toPx(x0), iy = toPy(y0);
-    svg += `<circle cx="${ix}" cy="${iy}" r="5.5" fill="#F96167" stroke="#232D63" stroke-width="1.5"/>`;
+    svg += `<circle cx="${ix}" cy="${iy}" r="5.5" fill="#DF655D" stroke="#FFFFFF" stroke-width="1.5"/>`;
 
     const { dx, dy } = labelDirection(A1, B1, A2, B2);
     const labelStr = `(${fmtFraction(x0Frac)}, ${fmtFraction(y0Frac)})`;
@@ -839,76 +927,130 @@
     // label box on-canvas regardless of where that lands.
     lx = Math.max(W + 4, Math.min(w - W - 4, lx));
     ly = Math.max(H + 4, Math.min(h - H - 4, ly));
-    svg += `<text x="${lx}" y="${ly}" font-size="${fontSize}" fill="#F96167" font-weight="700" text-anchor="middle" dominant-baseline="middle" font-family="Calibri, sans-serif">${labelStr}</text>`;
+    svg += `<text x="${lx}" y="${ly}" font-size="${fontSize}" fill="#C84D47" font-weight="700" text-anchor="middle" dominant-baseline="middle" font-family="Calibri, sans-serif">${labelStr}</text>`;
 
-    // small line labels (which equation is which) — placed toward one end of each
-    // line's visible segment, offset perpendicular to the line (away from the origin
-    // side, mirroring the same sign(C)*(A,B) rule used for the standalone line-graph
-    // tool). If that spot would land too close to the coordinate label already placed
-    // above, try the opposite end of the segment instead — the two ends of a line
-    // crossing the plot are rarely both crowded by the same nearby label.
+    // line labels (y = …, KaTeX) — placed toward one end of each line's visible segment, offset
+    // perpendicular to the line by the label's own half-size so the box clears the line. If that spot
+    // would collide with an already-placed label, try other positions along the segment.
     function boxesOverlap(x1, y1, w1, h1, x2, y2, w2, h2) {
       return Math.abs(x1 - x2) < (w1 + w2) / 2 + 6 && Math.abs(y1 - y2) < (h1 + h2) / 2 + 6;
     }
-    function lineLabelPos(A, B, C, seg, label, avoidBoxes) {
+    // both visible line segments in pixel space — a label must not sit on either line
+    const pxSegs = [seg1, seg2].map((s) => [[toPx(s[0][0]), toPy(s[0][1])], [toPx(s[1][0]), toPy(s[1][1])]]);
+    function hitsLine(cx, cy, hw, hh) {
+      return pxSegs.some(([p, q]) => {
+        for (let i = 0; i <= 50; i++) {
+          const t = i / 50, x = p[0] + (q[0] - p[0]) * t, y = p[1] + (q[1] - p[1]) * t;
+          if (Math.abs(x - cx) < hw + 2 && Math.abs(y - cy) < hh + 2) return true;
+        }
+        return false;
+      });
+    }
+    function lineLabelPos(A, B, C, seg, size, avoidBoxes) {
       const norm = Math.sqrt(A * A + B * B) || 1;
       const sgn = C > 0 ? 1 : -1;
       const dirx = (sgn * A) / norm, diry = (sgn * B) / norm;
-      const halfTextW = (label.length * 11 * 0.58) / 2 + 4;
-      const off = 16;
-      function candidateAt(t) {
+      const halfW = size.w / 2 + 2, halfH = size.h / 2 + 1;
+      const off = 6 + halfW * Math.abs(dirx) + halfH * Math.abs(diry);
+      function candidateAt(t, side) {
         const px = seg[0][0] + (seg[1][0] - seg[0][0]) * t;
         const py = seg[0][1] + (seg[1][1] - seg[0][1]) * t;
-        let cx = toPx(px) + dirx * off, cy = toPy(py) - diry * off;
-        cx = Math.max(halfTextW, Math.min(w - halfTextW, cx));
-        cy = Math.max(12, Math.min(h - 12, cy));
+        let cx = toPx(px) + side * dirx * off, cy = toPy(py) - side * diry * off;
+        cx = Math.max(halfW, Math.min(w - halfW, cx));
+        cy = Math.max(halfH, Math.min(h - halfH, cy));
         return [cx, cy];
       }
       function clashesAny(cx, cy) {
-        return avoidBoxes.some((b) => boxesOverlap(cx, cy, halfTextW * 2, 14, b.x, b.y, b.w, b.h));
+        return avoidBoxes.some((b) => boxesOverlap(cx, cy, halfW * 2, halfH * 2, b.x, b.y, b.w, b.h)) || hitsLine(cx, cy, halfW, halfH);
       }
-      // try progressively further along the segment, then the mirrored end, before
-      // finally accepting the least-bad option — a label sitting a little close to
-      // another is far more readable than one running off the plot.
-      for (const t of [0.8, 0.6, 0.9, 0.4, 0.2, 0.95, 0.1, 0.5]) {
-        const [cx, cy] = candidateAt(t);
-        if (!clashesAny(cx, cy)) return [cx, cy];
+      // preferred side first (same side rule as before), then the mirrored side; along the segment from
+      // the usual spot outward.
+      const ts = [0.8, 0.6, 0.9, 0.4, 0.2, 0.95, 0.1, 0.5, 0.7, 0.3, 0.85, 0.15, 0.05];
+      for (const side of [1, -1]) {
+        for (const t of ts) {
+          const [cx, cy] = candidateAt(t, side);
+          if (!clashesAny(cx, cy)) return [cx, cy];
+        }
       }
-      return candidateAt(0.8);
+      return candidateAt(0.8, 1);
     }
-    const label1 = fmtLineGeneral(A1, B1, C1, vx, vy), label2 = fmtLineGeneral(A2, B2, C2, vx, vy);
+    const m1 = measureTex(tex1), m2 = measureTex(tex2);
     const coordBox = { x: lx, y: ly, w: labelStr.length * 13 * 0.58, h: 16 };
-    const [lx1, ly1] = lineLabelPos(A1, B1, C1, seg1, label1, [coordBox]);
-    const line1Box = { x: lx1, y: ly1, w: label1.length * 11 * 0.58, h: 14 };
-    const [lx2, ly2] = lineLabelPos(A2, B2, C2, seg2, label2, [coordBox, line1Box]);
-    svg += `<text x="${lx1}" y="${ly1}" font-size="11" fill="#FFFFFF" text-anchor="middle" font-family="Calibri, sans-serif">${label1}</text>`;
-    svg += `<text x="${lx2}" y="${ly2}" font-size="11" fill="#F9E795" text-anchor="middle" font-family="Calibri, sans-serif">${label2}</text>`;
+    const fixedBoxes = [
+      coordBox,
+      { x: toPx(0) - 6, y: toPy(0) + 10, w: 12, h: 12 },            // the "0" at the origin
+      { x: toPx(xHi) - 10, y: toPy(0) - 6, w: 14, h: 14 },          // x-axis name
+      { x: toPx(0) + 12, y: toPy(yHi) + 6, w: 14, h: 14 },          // y-axis name
+    ];
+    const [lx1, ly1] = lineLabelPos(A1, B1, C1, seg1, m1, fixedBoxes);
+    const line1Box = { x: lx1, y: ly1, w: m1.w + 4, h: m1.h + 2 };
+    const [lx2, ly2] = lineLabelPos(A2, B2, C2, seg2, m2, [...fixedBoxes, line1Box]);
+    const fo = (cx, cy, m, tex, color) =>
+      `<foreignObject x="${cx - m.w / 2 - 2}" y="${cy - m.h / 2 - 1}" width="${m.w + 4}" height="${m.h + 2}">` +
+      `<div class="glabel" style="color:${color};width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${KT(tex)}</div></foreignObject>`;
+    svg += fo(lx1, ly1, m1, tex1, "#244C7A");
+    svg += fo(lx2, ly2, m2, tex2, "#C84D47");
 
     svg += "</svg>";
     return svg;
   }
 
   /* =========================================================
-     7. RENDER / DISPLAY
+     8. RENDER / DISPLAY
      ========================================================= */
+  // shrink the font until the widest KaTeX piece fits the screen (long type-3 equations on phones)
+  function fitSize(el, extra) {
+    el.style.fontSize = "";
+    const avail = Math.min(window.innerWidth * 0.92, 980);
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    for (let i = 0; i < 80 && size > 11; i++) {
+      let widest = 0;
+      el.querySelectorAll(".katex").forEach((k) => { widest = Math.max(widest, k.offsetWidth); });
+      if (widest + extra <= avail) break;
+      size -= 1;
+      el.style.fontSize = size + "px";
+    }
+  }
+
+  function renderProblem() {
+    eq1El.innerHTML = KT(current.eq1.tex);
+    eq2El.innerHTML = KT(current.eq2.tex);
+  }
+
+  function preLineHTML(eq, vx, vy) {
+    const segs = [eq.tex];
+    if (eq.type !== 1) segs.push(standardTex(eq, vx, vy)); // type 1 already IS the standard form
+    segs.push(yFormTex(eq, vx, vy));
+    const arrow = `<span class="arr">${KT("\\Rightarrow")}</span>`;
+    return `<div class="pre-line">` +
+      segs.map((s, i) => `<span class="seg">${i ? arrow : ""}${KT(s)}</span>`).join("") +
+      `</div>`;
+  }
+
   function displayProblem() {
     eqPair.style.display = "";
     answerWrap.style.display = "none";
     promptEl.textContent = "แก้ระบบสมการ หาค่าตัวแปรทั้งสองตัว แล้วกดดูเฉลย";
+    toggleBtn.textContent = "ดูเฉลย";
+    fitSize(eq1El, 0);
+    fitSize(eq2El, 0);
   }
 
   function displayAnswer() {
     eqPair.style.display = "none";
     answerWrap.style.display = "";
 
-    const rawC1 = getLinearCoeffs(current.eq1, current.varX, current.varY);
-    const rawC2 = getLinearCoeffs(current.eq2, current.varX, current.varY);
-    const [A1, B1, C1] = clearDenominators(rawC1[0], rawC1[1], -rawC1[2]);
-    const [A2, B2, C2] = clearDenominators(rawC2[0], rawC2[1], -rawC2[2]);
+    const { eq1, eq2, varX, varY } = current;
+    preLines.innerHTML = preLineHTML(eq1, varX, varY) + preLineHTML(eq2, varX, varY);
+    preLines.querySelectorAll(".pre-line").forEach((el) => fitSize(el, 40));
 
-    graphBox.innerHTML = buildIntersectionGraph(A1, B1, C1, A2, B2, C2, current.x0, current.y0, current.varX, current.varY, current.x0Frac, current.y0Frac);
-    answerLine.innerHTML = `${current.varX} = ${fmtFractionHTML(current.x0Frac)}, ${current.varY} = ${fmtFractionHTML(current.y0Frac)}`;
+    graphBox.innerHTML = buildIntersectionGraph(
+      fnum(eq1.A), fnum(eq1.B), fnum(eq1.C), fnum(eq2.A), fnum(eq2.B), fnum(eq2.C),
+      current.x0, current.y0, varX, varY, current.x0Frac, current.y0Frac,
+      yFormTex(eq1, varX, varY), yFormTex(eq2, varX, varY));
+    answerLine.innerHTML = KT(`${varX} = ${texFrac(F(current.x0Frac.p, current.x0Frac.d))},\\; ${varY} = ${texFrac(F(current.y0Frac.p, current.y0Frac.d))}`);
     promptEl.textContent = "นี่คือเฉลย";
+    toggleBtn.textContent = "ดูโจทย์";
   }
 
   function showNext() {
@@ -916,8 +1058,7 @@
     answerWrap.classList.add("swap");
     setTimeout(() => {
       current = generateSystem();
-      eq1El.innerHTML = current.eq1;
-      eq2El.innerHTML = current.eq2;
+      renderProblem();
       showingAnswer = false;
       displayProblem();
       eqPair.classList.remove("swap");
@@ -936,7 +1077,7 @@
   }
 
   /* =========================================================
-     8. MAIN CONTROLS — EVENTS
+     9. MAIN CONTROLS — EVENTS
      ========================================================= */
   nextBtn.addEventListener("click", showNext);
   toggleBtn.addEventListener("click", toggleAnswer);
@@ -947,10 +1088,11 @@
   });
 
   /* =========================================================
-     9. SETTINGS — EVENTS + VALIDATION
+     10. SETTINGS — EVENTS + VALIDATION
      ========================================================= */
   function openSettings() {
     fieldIds.forEach((id) => (document.getElementById(id).value = cfg[id]));
+    checkIds.forEach((id) => (document.getElementById(id).checked = !!cfg[id]));
     settingsError.textContent = "";
     settingsOverlay.classList.add("show");
   }
@@ -979,12 +1121,14 @@
       settingsError.textContent = "ช่วงคำตอบ: ต่ำสุดต้องน้อยกว่าสูงสุด";
       return;
     }
-    for (const v of ["v1", "v2"]) {
-      const label = v === "v1" ? "ตัวแปรตัวที่ 1" : "ตัวแปรตัวที่ 2";
-      if (vals[`${v}AsMin`] < 1 || vals[`${v}AsMin`] > vals[`${v}AsMax`]) { settingsError.textContent = `${label}: ช่วงบวก/ลบไม่ถูกต้อง`; return; }
-      if (vals[`${v}MdMin`] < 1 || vals[`${v}MdMin`] > vals[`${v}MdMax`]) { settingsError.textContent = `${label}: ช่วงคูณ/หารไม่ถูกต้อง`; return; }
-      if (vals[`${v}BrMin`] < 0 || vals[`${v}BrMin`] > vals[`${v}BrMax`]) { settingsError.textContent = `${label}: ช่วงวงเล็บไม่ถูกต้อง`; return; }
-      if (vals[`${v}BrMax`] > vals[`${v}AsMax`] || vals[`${v}BrMax`] > vals[`${v}MdMax`]) { settingsError.textContent = `${label}: วงเล็บสูงสุด ต้องไม่เกินบวก/ลบหรือคูณ/หารสูงสุด`; return; }
+    if (vals.lvMin < 1 || vals.lvMax > 5 || vals.lvMin > vals.lvMax) {
+      settingsError.textContent = "เลเวล: ต้องอยู่ระหว่าง 1 ถึง 5 และต่ำสุดต้องไม่เกินสูงสุด";
+      return;
+    }
+    for (const id of checkIds) vals[id] = document.getElementById(id).checked;
+    if (!vals.t1 && !vals.t2 && !vals.t3) {
+      settingsError.textContent = "ต้องเลือกสมการอย่างน้อย 1 แบบ";
+      return;
     }
 
     cfg = { ...cfg, ...vals };
@@ -994,13 +1138,11 @@
   });
 
   /* =========================================================
-     10. INITIAL LOAD
+     11. INITIAL LOAD
      ========================================================= */
   current = generateSystem();
-  eq1El.innerHTML = current.eq1;
-  eq2El.innerHTML = current.eq2;
+  renderProblem();
   displayProblem();
-
 </script>
 
 </body>
