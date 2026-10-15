@@ -333,6 +333,7 @@
   .pre-line .seg { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
 
   .glabel { font-size: 11px; line-height: 1.2; white-space: nowrap; text-align: center; }
+  .glabel.coord-label { font-size: 13px; }
 
   .check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 0; cursor: pointer; }
   .check-row input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--coral); }
@@ -820,9 +821,9 @@
      Line labels are KaTeX (y = …), measured first so the placement logic can keep
      them clear of the lines, the axes and each other.
      ========================================================= */
-  function measureTex(tex) {
+  function measureTex(tex, className = "glabel") {
     const d = document.createElement("div");
-    d.className = "glabel";
+    d.className = className;
     d.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;display:inline-block;";
     d.innerHTML = KT(tex);
     document.body.appendChild(d);
@@ -903,10 +904,10 @@
     const axisColor = "#7189A1";
     svg += `<line x1="${toPx(xLo)}" y1="${toPy(0)}" x2="${toPx(xHi)}" y2="${toPy(0)}" stroke="${axisColor}" stroke-width="1.25"/>`;
     svg += `<line x1="${toPx(0)}" y1="${toPy(yHi)}" x2="${toPx(0)}" y2="${toPy(yLo)}" stroke="${axisColor}" stroke-width="1.25"/>`;
-    svg += `<text x="${toPx(xHi) - 4}" y="${toPy(0) - 6}" font-size="12" fill="${axisColor}" font-weight="700" text-anchor="end" font-family="Calibri, sans-serif">${vx}</text>`;
-    svg += `<text x="${toPx(0) + 6}" y="${toPy(yHi) + 12}" font-size="12" fill="${axisColor}" font-weight="700" font-family="Calibri, sans-serif">${vy}</text>`;
+    svg += `<text x="${toPx(xHi) - 4}" y="${toPy(0) - 6}" font-size="12" fill="${axisColor}" font-weight="400" font-style="italic" text-anchor="end" font-family="Times New Roman, Times, serif">${vx}</text>`;
+    svg += `<text x="${toPx(0) + 6}" y="${toPy(yHi) + 12}" font-size="12" fill="${axisColor}" font-weight="400" font-style="italic" font-family="Times New Roman, Times, serif">${vy}</text>`;
     svg += `<circle cx="${toPx(0)}" cy="${toPy(0)}" r="2.5" fill="${axisColor}"/>`;
-    svg += `<text x="${toPx(0) - 6}" y="${toPy(0) + 14}" font-size="10" fill="${axisColor}" text-anchor="end" font-family="Calibri, sans-serif">0</text>`;
+    svg += `<text x="${toPx(0) - 6}" y="${toPy(0) + 14}" font-size="10" fill="${axisColor}" text-anchor="end" font-style="normal" font-weight="400" font-family="Times New Roman, Times, serif">0</text>`;
 
     svg += `<line x1="${toPx(seg1[0][0])}" y1="${toPy(seg1[0][1])}" x2="${toPx(seg1[1][0])}" y2="${toPy(seg1[1][1])}" stroke="#244C7A" stroke-width="2.5"/>`;
     svg += `<line x1="${toPx(seg2[0][0])}" y1="${toPy(seg2[0][1])}" x2="${toPx(seg2[1][0])}" y2="${toPy(seg2[1][1])}" stroke="#DF655D" stroke-width="2.5" stroke-dasharray="6 4"/>`;
@@ -916,10 +917,14 @@
     svg += `<circle cx="${ix}" cy="${iy}" r="5.5" fill="#DF655D" stroke="#FFFFFF" stroke-width="1.5"/>`;
 
     const { dx, dy } = labelDirection(A1, B1, A2, B2);
-    const labelStr = `(${fmtFraction(x0Frac)}, ${fmtFraction(y0Frac)})`;
-    const fontSize = 13;
-    const avgCharW = fontSize * 0.58;
-    const W = (labelStr.length * avgCharW) / 2, H = fontSize / 2;
+    // Render intersection coordinates as genuine KaTeX (including stacked fractions).
+    const coordPartTex = (frac) => {
+      const sign = frac.p < 0 ? "-" : "";
+      return sign + (frac.d === 1 ? `${Math.abs(frac.p)}` : `\\frac{${Math.abs(frac.p)}}{${frac.d}}`);
+    };
+    const coordTex = `\\left(${coordPartTex(x0Frac)},\\ ${coordPartTex(y0Frac)}\\right)`;
+    const coordSize = measureTex(coordTex, "glabel coord-label");
+    const W = coordSize.w / 2, H = coordSize.h / 2;
     const offset = W * Math.abs(dx) + H * Math.abs(dy) + 10;
     let lx = ix + dx * offset, ly = iy - dy * offset;
     // safety clamp: the intersection isn't always centered (the viewport also has to
@@ -927,7 +932,8 @@
     // label box on-canvas regardless of where that lands.
     lx = Math.max(W + 4, Math.min(w - W - 4, lx));
     ly = Math.max(H + 4, Math.min(h - H - 4, ly));
-    svg += `<text x="${lx}" y="${ly}" font-size="${fontSize}" fill="#C84D47" font-weight="700" text-anchor="middle" dominant-baseline="middle" font-family="Calibri, sans-serif">${labelStr}</text>`;
+    svg += `<foreignObject x="${lx - W - 2}" y="${ly - H - 2}" width="${coordSize.w + 4}" height="${coordSize.h + 4}">` +
+      `<div class="glabel coord-label" style="color:#C84D47;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">${KT(coordTex)}</div></foreignObject>`;
 
     // line labels (y = …, KaTeX) — placed toward one end of each line's visible segment, offset
     // perpendicular to the line by the label's own half-size so the box clears the line. If that spot
@@ -975,7 +981,7 @@
       return candidateAt(0.8, 1);
     }
     const m1 = measureTex(tex1), m2 = measureTex(tex2);
-    const coordBox = { x: lx, y: ly, w: labelStr.length * 13 * 0.58, h: 16 };
+    const coordBox = { x: lx, y: ly, w: coordSize.w + 4, h: coordSize.h + 4 };
     const fixedBoxes = [
       coordBox,
       { x: toPx(0) - 6, y: toPy(0) + 10, w: 12, h: 12 },            // the "0" at the origin
