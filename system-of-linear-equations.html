@@ -92,7 +92,7 @@
     justify-content: center;
     flex: 1;
     width: 100%;
-    max-width: 850px;
+    max-width: 1100px;
     z-index: 1;
     padding: 8px 20px;
     gap: clamp(8px, 1.8vh, 18px);
@@ -655,7 +655,7 @@
       } else { c = randInt(2, 9); }
       if (op === "*") {
         if (bareMode) { bareCoef *= c; scale(F(c)); return; }
-        expr = `${c}\\left(${expr}\\right)`; scale(F(c)); isSumAtTop = false;
+        expr = `${c}\\cdot\\left(${expr}\\right)`; scale(F(c)); isSumAtTop = false;
       } else {
         if (bareMode) materialize();
         expr = `\\frac{${expr}}{${c}}`; scale(F(1, c)); isSumAtTop = false;
@@ -667,7 +667,7 @@
         const divs = intDivisors(value, 2, 9);
         if (divs.length === 0) { op = "*"; c = randInt(2, 9); } else c = choice(divs);
       } else { c = randInt(2, 9); }
-      if (op === "*") { expr = `${c}\\left(${expr}\\right)`; scale(F(c)); }
+      if (op === "*") { expr = `${c}\\cdot\\left(${expr}\\right)`; scale(F(c)); }
       else { expr = `\\frac{${expr}}{${c}}`; scale(F(1, c)); }
       isSumAtTop = false;
     }
@@ -732,8 +732,8 @@
       if (cands.length === 0) continue;
       const [b, d, E] = choice(cands);
 
-      const term1 = `${num1 < 0 ? "-" : ""}\\frac{${Math.abs(num1)}}{${den1}}\\left(${innerTex(a, b, varX)}\\right)`;
-      const term2 = `\\frac{${Math.abs(num2)}}{${den2}}\\left(${innerTex(c, d, varY)}\\right)`;
+      const term1 = `${num1 < 0 ? "-" : ""}\\frac{${Math.abs(num1)}}{${den1}}\\cdot\\left(${innerTex(a, b, varX)}\\right)`;
+      const term2 = `\\frac{${Math.abs(num2)}}{${den2}}\\cdot\\left(${innerTex(c, d, varY)}\\right)`;
       const tex = `${term1} ${num2 < 0 ? "-" : "+"} ${term2} = ${texFrac(E)}`;
       const A = fmul(k1, F(a)), B = fmul(k2, F(c));
       const C = fsub(fadd(fmul(k1, F(b)), fmul(k2, F(d))), E);
