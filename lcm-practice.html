@@ -4,19 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>สุ่มโจทย์หา ค.ร.น.</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <style>
 
   /* =========================================================
      1. BASE / VARIABLES
      ========================================================= */
   :root {
-    --navy: #2F3C7E;
-    --navy-deep: #232D63;
-    --coral: #F96167;
-    --coral-deep: #E14A50;
-    --gold: #F9E795;
-    --ink: #FFFFFF;
-    --muted: #B9C0E0;
+    --navy: #EAF4FF;
+    --navy-deep: #315B92;
+    --coral: #DF655D;
+    --coral-deep: #C84D47;
+    --gold: #315B92;
+    --ink: #192E43;
+    --muted: #52677C;
+    --panel: #FFFFFF;
+    --border: #C5D9EC;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,8 +45,8 @@
      2. BACKGROUND DECORATION
      ========================================================= */
   .blob { position: absolute; border-radius: 50%; pointer-events: none; }
-  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.10; top: -14vmax; right: -12vmax; }
-  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.08; bottom: -10vmax; left: -8vmax; }
+  .blob-1 { width: 38vmax; height: 38vmax; background: var(--coral); opacity: 0.06; top: -14vmax; right: -12vmax; }
+  .blob-2 { width: 26vmax; height: 26vmax; background: var(--gold); opacity: 0.05; bottom: -10vmax; left: -8vmax; }
 
   /* =========================================================
      3. HEADER (eyebrow) + GEAR BUTTON
@@ -64,7 +68,8 @@
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--panel);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,7 +77,7 @@
     z-index: 2;
     padding: 0;
   }
-  .gear-btn:active { background: rgba(255, 255, 255, 0.18); }
+  .gear-btn:active { background: #DCEBFA; }
 
   /* =========================================================
      4. STAGE (problem / answer area)
@@ -86,27 +91,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     flex: 1;
     width: 100%;
+    max-width: 1000px;
+    min-height: 0;
     z-index: 1;
     padding: 10px 20px;
     overflow-y: auto;
   }
 
   .expr {
-    font-family: "Cambria", "Georgia", serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: clamp(26px, 5.5vw, 48px);
-    font-weight: 700;
+    font-weight: 400;
     text-align: center;
     line-height: 1.35;
     letter-spacing: 0.05em;
-    max-width: 95vw;
+    max-width: 100%;
     transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .expr.swap { opacity: 0; transform: scale(0.95); }
 
-  .answer-wrap { transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
+  .answer-wrap { width: 100%; transition: opacity 0.15s ease, transform 0.15s ease; text-align: center; }
   .answer-wrap.swap { opacity: 0; transform: scale(0.95); }
 
   .mode-label {
@@ -121,9 +128,9 @@
   .ladder {
     display: inline-block;
     border-collapse: collapse;
-    font-family: "Cambria", "Georgia", serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: clamp(18px, 3.4vw, 30px);
-    font-weight: 700;
+    font-weight: 400;
   }
   .ladder tr td { padding: 4px 14px; text-align: center; }
   .ladder .divcol {
@@ -133,7 +140,7 @@
   }
 
   .final-line {
-    font-family: "Cambria", "Georgia", serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: clamp(20px, 4vw, 36px);
     font-weight: 700;
     color: var(--gold);
@@ -157,7 +164,7 @@
     border: none;
     border-radius: 20px;
     font-family: inherit;
-    font-weight: 700;
+    font-weight: 400;
     cursor: pointer;
     -webkit-appearance: none;
     transition: transform 0.08s ease, filter 0.15s ease;
@@ -167,8 +174,8 @@
   .btn-next {
     flex: 2;
     background: var(--coral);
-    color: var(--ink);
-    font-size: clamp(13px, 2.1vw, 22px);
+    color: #FFFFFF;
+    font-size: clamp(13px, 1.9vw, 20px);
     padding: clamp(12px, 2.4vh, 20px) 10px;
     white-space: nowrap;
   }
@@ -176,8 +183,8 @@
   .btn-toggle {
     flex: 2;
     background: var(--navy-deep);
-    color: var(--gold);
-    border: 2px solid var(--gold);
+    color: #FFFFFF;
+    border: 2px solid var(--navy-deep);
     font-size: clamp(13px, 1.9vw, 20px);
     padding: clamp(12px, 2.4vh, 20px) 16px;
   }
@@ -186,8 +193,8 @@
     flex: 1;
     background: transparent;
     color: var(--muted);
-    border: 2px solid var(--navy-deep);
-    font-size: clamp(12px, 1.6vw, 18px);
+    border: 2px solid var(--border);
+    font-size: clamp(13px, 1.9vw, 20px);
     padding: clamp(12px, 2.4vh, 20px) 12px;
   }
   .btn-end:active { background: var(--navy-deep); }
@@ -198,7 +205,7 @@
   .end-screen {
     position: fixed;
     inset: 0;
-    background: var(--navy-deep);
+    background: var(--navy);
     display: none;
     flex-direction: column;
     align-items: center;
@@ -212,8 +219,8 @@
   .end-screen .sub { color: var(--muted); font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 36px; }
 
   .btn-restart {
-    background: var(--gold);
-    color: var(--navy-deep);
+    background: var(--navy-deep);
+    color: #FFFFFF;
     font-size: clamp(17px, 2.4vw, 22px);
     padding: 18px 40px;
     border-radius: 20px;
@@ -225,7 +232,7 @@
   .settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20, 24, 54, 0.75);
+    background: rgba(25, 46, 67, 0.45);
     display: none;
     align-items: center;
     justify-content: center;
@@ -236,14 +243,15 @@
   .settings-overlay.show { display: flex; }
 
   .settings-panel {
-    background: var(--navy-deep);
+    background: var(--panel);
+    border: 1px solid var(--border);
     border-radius: 22px;
     padding: 28px 24px;
     width: 100%;
     max-width: 420px;
     max-height: 92vh;
     overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 -28px 22px -24px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 20px 60px rgba(25, 46, 67, 0.18);
   }
   .settings-panel h2 { margin: 0 0 4px; font-size: 20px; font-weight: 800; }
   .settings-panel .desc { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
@@ -262,8 +270,8 @@
     font-size: 17px;
     font-weight: 700;
     color: var(--ink);
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: #F6FAFF;
+    border: 2px solid var(--border);
     border-radius: 10px;
     padding: 10px;
     box-sizing: border-box;
@@ -275,8 +283,8 @@
   .settings-error { color: var(--coral); font-size: 13px; font-weight: 700; margin: 4px 0 6px; min-height: 16px; }
 
   .settings-actions { display: flex; gap: 12px; margin-top: 10px; }
-  .btn-cancel { flex: 1; background: transparent; border: 2px solid rgba(255, 255, 255, 0.15); color: var(--muted); font-size: 15px; padding: 14px; }
-  .btn-save { flex: 1; background: var(--coral); color: var(--ink); font-size: 15px; padding: 14px; }
+  .btn-cancel { flex: 1; background: transparent; border: 2px solid var(--border); color: var(--muted); font-size: 15px; padding: 14px; }
+  .btn-save { flex: 1; background: var(--coral); color: #FFFFFF; font-size: 15px; padding: 14px; }
 
   /* =========================================================
      8. RESPONSIVE (short screens)
@@ -296,6 +304,50 @@
     .mode-label { margin-top: 6px; }
   }
 
+
+  /* ---- exercise-specific: GCD solution steps ---- */
+  .sol { font-family: "Times New Roman", Times, serif; font-size: clamp(16px, 2.8vw, 26px); text-align: left; max-width: 94vw; line-height: 1.5; }
+  .sol .intro { color: var(--muted); font-size: 0.8em; margin-bottom: 8px; font-family: inherit; }
+  .sol .round { border-top: 1px solid var(--border); padding: 8px 0; margin: 0; }
+  .sol .round .hd { color: var(--gold); font-weight: 700; }
+  /* Pair headings distinguish LCM cascade stages from Euclidean rounds. */
+  .sol .round .hd.pair-heading { color: var(--coral); }
+  .sol .rem { color: var(--coral); font-weight: 700; }
+  .sol .zero { color: var(--muted); }
+  .sol .res { color: var(--gold); font-weight: 700; border-top: 1px solid var(--border); padding-top: 8px; }
+  /* ให้จัดกึ่งกลางได้โดยเลื่อนขึ้นไปเห็นหัวเฉลยยาว ๆ ได้ (justify-content:center ตัดส่วนบนทิ้ง) */
+  .stage { justify-content: flex-start; min-height: 0; }
+  .stage > :first-child { margin-top: auto; }
+  .stage > :last-child { margin-bottom: auto; }
+  .expr.long { font-size: clamp(20px, 4vw, 36px); letter-spacing: 0.02em; }
+  @media (max-height: 480px) { .sol { font-size: clamp(12px, 2.2vw, 18px); } .sol .round { padding: 3px 0; } }
+
+  /* Theme A: white cards; preserve LCM algorithms and scrollable worked solutions. */
+  .expr, .answer-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: clamp(18px, 3vw, 28px);
+    width: 100%;
+    box-shadow: 0 1px 2px rgba(25,46,67,0.03);
+  }
+  .expr { overflow-wrap: anywhere; }
+  .sol { max-width: 100%; font-weight: 400; }
+  .sol .hd, .sol .res { font-weight: 700; }
+  .katex .mathnormal, .katex .mathdefault, .katex .mathit {
+    font-family: "Times New Roman", Times, serif !important;
+  }
+  .katex .ordinary-number {
+    font-family: "Times New Roman", Times, serif !important;
+    font-style: normal;
+    font-size: calc(1em - 1pt);
+  }
+  .katex .katex-sizing.reset-size6.size3.mtight { font-size: 0.78em !important; }
+  .katex .msupsub { margin-left: 0.08em; }
+  @media (max-width: 600px) {
+    .stage { padding: 8px 12px; }
+    .expr, .answer-wrap { padding: 16px 12px; }
+  }
 </style>
 </head>
 <body>
@@ -309,15 +361,14 @@
   <div class="stage">
     <div class="expr" id="exprEl">…</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
-      <table class="ladder" id="ladderTable"></table>
-      <div class="final-line" id="finalLine"></div>
+      <div class="sol" id="solEl"></div>
     </div>
-    <div class="mode-label" id="modeLabel">หา ค.ร.น. แล้วกดดูเฉลย</div>
+    <div class="mode-label" id="modeLabel"></div>
   </div>
 
   <div class="controls">
-    <button class="btn-next" id="nextBtn">สุ่มข้อถัดไป ⚡</button>
-    <button class="btn-toggle" id="toggleBtn">โจทย์ / เฉลย</button>
+    <button class="btn-next" id="nextBtn">ข้อต่อไป</button>
+    <button class="btn-toggle" id="toggleBtn">ดูเฉลย</button>
     <button class="btn-end" id="endBtn">จบ</button>
   </div>
 
@@ -330,26 +381,19 @@
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>ตั้งค่าการสุ่มโจทย์</h2>
-      <div class="desc">กำหนดจำนวนตัวเลขในโจทย์ และค่ามากที่สุด</div>
+      <div class="desc">เลือกช่วงระดับความยาก (1–5) ถ้าต้องการระดับเดียว ให้ตั้งต่ำสุดและสูงสุดเท่ากัน</div>
 
       <div class="field-group">
-        <div class="label">จำนวนตัวเลขในโจทย์</div>
+        <div class="label">ระดับความยาก</div>
         <div class="field-row">
-          <select id="countMode">
-            <option value="random">สุ่ม (2-4 ตัว)</option>
-            <option value="2">2 ตัว</option>
-            <option value="3">3 ตัว</option>
-            <option value="4">4 ตัว</option>
-          </select>
+          <span class="mini-label">ต่ำสุด</span>
+          <select id="lvMin"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
         </div>
-      </div>
-
-      <div class="field-group">
-        <div class="label">ค่ามากที่สุดของแต่ละตัวเลข</div>
-        <div class="field-row">
-          <input type="number" id="maxVal">
+        <div class="field-row" style="margin-top:8px;">
+          <span class="mini-label">สูงสุด</span>
+          <select id="lvMax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
         </div>
-        <div class="field-note">ต้องอย่างน้อย 5 (ต้องมีเลขพอสุ่มได้ 4 ตัวไม่ซ้ำกัน)</div>
+        <div class="field-note">1 = สองจำนวนหลักสิบ … 5 = สี่จำนวน หลักสิบ/หลักร้อย</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -362,211 +406,242 @@
   </div>
 
 <script>
+/* =========================================================
+   1. LEVELS  (ตารางระดับความยากของ ค.ร.น. — ปรับค่าที่นี่)
+   digits : จำนวนหลักของแต่ละตัวเลข (2 = หลักสิบ 10–98, 3 = หลักร้อย 100–999)
+   rule   : 'both'  = ตัดกรณีเป็นจำนวนเฉพาะทั้งสองจำนวน
+            'multi' = มีจำนวนเฉพาะได้ไม่เกิน 1 ตัว และต้องมีตัวอื่นหารด้วยจำนวนเฉพาะนั้นลงตัว
+   share  : true = ต้องมีอย่างน้อยหนึ่งคู่ที่ ห.ร.ม. > 1 (ไม่ให้ ค.ร.น. = ผลคูณทุกตัว)
+   maxLcm : เพดานของคำตอบ ค.ร.น. (ไม่ใส่ = ไม่จำกัด)
+   solve  : วิธีที่แสดงในเฉลย ('ladder' ตั้งหาร, 'euclid' สูตรยูคลิด)
+   ========================================================= */
+const LEVELS = {
+  1: [ { digits:[2,2],       rule:'both',  share:false, solve:['ladder'] } ],
+  2: [ { digits:[2,2,2],     rule:'multi', share:false, solve:['ladder'] } ],
+  3: [ { digits:[3,3],       rule:'both',  share:true,  solve:['ladder','euclid'] } ],
+  4: [ { digits:[3,3,3],     rule:'multi', share:true,  maxLcm:1000000, solve:['euclid'] } ],
+  5: [ { digits:[2,2,3,3],   rule:'multi', share:true,  maxLcm:1000000, solve:['euclid'] },
+       { digits:[2,2,2,3],   rule:'multi', share:true,  maxLcm:1000000, solve:['euclid'] } ]
+};
+const RANGE = { 2: [10, 98], 3: [100, 999] };
 
-  /* =========================================================
-     1. CONFIG
-     ========================================================= */
-  const DEFAULT_CFG = { countMode: "random", maxVal: 60 };
-  const STORAGE_KEY = "lcm-gen-cfg";
+const DEFAULT_CFG = { lvMin: 1, lvMax: 5 };
+const STORAGE_KEY = "lcm-gen-cfg2";
+let cfg = { ...DEFAULT_CFG };
+try { const s = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (s) cfg = { ...DEFAULT_CFG, ...s }; } catch (e) {}
 
-  let cfg = { ...DEFAULT_CFG };
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved) cfg = { ...DEFAULT_CFG, ...saved };
-  } catch (e) {}
+/* =========================================================
+   2. UTILITIES
+   ========================================================= */
+function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
+function gcd2(a, b) { while (b) { [a, b] = [b, a % b]; } return a; }
+function lcm2(a, b) { return a / gcd2(a, b) * b; }
+function isPrime(n) { if (n < 2) return false; for (let p = 2; p * p <= n; p++) if (n % p === 0) return false; return true; }
+function smallestPrimeFactor(n) { if (n <= 1) return null; for (let p = 2; p * p <= n; p++) if (n % p === 0) return p; return n; }
 
-  /* =========================================================
-     2. DOM REFERENCES
-     ========================================================= */
-  // stage
-  const exprEl = document.getElementById("exprEl");
-  const answerWrap = document.getElementById("answerWrap");
-  const ladderTable = document.getElementById("ladderTable");
-  const finalLine = document.getElementById("finalLine");
-  const modeLabel = document.getElementById("modeLabel");
-
-  // main controls
-  const nextBtn = document.getElementById("nextBtn");
-  const toggleBtn = document.getElementById("toggleBtn");
-  const endBtn = document.getElementById("endBtn");
-  const endScreen = document.getElementById("endScreen");
-  const restartBtn = document.getElementById("restartBtn");
-
-  // settings
-  const gearBtn = document.getElementById("gearBtn");
-  const settingsOverlay = document.getElementById("settingsOverlay");
-  const countModeSelect = document.getElementById("countMode");
-  const maxValInput = document.getElementById("maxVal");
-  const settingsError = document.getElementById("settingsError");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const saveBtn = document.getElementById("saveBtn");
-
-  /* =========================================================
-     3. STATE
-     ========================================================= */
-  let current = null;
-  let showingAnswer = false;
-
-  /* =========================================================
-     4. GENERIC UTILITIES
-     ========================================================= */
-  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-  /* =========================================================
-     5. DOMAIN LOGIC
-     Short-division ("หารสั้น") ladder: repeatedly divide by the
-     smallest prime factor common to any remaining number > 1;
-     the LCM is the product of every divisor used.
-     ========================================================= */
-  function smallestPrimeFactor(n) {
-    if (n <= 1) return null;
-    for (let p = 2; p * p <= n; p++) if (n % p === 0) return p;
-    return n;
+/* ---- วิธีตั้งหาร ---- */
+function divisionLadder(nums) {
+  let row = nums.slice();
+  const divisors = [], steps = [row.slice()];
+  while (row.some((x) => x > 1)) {
+    const p = Math.min(...row.filter((x) => x > 1).map(smallestPrimeFactor));
+    row = row.map((x) => (x > 1 && x % p === 0 ? x / p : x));
+    divisors.push(p); steps.push(row.slice());
   }
+  return { divisors, steps, product: divisors.reduce((a, b) => a * b, 1) };
+}
 
-  function divisionLadder(nums) {
-    let row = nums.slice();
-    const divisors = [];
-    const steps = [row.slice()];
-    while (row.some((x) => x > 1)) {
-      const candidates = row.filter((x) => x > 1).map(smallestPrimeFactor);
-      const p = Math.min(...candidates);
-      row = row.map((x) => (x > 1 && x % p === 0 ? x / p : x));
-      divisors.push(p);
-      steps.push(row.slice());
-    }
-    const product = divisors.reduce((a, b) => a * b, 1);
-    return { divisors, steps, product };
+/* ---- ยูคลิดแบบหมู่คณะ (ใช้หา ห.ร.ม. ของคู่) ---- */
+function groupEuclid(nums) {
+  let pool = Array.from(new Set(nums)).sort((a, b) => a - b);
+  const rounds = [];
+  while (true) {
+    const m = pool[0];
+    const items = pool.slice(1).map((x) => ({ x, r: x % m }));
+    const nonzero = Array.from(new Set(items.filter((t) => t.r > 0).map((t) => t.r)));
+    rounds.push({ pool: pool.slice(), m, items });
+    if (nonzero.length === 0) return { rounds, g: m };
+    pool = [m, ...nonzero].sort((a, b) => a - b);
   }
+}
 
-  function genProblem() {
-    const n = cfg.countMode === "random" ? randInt(2, 4) : parseInt(cfg.countMode, 10);
-
-    // sample n distinct values from [2, maxVal] without replacement (Fisher-Yates partial shuffle)
-    const pool = [];
-    for (let v = 2; v <= cfg.maxVal; v++) pool.push(v);
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = randInt(0, i);
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    const nums = pool.slice(0, n);
-
-    return { nums };
+/* ---- ยูคลิดแบบต่อเนื่อง (cascade) ---- */
+function cascade(nums) {
+  const steps = [];
+  let cur = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    const ge = groupEuclid([cur, nums[i]]);
+    const q = cur / ge.g, next = q * nums[i];
+    steps.push({ a: cur, b: nums[i], ge, g: ge.g, q, next });
+    cur = next;
   }
+  return { steps, lcm: cur };
+}
 
-  function newProblem() {
-    current = genProblem();
-    return `หา ค.ร.น. ของ ${current.nums.join(", ")}`;
+/* =========================================================
+   3. PROBLEM GENERATION (สุ่มแล้วคัดตามเงื่อนไข)
+   ========================================================= */
+function okPrimes(nums, rule) {
+  const pr = nums.filter(isPrime);
+  if (rule === 'both') return pr.length < nums.length;
+  if (pr.length >= 2) return false;
+  if (pr.length === 1) return nums.some((x) => x !== pr[0] && x % pr[0] === 0);
+  return true;
+}
+function hasShare(nums) {
+  for (let i = 0; i < nums.length; i++) for (let j = i + 1; j < nums.length; j++) if (gcd2(nums[i], nums[j]) > 1) return true;
+  return false;
+}
+function genProblem() {
+  const level = randInt(cfg.lvMin, cfg.lvMax);
+  const v = pick(LEVELS[level]);
+  for (let i = 0; i < 20000; i++) {
+    const nums = v.digits.map((d) => randInt(RANGE[d][0], RANGE[d][1]));
+    if (new Set(nums).size !== nums.length) continue;
+    if (!okPrimes(nums, v.rule)) continue;
+    if (v.share && !hasShare(nums)) continue;
+    if (v.maxLcm && nums.reduce(lcm2) > v.maxLcm) continue;
+    return { nums, level, solve: v.solve };
   }
+  return genProblem();
+}
 
-  function buildLadderHTML(nums) {
-    const { divisors, steps } = divisionLadder(nums);
-    let html = "";
-    for (let i = 0; i < steps.length; i++) {
-      html += "<tr>";
-      html += `<td class="divcol">${i < divisors.length ? divisors[i] : ""}</td>`;
-      steps[i].forEach((v) => { html += `<td>${v}</td>`; });
-      html += "</tr>";
-    }
-    return html;
+/* =========================================================
+   4. RENDER
+   ========================================================= */
+const $ = (id) => document.getElementById(id);
+const exprEl = $("exprEl"), answerWrap = $("answerWrap"), solEl = $("solEl"), modeLabel = $("modeLabel");
+let current = null, showingAnswer = false;
+
+function ladderHTML(nums) {
+  const { divisors, steps, product } = divisionLadder(nums);
+  let h = `<table class="ladder">`;
+  for (let i = 0; i < steps.length; i++) {
+    h += `<tr><td class="divcol">${i < divisors.length ? divisors[i] : ""}</td>`;
+    steps[i].forEach((v) => { h += `<td>${v}</td>`; });
+    h += `</tr>`;
   }
+  h += `</table><div class="final-line">ค.ร.น. = ${divisors.join(" × ")} = ${product}</div>`;
+  return h;
+}
 
-  /* =========================================================
-     6. RENDER / DISPLAY
-     ========================================================= */
-  function displayProblem() {
-    exprEl.style.display = "";
-    answerWrap.style.display = "none";
-    modeLabel.textContent = "หา ค.ร.น. แล้วกดดูเฉลย";
-  }
-
-  function displayAnswer() {
-    exprEl.style.display = "none";
-    answerWrap.style.display = "";
-    ladderTable.innerHTML = buildLadderHTML(current.nums);
-    const { divisors, product } = divisionLadder(current.nums);
-    finalLine.textContent = `ค.ร.น. = ${divisors.join(" \u00d7 ")} = ${product}`;
-    modeLabel.textContent = "นี่คือเฉลย (วิธีหารสั้น)";
-  }
-
-  function showNext() {
-    exprEl.classList.add("swap");
-    answerWrap.classList.add("swap");
-    setTimeout(() => {
-      exprEl.textContent = newProblem();
-      showingAnswer = false;
-      displayProblem();
-      exprEl.classList.remove("swap");
-      answerWrap.classList.remove("swap");
-    }, 150);
-  }
-
-  function toggleAnswer() {
-    const el = showingAnswer ? answerWrap : exprEl;
-    el.classList.add("swap");
-    setTimeout(() => {
-      showingAnswer = !showingAnswer;
-      if (showingAnswer) displayAnswer(); else displayProblem();
-      (showingAnswer ? answerWrap : exprEl).classList.remove("swap");
-    }, 150);
-  }
-
-  /* =========================================================
-     7. MAIN CONTROLS — EVENTS
-     ========================================================= */
-  nextBtn.addEventListener("click", showNext);
-  toggleBtn.addEventListener("click", toggleAnswer);
-  endBtn.addEventListener("click", () => endScreen.classList.add("show"));
-  restartBtn.addEventListener("click", () => {
-    endScreen.classList.remove("show");
-    showNext();
+function roundsHTML(ge) {
+  let h = "";
+  ge.rounds.forEach((rd, i) => {
+    const last = i === ge.rounds.length - 1;
+    h += `<div class="round"><div class="hd">รอบ ${i + 1}: ${rd.pool.join(", ")} (ตัวน้อยสุด ${rd.m})</div>`;
+    rd.items.forEach((t) => {
+      h += t.r > 0
+        ? `<div>${t.x} ÷ ${rd.m} เศษ <span class="rem">${t.r}</span></div>`
+        : `<div class="zero">${t.x} ÷ ${rd.m} ลงตัว (ตัดทิ้ง)</div>`;
+    });
+    h += last
+      ? `<div>${rd.m} หารทุกตัวลงตัว → ห.ร.ม. = <span class="res">${rd.m}</span></div>`
+      : `<div>กลุ่มใหม่: ${[rd.m, ...Array.from(new Set(rd.items.filter((t) => t.r > 0).map((t) => t.r)))].sort((a, b) => a - b).join(", ")}</div>`;
+    h += `</div>`;
   });
+  return h;
+}
 
-  /* =========================================================
-     8. SETTINGS — EVENTS + VALIDATION
-     ========================================================= */
-  function openSettings() {
-    countModeSelect.value = cfg.countMode;
-    maxValInput.value = cfg.maxVal;
-    settingsError.textContent = "";
-    settingsOverlay.classList.add("show");
-  }
-
-  function closeSettings() {
-    settingsOverlay.classList.remove("show");
-  }
-
-  gearBtn.addEventListener("click", openSettings);
-  cancelBtn.addEventListener("click", closeSettings);
-  settingsOverlay.addEventListener("click", (e) => {
-    if (e.target === settingsOverlay) closeSettings();
+function euclidHTML(nums) {
+  const c = cascade(nums);
+  let h = "";
+  c.steps.forEach((st, i) => {
+    const title = nums.length === 2 ? `ค.ร.น.(${st.a}, ${st.b})` : `คู่ที่ ${i + 1}: ค.ร.น.(${st.a}, ${st.b})`;
+    h += `<div class="round"><div class="hd pair-heading">${title}</div>`;
+    h += `<div>หา ห.ร.ม.(${st.a}, ${st.b}) ด้วยยูคลิด</div></div>`;
+    h += roundsHTML(st.ge);
+    h += `<div class="round"><div>${st.a} × ${st.b} ÷ ${st.g} = ${st.a * st.b} ÷ ${st.g} = <span class="res">${st.next}</span></div></div>`;
   });
+  h += `<div class="res">ค.ร.น. = ${c.lcm}</div>`;
+  return h;
+}
 
-  saveBtn.addEventListener("click", () => {
-    const countMode = countModeSelect.value;
-    const maxVal = parseInt(maxValInput.value, 10);
+function solutionHTML(p) {
+  let h = "";
+  const both = p.solve.length > 1;
+  if (p.solve.includes("ladder")) {
+    h += `<div class="intro">${both ? "วิธีที่ 1 · " : ""}ตั้งหาร</div>` + ladderHTML(p.nums);
+  }
+  if (p.solve.includes("euclid")) {
+    h += `<div class="intro"${both ? ' style="margin-top:18px"' : ""}>${both ? "วิธีที่ 2 · " : ""}สูตรยูคลิด${p.nums.length > 2 ? " (จับคู่ต่อเนื่อง)" : ""}</div>` + euclidHTML(p.nums);
+  }
+  return h;
+}
 
-    if (!Number.isInteger(maxVal)) {
-      settingsError.textContent = "กรอกค่ามากที่สุดให้ถูกต้อง";
-      return;
-    }
-    if (maxVal < 5) {
-      settingsError.textContent = "ค่ามากที่สุดต้องอย่างน้อย 5 (ต้องมีเลขพอสุ่มได้ 4 ตัวไม่ซ้ำกัน)";
-      return;
-    }
 
-    cfg = { ...cfg, countMode, maxVal };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
-    closeSettings();
-    showNext();
+/* Presentation-only KaTeX: render numeric runs in Thai prose and table cells. */
+function styleOrdinaryMathNumbers(renderedHtml) {
+  const template = document.createElement('template');
+  template.innerHTML = renderedHtml;
+  template.content.querySelectorAll('.katex-html .mord').forEach(atom => {
+    if (atom.children.length || !/^\d+(?:\.\d+)?$/.test(atom.textContent.trim())) return;
+    if (atom.closest('.mfrac, .msupsub, .vlist, .sqrt, .root, .sizing, .accent, .op-limits')) return;
+    atom.classList.add('ordinary-number');
   });
+  return template.innerHTML;
+}
+function renderLcmMathNumbers(root) {
+  if (typeof katex === 'undefined') return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.parentElement.closest('.katex, script, style')) continue;
+    if (/\d/.test(node.nodeValue)) nodes.push(node);
+  }
+  nodes.forEach(node => {
+    const chunks = node.nodeValue.split(/(\d+(?:\.\d+)?)/g);
+    if (chunks.length === 1) return;
+    const frag = document.createDocumentFragment();
+    chunks.forEach(chunk => {
+      if (!/^\d+(?:\.\d+)?$/.test(chunk)) {
+        frag.appendChild(document.createTextNode(chunk));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'inline-lcm-math';
+        span.innerHTML = styleOrdinaryMathNumbers(katex.renderToString(chunk, {throwOnError:false}));
+        frag.appendChild(span);
+      }
+    });
+    node.replaceWith(frag);
+  });
+}
 
-  /* =========================================================
-     9. INITIAL LOAD
-     ========================================================= */
-  exprEl.textContent = newProblem();
-  displayProblem();
+function setLabel() { modeLabel.textContent = `ระดับ ${current.level}`; }
+function displayProblem() { exprEl.style.display = ""; answerWrap.style.display = "none"; $("toggleBtn").textContent = "ดูเฉลย"; setLabel(); }
+function displayAnswer() { exprEl.style.display = "none"; answerWrap.style.display = ""; solEl.innerHTML = solutionHTML(current); renderLcmMathNumbers(solEl); $("toggleBtn").textContent = "ดูโจทย์"; setLabel(); }
+function newProblem() { current = genProblem(); exprEl.textContent = `หา ค.ร.น. ของ ${current.nums.join(", ")}`; renderLcmMathNumbers(exprEl); }
+function showNext() {
+  exprEl.classList.add("swap"); answerWrap.classList.add("swap");
+  setTimeout(() => { newProblem(); showingAnswer = false; displayProblem(); exprEl.classList.remove("swap"); answerWrap.classList.remove("swap"); }, 150);
+}
+function toggleAnswer() {
+  const el = showingAnswer ? answerWrap : exprEl;
+  el.classList.add("swap");
+  setTimeout(() => { showingAnswer = !showingAnswer; showingAnswer ? displayAnswer() : displayProblem(); (showingAnswer ? answerWrap : exprEl).classList.remove("swap"); }, 150);
+}
 
+/* =========================================================
+   5. EVENTS + SETTINGS
+   ========================================================= */
+$("nextBtn").addEventListener("click", showNext);
+$("toggleBtn").addEventListener("click", toggleAnswer);
+$("endBtn").addEventListener("click", () => $("endScreen").classList.add("show"));
+$("restartBtn").addEventListener("click", () => { $("endScreen").classList.remove("show"); showNext(); });
+const ov = $("settingsOverlay");
+$("gearBtn").addEventListener("click", () => { $("lvMin").value = cfg.lvMin; $("lvMax").value = cfg.lvMax; $("settingsError").textContent = ""; ov.classList.add("show"); });
+$("cancelBtn").addEventListener("click", () => ov.classList.remove("show"));
+ov.addEventListener("click", (e) => { if (e.target === ov) ov.classList.remove("show"); });
+$("saveBtn").addEventListener("click", () => {
+  const a = parseInt($("lvMin").value, 10), b = parseInt($("lvMax").value, 10);
+  if (a > b) { $("settingsError").textContent = "ระดับต่ำสุดต้องไม่มากกว่าระดับสูงสุด"; return; }
+  cfg = { lvMin: a, lvMax: b };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {}
+  ov.classList.remove("show"); showNext();
+});
+newProblem(); displayProblem();
 </script>
 
 </body>
