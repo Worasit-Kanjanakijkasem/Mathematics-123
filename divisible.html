@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-5QmANu2CPEzlJ7jgFg5AQwr21TuAj0lp16rFFd0z6sM=' https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; connect-src https://math-generator-api.marveric2.workers.dev; img-src 'self' data:; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-d2z15NbOdN6IfSAiL401s59okX6IqdP52kqYcOwyA6E=' https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; connect-src https://math-generator-api.marveric2.workers.dev; img-src 'self' data:; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ฝึกหารลงตัว</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
@@ -332,7 +332,7 @@
           <span class="mini-label">ต่ำสุด</span><input type="number" id="minInput" inputmode="numeric">
           <span class="mini-label">สูงสุด</span><input type="number" id="maxInput" inputmode="numeric">
         </div>
-        <div class="field-note">เลขน้อยที่สุดต้องมากกว่า 0 และน้อยกว่าเลขมากที่สุด และช่วงต้องมีไม่เกิน 4,294,967,296 จำนวน</div>
+        <div class="field-note">เลขน้อยที่สุดต้องมากกว่า 0 และน้อยกว่าเลขมากที่สุด โดยค่าสูงสุดและค่าต่ำสุดต้องต่างกันไม่เกิน 4,294,967,295</div>
       </div>
 
       <div class="settings-error" id="settingsError"></div>
@@ -506,7 +506,7 @@
     if (newMin < 1) { settingsError.textContent = "เลขน้อยที่สุดต้องมากกว่า 0"; return; }
     if (newMin >= newMax) { settingsError.textContent = "เลขน้อยที่สุดต้องน้อยกว่าเลขมากที่สุด"; return; }
     if (newMax - newMin + 1 > MAX_RANDOM_RANGE) {
-      settingsError.textContent = "ช่วงตัวเลขต้องมีจำนวนไม่เกิน 4,294,967,296 ค่า"; return;
+      settingsError.textContent = "ค่าสูงสุดและค่าต่ำสุดต้องต่างกันไม่เกิน 4,294,967,295"; return;
     }
     cfg = { min: newMin, max: newMax };
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch (e) {}
