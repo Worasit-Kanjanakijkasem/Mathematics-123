@@ -2,9 +2,9 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-d2z15NbOdN6IfSAiL401s59okX6IqdP52kqYcOwyA6E=' https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; connect-src https://math-generator-api.marveric2.workers.dev; img-src 'self' data:; base-uri 'none'; object-src 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ziLVru7VBhbrBM0DBYF0omFx22SV7kZ++8pgYt9d31Y=' https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; connect-src https://math-generator-api.marveric2.workers.dev; img-src 'self' data:; base-uri 'none'; object-src 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ฝึกหารลงตัว</title>
+<title>การหารลงตัว</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
 <style>
@@ -299,14 +299,14 @@
   <div class="blob blob-2"></div>
   <button class="gear-btn" id="gearBtn" aria-label="ตั้งค่าช่วงตัวเลข">⚙️</button>
 
-  <div class="eyebrow">ฝึกหารลงตัว <span class="title-math" id="titleMath">3 · 4 · 8 · 9 · 11</span></div>
+  <div class="eyebrow">การหารลงตัว</div>
 
   <div class="stage">
     <div class="number" id="numberEl">–</div>
     <div class="answer-wrap" id="answerWrap" style="display:none;">
       <div class="answer-line" id="answerLine"></div>
     </div>
-    <div class="prompt" id="promptEl">หารลงตัวด้วยตัวไหนบ้าง? <b>(3, 4, 8, 9, 11)</b></div>
+    <div class="prompt" id="promptEl">หารลงตัวด้วยตัวเลขใดบ้าง? <b>(3, 4, 8, 9, 11)</b></div>
   </div>
 
   <div class="controls">
@@ -398,13 +398,6 @@
     // Readable fallback if the KaTeX CDN is temporarily unavailable.
     element.textContent = expression.replace(/\\,/g, ', ');
   }
-  // Render the header numerals with the same math typesetter as the exercises.
-  function renderTitleMath() {
-    renderMath(document.getElementById('titleMath'), '3\\cdot 4\\cdot 8\\cdot 9\\cdot 11');
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderTitleMath, { once: true });
-  } else { renderTitleMath(); }
   function renderDivisorList(element, numbers) {
     renderMath(element, numbers.join(',\\;'));
   }
@@ -417,7 +410,7 @@
   function displayProblem() {
     numberEl.style.display = "";
     answerWrap.style.display = "none";
-    promptEl.textContent = "หารลงตัวด้วยตัวไหนบ้าง? ";
+    promptEl.textContent = "หารลงตัวด้วยตัวเลขใดบ้าง? ";
     const math = document.createElement('b');
     promptEl.appendChild(math);
     renderMath(math, '(3,4,8,9,11)');
